@@ -8,20 +8,38 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/lib/database.types";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+/** Accepts the full project URL or just the project ref ("svvbvkdkgduyphkkaiio"). */
+export function normalizeSupabaseUrl(value: string | undefined): string | null {
+  const v = value?.trim().replace(/\/+$/, "");
+  if (!v) return null;
+  if (/^[a-z0-9]{20}$/.test(v)) return `https://${v}.supabase.co`;
+  try {
+    const u = new URL(v);
+    return u.protocol === "https:" || u.protocol === "http:" ? u.origin : null;
+  } catch {
+    return null;
+  }
+}
+
+const url = normalizeSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
+const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 
 let client: SupabaseClient<Database> | null | undefined;
 
 /** null when Supabase isn't configured (the app still works: bundled content, no logging). */
 export function getSupabase(): SupabaseClient<Database> | null {
   if (client !== undefined) return client;
-  client =
-    url && anonKey
-      ? createClient<Database>(url, anonKey, {
-          auth: { persistSession: true, autoRefreshToken: true, storageKey: "itapon-auth" },
-        })
-      : null;
+  try {
+    client =
+      url && anonKey
+        ? createClient<Database>(url, anonKey, {
+            auth: { persistSession: true, autoRefreshToken: true, storageKey: "itapon-auth" },
+          })
+        : null;
+  } catch (e) {
+    console.warn("[itapon] Supabase is misconfigured; scans won't be logged.", e);
+    client = null;
+  }
   return client;
 }
 
