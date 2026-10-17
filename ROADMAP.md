@@ -725,6 +725,16 @@ itapon/
 
 ## Phase 16: Authentication & Scan History
 
+> **Status (2026-10-17): Done in code and verified on dev, except the real email round trip (needs you).**
+> 1. **Auth** (`lib/supabase/auth.ts`): guests stay anonymous (created on first scan or first account action). **"Save your history"** attaches an email to the *same* anonymous user (`updateUser` + confirmation link → `/account?saved=1`), so the user id and every scan are kept. **Sign in** on another device uses a magic link; guest scans from that device don't merge into the account (documented in the UI). **Google** (`linkIdentity` for guests) is hidden behind `NEXT_PUBLIC_AUTH_GOOGLE=1` until the Google provider and manual linking are set up in Supabase. It uses a redirect, not a popup, because of COOP.
+> 2. **No proxy/middleware:** sessions live in localStorage, every page is prerendered, and all data is read in the browser under RLS, so nothing on the server needs the session. `/account` is client-gated; admin data (Phase 19) is protected by RLS.
+> 3. **History** (`/history`, `components/history/history-view.tsx`): the user's scans from Supabase, grouped by day, newest first, 20 per page with infinite scroll + "Load more", skeleton/empty/error states, and a "Save your history" banner for guests.
+> 4. **Detail:** tap a row to expand all detected items with bin, confidence, instruction and Bin Guide link (inline instead of a separate route, so pages stay static).
+> 5. **Account** (`/account`): save history / sign in, display name + sign out (registered users), preferences stored in `profiles.prefs` (auto read-aloud, language, text size; applied in Phase 17), and **Delete my data** with confirmation (RPC + removes shared photos in Storage).
+> **Hosted auth config:** site URL set to https://itapon.vercel.app and redirect allow-list `localhost:3000/**`, `127.0.0.1:3000/**`, `itapon.vercel.app/**` (`supabase config push`). The local `config.toml` was aligned to the hosted security settings first so the push didn't turn off email confirmations.
+> **Verified on dev (browser + SQL):** guest A scanned 2 items → History showed both (grouped, expandable, with the banner); guest B on the same browser saw only its own scan; B's "Delete my data" removed its scan (and detections) while A's 2 scans remained.
+> **Still to test (you):** "Save my history" with **your own email**, open the link, and History should still show the guest scans. Supabase's built-in mailer only delivers to the project team's addresses and is rate-limited, so **custom SMTP is needed before real users sign up** (added to Phase 24).
+
 **Goal:** Let users keep and review their scan history across devices, while guests can still scan with no friction.
 
 **Why now:** Logging already happens from Phase 13. This phase exposes it and adds account features.
@@ -908,6 +918,8 @@ itapon/
 ---
 
 ## Phase 24: CI/CD, production release & monitoring
+
+> **Added in Phase 16:** configure **custom SMTP** for Supabase Auth (e.g. Resend/Brevo free tier) before public launch. The built-in mailer only sends to team members and is heavily rate-limited.
 
 **Goal:** A repeatable, low-risk path from merged PR to production, plus visibility into production health.
 
