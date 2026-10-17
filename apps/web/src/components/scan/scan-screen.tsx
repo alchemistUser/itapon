@@ -377,34 +377,44 @@ export function ScanScreen() {
   );
 
   // ---------- status / result areas ----------
-  const statusContent = photoError ? (
-    <>
-      <p className="font-semibold text-ink">Not sure what that is</p>
-      <p className="mt-1 text-sm text-ink-3">{photoError}</p>
-      <div className="mt-4 flex gap-3">
-        <Button variant="outline" onClick={next}>
-          Back to camera
+  const statusContent =
+    loop.error && !photoError ? (
+      // The loop retries every second; tell the user instead of silently showing nothing.
+      <div role="alert">
+        <p className="font-semibold text-ink">The scanner hit a problem</p>
+        <p className="mt-1 text-sm text-ink-3">Retrying… ({loop.error})</p>
+        <Button variant="outline" className="mt-3" onClick={retryDetector}>
+          <RefreshCw aria-hidden className="size-4" /> Restart scanner
         </Button>
-        <ButtonLink href="/guide">Bin Guide</ButtonLink>
       </div>
-    </>
-  ) : tentative ? (
-    <div className="flex items-center gap-3">
-      <BinTile category={tentative.category} size="md" className="opacity-60" />
-      <div>
-        <p className="text-xs font-medium text-ink-3">Possibly</p>
-        <p className="font-semibold text-ink">{tentative.name}</p>
-        <p className="text-sm text-ink-3">{hint}</p>
+    ) : photoError ? (
+      <>
+        <p className="font-semibold text-ink">Not sure what that is</p>
+        <p className="mt-1 text-sm text-ink-3">{photoError}</p>
+        <div className="mt-4 flex gap-3">
+          <Button variant="outline" onClick={next}>
+            Back to camera
+          </Button>
+          <ButtonLink href="/guide">Bin Guide</ButtonLink>
+        </div>
+      </>
+    ) : tentative ? (
+      <div className="flex items-center gap-3">
+        <BinTile category={tentative.category} size="md" className="opacity-60" />
+        <div>
+          <p className="text-xs font-medium text-ink-3">Possibly</p>
+          <p className="font-semibold text-ink">{tentative.name}</p>
+          <p className="text-sm text-ink-3">{hint}</p>
+        </div>
       </div>
-    </div>
-  ) : (
-    <>
-      <p className="font-semibold text-ink">Point your camera at an item</p>
-      <p className="mt-1 text-sm text-ink-3">
-        Keep it inside the frame. iTapon will tell you which bin it goes in.
-      </p>
-    </>
-  );
+    ) : (
+      <>
+        <p className="font-semibold text-ink">Point your camera at an item</p>
+        <p className="mt-1 text-sm text-ink-3">
+          Keep it inside the frame. iTapon will tell you which bin it goes in.
+        </p>
+      </>
+    );
 
   const photoLink = (
     <button

@@ -596,6 +596,10 @@ itapon/
 
 ## Phase 12: Camera & live scanning
 
+> **Status (2026-10-17): Done, except device testing (task 10).** `/scan` runs `ScanScreen` (`apps/web/src/components/scan/scan-screen.tsx`). Camera hook (`lib/scan/use-camera.ts`: back camera, iOS-safe, permission/device/insecure errors, front/back switch, torch). Scan loop (`lib/scan/use-scan-loop.ts`: one frame in flight, ≤ 4 fps, paused when hidden). Stability gate (`lib/scan/stability.ts`: 3 of 4 frames, unit-tested). Box overlay mapped onto the `object-cover` video, tentative/low-light hints, locked sheet (phone) or panel (tablet/desktop), warming-up overlay with download progress, retry/give-up screen, camera-blocked screen, take-a-photo fallback, vibration on lock, and scan-loop errors shown with a restart button. Shared detector store with idle preload from any page (F9-1, skipped in data-saver mode); COOP/COEP made site-wide so client navigation keeps WASM threads. Startup timing breakdown added to the ready report.
+> **Verified** with a simulated camera (canvas stream) in the browser at phone and desktop sizes: paper bag locks as Recyclable (~40%), Scan again re-arms, a photo during live scanning detects the cup, and the denied-camera screen appears. **Fixed on the way:** concurrent `session.run()` in the worker hung the detector (messages are now serialized).
+> **Moved:** the lock "tone" goes to Phase 17 (needs a sound preference); the `loading.tsx` route overlay goes to Phase 21 (every route is prerendered as static, so it would never show). **Not done:** task 10 device matrix and the exit-criteria timings (lock ≤ 2 s, 5-minute memory check) need real phones.
+
 **Goal:** A reliable, fast scanning experience on real phones (especially iOS Safari) and tablets.
 
 **Why now:** This is the core interaction and the riskiest frontend piece because of browser camera quirks. Doing it early leaves time to fix device issues.
