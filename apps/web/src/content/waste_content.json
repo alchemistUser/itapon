@@ -1,856 +1,1026 @@
 {
-  "categories": [
+ "categories": [
+  {
+   "key": "biodegradable",
+   "name": "Biodegradable",
+   "bin_label": "Green Bin",
+   "bin_color": "#2EA043",
+   "description": "Organic waste that breaks down naturally and can be composted.",
+   "examples": "Food scraps, fruit peels, leaves, used tissue paper",
+   "ra9003_term": "Biodegradable / compostable",
+   "icon": "leaf",
+   "sort_order": 1
+  },
+  {
+   "key": "recyclable",
+   "name": "Recyclable",
+   "bin_label": "Blue Bin",
+   "bin_color": "#0A84FF",
+   "description": "Clean, dry materials that can be made into new products.",
+   "examples": "Plastic bottles, glass, metal, clean paper",
+   "ra9003_term": "Recyclable",
+   "icon": "recycle",
+   "sort_order": 2
+  },
+  {
+   "key": "residual",
+   "name": "Residual",
+   "bin_label": "Black Bin",
+   "bin_color": "#111111",
+   "description": "Waste that cannot be composted or recycled here and goes to disposal.",
+   "examples": "Mixed garbage, soiled packaging, and sanitary waste",
+   "ra9003_term": "Residual",
+   "icon": "trash",
+   "sort_order": 3
+  },
+  {
+   "key": "hazardous",
+   "name": "Hazardous waste",
+   "bin_label": "Red Bin",
+   "bin_color": "#E5484D",
+   "description": "Special waste that can harm people or the environment. Use the red bin or a collection point.",
+   "examples": "Chemicals, batteries, busted light bulbs, and expired medicines",
+   "ra9003_term": "Special waste",
+   "icon": "alert-triangle",
+   "sort_order": 4
+  }
+ ],
+ "items": [
+  {
+   "class_key": "plastic_bottle",
+   "display_name": "Plastic bottle",
+   "display_name_fil": "Plastik na bote",
+   "category": "recyclable",
+   "detectable": true,
+   "short_instruction": "Empty it, remove the cap, and flatten it. Drop it in the blue bin.",
+   "reuse_tip": "Refill it for water or use it for plant cuttings.",
+   "prep_steps": [
     {
-      "key": "biodegradable",
-      "name": "Biodegradable",
-      "bin_label": "Green Bin",
-      "bin_color": "#2EA043",
-      "description": "Organic waste that breaks down naturally and can be composted.",
-      "examples": "Food scraps, fruit peels, leaves, used tissue paper",
-      "ra9003_term": "Biodegradable / compostable",
-      "icon": "leaf",
-      "sort_order": 1
+     "title": "Empty it",
+     "detail": "Pour out any drink left inside."
     },
     {
-      "key": "recyclable",
-      "name": "Recyclable",
-      "bin_label": "Blue Bin",
-      "bin_color": "#0A84FF",
-      "description": "Clean, dry materials that can be made into new products.",
-      "examples": "Plastic bottles, glass, metal, clean paper",
-      "ra9003_term": "Recyclable",
-      "icon": "recycle",
-      "sort_order": 2
+     "title": "Remove the cap",
+     "detail": "Caps are a different plastic. Put the cap in the blue bin separately."
     },
     {
-      "key": "residual",
-      "name": "Residual",
-      "bin_label": "Black Bin",
-      "bin_color": "#111111",
-      "description": "Waste that cannot be composted or recycled here and goes to disposal.",
-      "examples": "Mixed garbage, soiled packaging, and sanitary waste",
-      "ra9003_term": "Residual",
-      "icon": "trash",
-      "sort_order": 3
-    },
-    {
-      "key": "hazardous",
-      "name": "Hazardous waste",
-      "bin_label": "Red Bin",
-      "bin_color": "#E5484D",
-      "description": "Special waste that can harm people or the environment. Use the red bin or a collection point.",
-      "examples": "Chemicals, batteries, busted light bulbs, and expired medicines",
-      "ra9003_term": "Special waste",
-      "icon": "alert-triangle",
-      "sort_order": 4
+     "title": "Flatten it",
+     "detail": "Squeeze out the air to save space, then use the blue bin."
     }
-  ],
-  "items": [
+   ],
+   "why_text": "PET bottles are widely recycled when they are empty and clean. Leftover liquid spoils other recyclables.",
+   "contamination_note": "If it has leftover drink, empty and rinse it first.",
+   "aliases": [
+    "bottle",
+    "water bottle",
+    "pet bottle",
+    "softdrinks bottle",
+    "bote",
+    "plastik na bote",
+    "mineral water"
+   ],
+   "source": "RA, FG"
+  },
+  {
+   "class_key": "plastic_cup",
+   "display_name": "Plastic cup",
+   "display_name_fil": "Plastik na baso",
+   "category": "recyclable",
+   "detectable": true,
+   "short_instruction": "Empty and rinse it, then drop it in the blue bin.",
+   "reuse_tip": "Reuse it as a pen holder or seedling pot.",
+   "prep_steps": [
     {
-      "class_key": "plastic_bottle",
-      "display_name": "Plastic bottle",
-      "display_name_fil": "Plastik na bote",
-      "category": "recyclable",
-      "detectable": true,
-      "short_instruction": "Empty it, remove the cap, and flatten it. Drop it in the blue bin.",
-      "reuse_tip": "Refill it for water or use it for plant cuttings.",
-      "prep_steps": [
-        {
-          "title": "Empty it",
-          "detail": "Pour out any drink left inside."
-        },
-        {
-          "title": "Remove the cap",
-          "detail": "Caps are a different plastic. Put the cap in the blue bin separately."
-        },
-        {
-          "title": "Flatten it",
-          "detail": "Squeeze out the air to save space, then use the blue bin."
-        }
-      ],
-      "why_text": "PET bottles are widely recycled when they are empty and clean. Leftover liquid spoils other recyclables.",
-      "contamination_note": "If it has leftover drink, empty and rinse it first.",
-      "aliases": [
-        "bottle",
-        "water bottle",
-        "pet bottle",
-        "softdrinks bottle",
-        "bote",
-        "plastik na bote",
-        "mineral water"
-      ],
-      "source": "RA, FG"
+     "title": "Empty it",
+     "detail": "Finish or pour out the drink and remove the straw."
     },
     {
-      "class_key": "plastic_cup",
-      "display_name": "Plastic cup",
-      "display_name_fil": "Plastik na baso",
-      "category": "recyclable",
-      "detectable": true,
-      "short_instruction": "Empty and rinse it, then drop it in the blue bin.",
-      "reuse_tip": "Reuse it as a pen holder or seedling pot.",
-      "prep_steps": [
-        {
-          "title": "Empty it",
-          "detail": "Finish or pour out the drink and remove the straw."
-        },
-        {
-          "title": "Rinse it",
-          "detail": "A quick rinse removes milk tea or juice residue."
-        },
-        {
-          "title": "Sort it",
-          "detail": "Drop the clean cup in the blue bin. The straw goes in the black bin."
-        }
-      ],
-      "why_text": "Clean PP and PET cups are accepted by junk shops. Sticky residue makes them unrecyclable.",
-      "contamination_note": "If it has milk tea residue or food, rinse it or use the black bin.",
-      "aliases": ["cup", "milk tea cup", "plastic glass", "baso", "plastik na baso", "milktea"],
-      "source": "RA, FG (R5)"
+     "title": "Rinse it",
+     "detail": "A quick rinse removes milk tea or juice residue."
     },
     {
-      "class_key": "aluminum_can",
-      "display_name": "Aluminum can",
-      "display_name_fil": "Lata",
-      "category": "recyclable",
-      "detectable": true,
-      "short_instruction": "Empty it and crush it, then drop it in the blue bin.",
-      "reuse_tip": null,
-      "prep_steps": [
-        {
-          "title": "Empty it",
-          "detail": "Make sure no drink is left inside."
-        },
-        {
-          "title": "Crush it",
-          "detail": "Step on it or squeeze it to save space."
-        },
-        {
-          "title": "Sort it",
-          "detail": "Drop it in the blue bin."
-        }
-      ],
-      "why_text": "Aluminum can be recycled again and again without losing quality.",
-      "contamination_note": "Empty it fully before sorting.",
-      "aliases": ["can", "soda can", "softdrinks can", "beer can", "lata", "tin can"],
-      "source": "RA, FG"
-    },
-    {
-      "class_key": "glass_bottle",
-      "display_name": "Glass bottle",
-      "display_name_fil": "Boteng salamin",
-      "category": "recyclable",
-      "detectable": true,
-      "short_instruction": "Empty it and keep it whole. Place it in the blue bin.",
-      "reuse_tip": "Reuse it as a container or vase.",
-      "prep_steps": [
-        {
-          "title": "Empty it",
-          "detail": "Pour out any liquid left inside."
-        },
-        {
-          "title": "Keep it whole",
-          "detail": "Place it gently so it does not break."
-        },
-        {
-          "title": "Sort it",
-          "detail": "Put it in the blue bin."
-        }
-      ],
-      "why_text": "Whole glass bottles can be reused or remelted. Broken glass is a danger to waste workers.",
-      "contamination_note": "Broken glass: wrap it and give it to staff. Do not put it in any bin loose.",
-      "aliases": ["glass", "bottle", "jar", "bote", "boteng salamin", "garapon"],
-      "source": "RA, FG"
-    },
-    {
-      "class_key": "paper_bag",
-      "display_name": "Paper bag",
-      "display_name_fil": "Supot na papel",
-      "category": "recyclable",
-      "detectable": true,
-      "short_instruction": "Empty it and flatten it, then drop it in the blue bin.",
-      "reuse_tip": "Reuse it first. If it is still clean and sturdy, keep it for another trip. Recycle it when it is no longer usable.",
-      "prep_steps": [
-        {
-          "title": "Check the bag",
-          "detail": "Keep it only if it is clean, dry and intact."
-        },
-        {
-          "title": "Give it another use",
-          "detail": "Use it for dry storage or your next shopping trip."
-        },
-        {
-          "title": "Recycle when worn out",
-          "detail": "Empty and flatten it, then use the blue bin."
-        }
-      ],
-      "why_text": "Reusing extends the life of paper fibers. Clean, dry paper can then be recycled; grease-soaked paper cannot.",
-      "contamination_note": "Greasy or food-soaked paper goes in the black bin.",
-      "aliases": ["paper bag", "brown bag", "takeout bag", "supot", "supot na papel"],
-      "source": "RA, FG, FW"
-    },
-    {
-      "class_key": "cardboard",
-      "display_name": "Cardboard",
-      "display_name_fil": "Karton",
-      "category": "recyclable",
-      "detectable": true,
-      "short_instruction": "Flatten it and keep it dry. Place it in the blue bin.",
-      "reuse_tip": "Reuse it for storage or packing.",
-      "prep_steps": [
-        {
-          "title": "Empty it",
-          "detail": "Remove any contents, plastic wrap or foam."
-        },
-        {
-          "title": "Flatten it",
-          "detail": "Open the flaps and fold it flat."
-        },
-        {
-          "title": "Keep it dry",
-          "detail": "Put it in the blue bin away from wet waste."
-        }
-      ],
-      "why_text": "Dry cardboard is easy to recycle into new boxes. Wet or greasy cardboard is not.",
-      "contamination_note": "Wet or greasy cardboard (e.g. pizza box bottom) goes in the black bin.",
-      "aliases": ["box", "carton", "karton", "kahon", "pizza box"],
-      "source": "RA, FG"
-    },
-    {
-      "class_key": "paper_sheet",
-      "display_name": "Paper",
-      "display_name_fil": "Papel",
-      "category": "recyclable",
-      "detectable": true,
-      "short_instruction": "Keep it dry and uncrumpled. Place it in the blue bin.",
-      "reuse_tip": "Use the blank side for notes.",
-      "prep_steps": [
-        {
-          "title": "Use both sides",
-          "detail": "Scratch paper still has a blank side for notes."
-        },
-        {
-          "title": "Keep it dry and flat",
-          "detail": "Do not crumple or wet it."
-        },
-        {
-          "title": "Sort it",
-          "detail": "Place it in the blue bin."
-        }
-      ],
-      "why_text": "Clean, flat paper has long fibers that recycle well.",
-      "contamination_note": "Wet or food-stained paper goes in the black bin.",
-      "aliases": ["paper", "bond paper", "notebook paper", "papel", "scratch paper", "printout"],
-      "source": "RA, FG"
-    },
-    {
-      "class_key": "banana_peel",
-      "display_name": "Banana peel",
-      "display_name_fil": "Balat ng saging",
-      "category": "biodegradable",
-      "detectable": true,
-      "short_instruction": "Remove stickers, then compost or use the green bin.",
-      "reuse_tip": null,
-      "prep_steps": [
-        {
-          "title": "Remove stickers",
-          "detail": "Fruit stickers are plastic and go in the black bin."
-        },
-        {
-          "title": "Compost or green bin",
-          "detail": "Add it to a compost pile or the green bin."
-        }
-      ],
-      "why_text": "Organic material breaks down naturally.",
-      "contamination_note": null,
-      "aliases": ["banana", "peel", "fruit peel", "saging", "balat ng saging"],
-      "source": "RA, FG, FW"
-    },
-    {
-      "class_key": "food_scraps",
-      "display_name": "Food scraps",
-      "display_name_fil": "Tira-tirang pagkain",
-      "category": "biodegradable",
-      "detectable": true,
-      "short_instruction": "Scrape food into the green bin. No plastic or packaging.",
-      "reuse_tip": null,
-      "prep_steps": [
-        {
-          "title": "Separate the packaging",
-          "detail": "Take food out of wrappers and containers."
-        },
-        {
-          "title": "Scrape it in",
-          "detail": "Put only the food in the green bin."
-        }
-      ],
-      "why_text": "Food waste can be composted. Mixed with plastic, it can't.",
-      "contamination_note": "Remove any wrapper or container first.",
-      "aliases": [
-        "leftovers",
-        "food waste",
-        "rice",
-        "fruit peel",
-        "tira",
-        "tirang pagkain",
-        "kanin",
-        "mango peel"
-      ],
-      "source": "RA, FG"
-    },
-    {
-      "class_key": "leaves",
-      "display_name": "Leaves",
-      "display_name_fil": "Dahon",
-      "category": "biodegradable",
-      "detectable": true,
-      "short_instruction": "Place in the green bin or compost.",
-      "reuse_tip": null,
-      "prep_steps": [
-        {
-          "title": "Remove litter",
-          "detail": "Pick out any plastic or wrappers mixed in."
-        },
-        {
-          "title": "Compost or green bin",
-          "detail": "Leaves make good compost."
-        }
-      ],
-      "why_text": "Garden waste breaks down into useful compost.",
-      "contamination_note": null,
-      "aliases": ["leaf", "dry leaves", "dahon", "twigs", "grass", "garden waste"],
-      "source": "RA, FG"
-    },
-    {
-      "class_key": "used_tissue",
-      "display_name": "Used tissue",
-      "display_name_fil": "Gamit na tisyu",
-      "category": "biodegradable",
-      "detectable": true,
-      "short_instruction": "Place in the green bin.",
-      "reuse_tip": null,
-      "prep_steps": [
-        {
-          "title": "Check what it touched",
-          "detail": "Plain tissue can be composted."
-        },
-        {
-          "title": "Sort it",
-          "detail": "Use the green bin, or the black bin if it touched chemicals or blood."
-        }
-      ],
-      "why_text": "Plain tissue is paper fiber and breaks down naturally.",
-      "contamination_note": "Tissue used with chemicals or for blood goes in the black bin.",
-      "aliases": ["tissue", "table napkin", "paper towel", "tisyu"],
-      "source": "FG (R2)"
-    },
-    {
-      "class_key": "snack_wrapper",
-      "display_name": "Snack wrapper",
-      "display_name_fil": "Balot ng chichirya",
-      "category": "residual",
-      "detectable": true,
-      "short_instruction": "Empty any food, then place it in the black bin.",
-      "reuse_tip": null,
-      "prep_steps": [
-        {
-          "title": "Empty it",
-          "detail": "Shake out crumbs into the green bin."
-        },
-        {
-          "title": "Sort it",
-          "detail": "Place the wrapper in the black bin."
-        }
-      ],
-      "why_text": "Mixed-layer film is not recyclable here.",
-      "contamination_note": null,
-      "aliases": [
-        "chips bag",
-        "candy wrapper",
-        "junk food",
-        "chichirya",
-        "balot",
-        "sitsirya",
-        "biscuit wrapper"
-      ],
-      "source": "RA, FG, FW"
-    },
-    {
-      "class_key": "styrofoam",
-      "display_name": "Styrofoam",
-      "display_name_fil": "Styro",
-      "category": "residual",
-      "detectable": true,
-      "short_instruction": "Empty any food, then place it in the black bin.",
-      "reuse_tip": null,
-      "prep_steps": [
-        {
-          "title": "Empty it",
-          "detail": "Scrape leftover food into the green bin."
-        },
-        {
-          "title": "Sort it",
-          "detail": "Place the styrofoam in the black bin."
-        }
-      ],
-      "why_text": "Styrofoam is not recycled locally and breaks into small pieces that pollute.",
-      "contamination_note": null,
-      "aliases": ["styro", "foam", "styrofoam box", "styrofoam cup", "polystyrene"],
-      "source": "RA, FG"
-    },
-    {
-      "class_key": "plastic_utensil",
-      "display_name": "Plastic utensil",
-      "display_name_fil": "Plastik na kubyertos",
-      "category": "residual",
-      "detectable": true,
-      "short_instruction": "Place it in the black bin.",
-      "reuse_tip": "Wash and reuse it if it is still intact.",
-      "prep_steps": [
-        {
-          "title": "Reuse if you can",
-          "detail": "Wash it and keep it for another meal."
-        },
-        {
-          "title": "Sort it",
-          "detail": "When worn out, place it in the black bin."
-        }
-      ],
-      "why_text": "Small single-use plastics are too small and mixed to recycle here.",
-      "contamination_note": null,
-      "aliases": [
-        "spoon",
-        "fork",
-        "plastic spoon",
-        "plastic fork",
-        "kutsara",
-        "tinidor",
-        "kubyertos"
-      ],
-      "source": "RA, FG"
-    },
-    {
-      "class_key": "straw",
-      "display_name": "Straw",
-      "display_name_fil": "Straw",
-      "category": "residual",
-      "detectable": true,
-      "short_instruction": "Place it in the black bin.",
-      "reuse_tip": "Next time, skip the straw or bring a reusable one.",
-      "prep_steps": [
-        {
-          "title": "Sort it",
-          "detail": "Place the straw in the black bin."
-        },
-        {
-          "title": "Skip it next time",
-          "detail": "Bring a reusable straw or drink without one."
-        }
-      ],
-      "why_text": "Straws are too small and light to be recycled.",
-      "contamination_note": null,
-      "aliases": ["straw", "plastic straw", "drinking straw", "istro"],
-      "source": "RA, FG"
-    },
-    {
-      "class_key": "tetra_pack",
-      "display_name": "Tetra Pak / juice carton",
-      "display_name_fil": "Karton ng juice",
-      "category": "residual",
-      "detectable": true,
-      "short_instruction": "Empty and flatten it, then place it in the black bin.",
-      "reuse_tip": null,
-      "prep_steps": [
-        {
-          "title": "Empty it",
-          "detail": "Finish or pour out the drink."
-        },
-        {
-          "title": "Flatten it",
-          "detail": "Press it flat to save space."
-        },
-        {
-          "title": "Sort it",
-          "detail": "Place it in the black bin, or a carton drop-off if your area has one."
-        }
-      ],
-      "why_text": "Cartons mix paper, plastic and aluminum layers that most junk shops don't accept.",
-      "contamination_note": "Some drop-off programs accept clean cartons. Check locally.",
-      "aliases": ["tetra pak", "juice box", "milk carton", "zesto", "karton ng juice", "drink box"],
-      "source": "RA (R3)"
-    },
-    {
-      "class_key": "soiled_food_container",
-      "display_name": "Soiled food container",
-      "display_name_fil": "Maruming lalagyan ng pagkain",
-      "category": "residual",
-      "detectable": true,
-      "short_instruction": "Scrape leftover food into the green bin, then put the container in the black bin.",
-      "reuse_tip": null,
-      "prep_steps": [
-        {
-          "title": "Scrape the food",
-          "detail": "Put leftover food in the green bin."
-        },
-        {
-          "title": "Sort the container",
-          "detail": "Place the dirty container in the black bin."
-        }
-      ],
-      "why_text": "Food-soiled packaging can't be recycled, but the food itself can be composted.",
-      "contamination_note": null,
-      "aliases": [
-        "takeout box",
-        "food container",
-        "lunch box",
-        "lalagyan",
-        "baonan",
-        "packed lunch"
-      ],
-      "source": "RA, FG"
-    },
-    {
-      "class_key": "sanitary_napkin",
-      "display_name": "Sanitary napkin",
-      "display_name_fil": "Napkin",
-      "category": "residual",
-      "detectable": true,
-      "short_instruction": "Wrap it in paper, then place it in the black bin.",
-      "reuse_tip": null,
-      "prep_steps": [
-        {
-          "title": "Wrap it",
-          "detail": "Wrap it in paper or its wrapper."
-        },
-        {
-          "title": "Sort it",
-          "detail": "Place it in the black bin."
-        }
-      ],
-      "why_text": "Sanitary waste is a health risk and must not be recycled or composted.",
-      "contamination_note": null,
-      "aliases": ["pad", "sanitary pad", "napkin", "feminine napkin", "panty liner"],
-      "source": "RA, FG"
-    },
-    {
-      "class_key": "face_mask",
-      "display_name": "Face mask",
-      "display_name_fil": "Face mask",
-      "category": "residual",
-      "detectable": true,
-      "short_instruction": "Fold it inward, cut the ear loops, and place it in the black bin.",
-      "reuse_tip": null,
-      "prep_steps": [
-        {
-          "title": "Fold it inward",
-          "detail": "Keep the used side inside."
-        },
-        {
-          "title": "Cut the ear loops",
-          "detail": "Loops can trap animals."
-        },
-        {
-          "title": "Sort it",
-          "detail": "Place it in the black bin."
-        }
-      ],
-      "why_text": "Used masks may carry germs and are made of mixed materials that can't be recycled.",
-      "contamination_note": null,
-      "aliases": ["mask", "surgical mask", "facemask", "kn95"],
-      "source": "RA (R4)"
-    },
-    {
-      "class_key": "battery",
-      "display_name": "Battery",
-      "display_name_fil": "Baterya",
-      "category": "hazardous",
-      "detectable": true,
-      "short_instruction": "Tape the terminals. Take it to a battery collection point.",
-      "reuse_tip": null,
-      "prep_steps": [
-        {
-          "title": "Tape the terminals",
-          "detail": "Cover both ends with tape to prevent sparks."
-        },
-        {
-          "title": "Bring it to a collection point",
-          "detail": "Use the red bin or a battery drop-off."
-        }
-      ],
-      "why_text": "Batteries can leak or start fires. Never mix with regular waste.",
-      "contamination_note": "Never mix with regular waste. Batteries can leak or start fires.",
-      "aliases": [
-        "batteries",
-        "aa battery",
-        "aaa battery",
-        "baterya",
-        "lithium battery",
-        "battery cell"
-      ],
-      "source": "RA, FG, FW"
-    },
-    {
-      "class_key": "light_bulb",
-      "display_name": "Light bulb",
-      "display_name_fil": "Bombilya",
-      "category": "hazardous",
-      "detectable": true,
-      "short_instruction": "Keep it whole and wrap it. Give it to staff or a collection point.",
-      "reuse_tip": null,
-      "prep_steps": [
-        {
-          "title": "Keep it whole",
-          "detail": "Do not break it."
-        },
-        {
-          "title": "Wrap it",
-          "detail": "Use paper or its original box."
-        },
-        {
-          "title": "Hand it over",
-          "detail": "Give it to staff or a hazardous waste collection point."
-        }
-      ],
-      "why_text": "Fluorescent bulbs contain mercury, which is toxic when released.",
-      "contamination_note": "Fluorescent bulbs contain mercury. Do not break them.",
-      "aliases": ["bulb", "lamp", "fluorescent", "led bulb", "bombilya", "ilaw"],
-      "source": "RA, FG"
-    },
-    {
-      "class_key": "expired_medicine",
-      "display_name": "Medicine / blister pack",
-      "display_name_fil": "Gamot",
-      "category": "hazardous",
-      "detectable": true,
-      "short_instruction": "Keep it in its pack. Bring it to a pharmacy or hazardous waste collection point.",
-      "reuse_tip": null,
-      "prep_steps": [
-        {
-          "title": "Keep it packed",
-          "detail": "Leave pills in their blister or bottle."
-        },
-        {
-          "title": "Bring it to a drop-off",
-          "detail": "Use a pharmacy take-back or a hazardous waste collection point."
-        }
-      ],
-      "why_text": "Medicines can poison water and soil if thrown away or flushed.",
-      "contamination_note": "Do not flush or throw it in regular bins.",
-      "aliases": [
-        "medicine",
-        "pills",
-        "tablets",
-        "blister pack",
-        "gamot",
-        "expired medicine",
-        "syrup"
-      ],
-      "source": "RA, FG"
-    },
-    {
-      "class_key": "spray_can",
-      "display_name": "Spray / aerosol can",
-      "display_name_fil": "Spray can",
-      "category": "hazardous",
-      "detectable": true,
-      "short_instruction": "Do not puncture or burn it. Place it in the red bin or a collection point.",
-      "reuse_tip": null,
-      "prep_steps": [
-        {
-          "title": "Do not puncture it",
-          "detail": "Pressurized cans can explode."
-        },
-        {
-          "title": "Sort it",
-          "detail": "Place it in the red bin or a collection point."
-        }
-      ],
-      "why_text": "Aerosol cans hold pressure and chemicals that are dangerous in regular waste.",
-      "contamination_note": "Can explode under heat or pressure.",
-      "aliases": ["aerosol", "spray", "insect spray", "deodorant spray", "spray paint", "baygon"],
-      "source": "RA, FG"
-    },
-    {
-      "class_key": "paper_cup",
-      "display_name": "Paper cup",
-      "display_name_fil": "Papel na baso",
-      "category": "residual",
-      "detectable": false,
-      "short_instruction": "Empty it, then place it in the black bin.",
-      "reuse_tip": "Bring a reusable tumbler next time.",
-      "prep_steps": [],
-      "why_text": "Paper cups have a plastic lining, so they can't be recycled with paper.",
-      "contamination_note": null,
-      "aliases": ["coffee cup", "paper cup", "hot cup"],
-      "source": "RA (spec §3.3)"
-    },
-    {
-      "class_key": "cigarette_butt",
-      "display_name": "Cigarette butt",
-      "display_name_fil": "Upos",
-      "category": "residual",
-      "detectable": false,
-      "short_instruction": "Make sure it is fully out, then place it in the black bin.",
-      "reuse_tip": null,
-      "prep_steps": [],
-      "why_text": "Filters are plastic and contain toxins.",
-      "contamination_note": null,
-      "aliases": ["cigarette", "upos", "yosi", "filter"],
-      "source": "RA (spec §3.3)"
-    },
-    {
-      "class_key": "bamboo_skewer",
-      "display_name": "Chopsticks / bamboo skewer",
-      "display_name_fil": "Barbecue stick",
-      "category": "biodegradable",
-      "detectable": false,
-      "short_instruction": "Break sharp tips, then place it in the green bin.",
-      "reuse_tip": null,
-      "prep_steps": [],
-      "why_text": "Untreated bamboo and wood break down naturally.",
-      "contamination_note": "Plastic chopsticks go in the black bin.",
-      "aliases": ["chopsticks", "skewer", "barbecue stick", "bbq stick", "toothpick"],
-      "source": "RA (spec §3.3)"
-    },
-    {
-      "class_key": "eggshell",
-      "display_name": "Eggshell",
-      "display_name_fil": "Balat ng itlog",
-      "category": "biodegradable",
-      "detectable": false,
-      "short_instruction": "Place it in the green bin or compost.",
-      "reuse_tip": "Crushed eggshells are good for garden soil.",
-      "prep_steps": [],
-      "why_text": "Eggshells are organic and add calcium to compost.",
-      "contamination_note": null,
-      "aliases": ["egg", "egg shell", "itlog", "balat ng itlog"],
-      "source": "RA (spec §3.3)"
-    },
-    {
-      "class_key": "coffee_grounds",
-      "display_name": "Coffee grounds",
-      "display_name_fil": "Sapal ng kape",
-      "category": "biodegradable",
-      "detectable": false,
-      "short_instruction": "Place them in the green bin or compost.",
-      "reuse_tip": "Use them as garden fertilizer.",
-      "prep_steps": [],
-      "why_text": "Coffee grounds are organic and compost well.",
-      "contamination_note": "Coffee pods and sachets go in the black bin.",
-      "aliases": ["coffee", "grounds", "kape", "tea leaves"],
-      "source": "RA (spec §3.3)"
-    },
-    {
-      "class_key": "plastic_sachet",
-      "display_name": "Plastic sachet",
-      "display_name_fil": "Sachet",
-      "category": "residual",
-      "detectable": false,
-      "short_instruction": "Empty it, then place it in the black bin.",
-      "reuse_tip": "Choose refill stations or bigger packs when you can.",
-      "prep_steps": [],
-      "why_text": "Sachets are multi-layer plastic and are not recycled here.",
-      "contamination_note": null,
-      "aliases": ["sachet", "shampoo sachet", "coffee sachet", "3in1", "ketchup packet"],
-      "source": "RA (spec §3.3)"
-    },
-    {
-      "class_key": "rubber_band",
-      "display_name": "Rubber band",
-      "display_name_fil": "Goma",
-      "category": "residual",
-      "detectable": false,
-      "short_instruction": "Reuse it, or place it in the black bin.",
-      "reuse_tip": "Keep it for bundling things.",
-      "prep_steps": [],
-      "why_text": "Small rubber items are not recycled here.",
-      "contamination_note": null,
-      "aliases": ["rubber", "goma", "rubber band", "lastiko"],
-      "source": "RA (spec §3.3)"
-    },
-    {
-      "class_key": "e_waste",
-      "display_name": "E-waste (phones, cables, chargers)",
-      "display_name_fil": "E-waste",
-      "category": "hazardous",
-      "detectable": false,
-      "short_instruction": "Do not throw it in any bin. Bring it to an e-waste collection point.",
-      "reuse_tip": "Donate or repair working devices.",
-      "prep_steps": [],
-      "why_text": "Electronics contain metals and chemicals that are harmful but valuable to recover.",
-      "contamination_note": null,
-      "aliases": ["phone", "cellphone", "charger", "cable", "earphones", "electronics", "gadget"],
-      "source": "RA (spec §3.3)"
-    },
-    {
-      "class_key": "paint_can",
-      "display_name": "Paint can",
-      "display_name_fil": "Lata ng pintura",
-      "category": "hazardous",
-      "detectable": false,
-      "short_instruction": "Keep it closed. Bring it to a hazardous waste collection point.",
-      "reuse_tip": null,
-      "prep_steps": [],
-      "why_text": "Leftover paint and solvents are toxic.",
-      "contamination_note": null,
-      "aliases": ["paint", "pintura", "thinner", "solvent"],
-      "source": "RA (spec §3.3)"
-    },
-    {
-      "class_key": "broken_glass",
-      "display_name": "Broken glass",
-      "display_name_fil": "Basag na salamin",
-      "category": "residual",
-      "detectable": false,
-      "short_instruction": "Wrap it well and label it \"sharp\". Give it to staff.",
-      "reuse_tip": null,
-      "prep_steps": [],
-      "why_text": "Loose broken glass injures waste workers.",
-      "contamination_note": "Never put loose broken glass in any bin.",
-      "aliases": ["glass shards", "bubog", "basag", "broken bottle"],
-      "source": "RA (spec §3.3)"
-    },
-    {
-      "class_key": "diaper",
-      "display_name": "Diaper",
-      "display_name_fil": "Lampin",
-      "category": "residual",
-      "detectable": false,
-      "short_instruction": "Roll it up and tape it, then place it in the black bin.",
-      "reuse_tip": null,
-      "prep_steps": [],
-      "why_text": "Diapers are sanitary waste and can't be recycled or composted.",
-      "contamination_note": null,
-      "aliases": ["diaper", "nappy", "lampin", "adult diaper"],
-      "source": "RA (spec §3.3)"
-    },
-    {
-      "class_key": "pen",
-      "display_name": "Pen",
-      "display_name_fil": "Ballpen",
-      "category": "residual",
-      "detectable": false,
-      "short_instruction": "Place it in the black bin.",
-      "reuse_tip": "Use refillable pens.",
-      "prep_steps": [],
-      "why_text": "Pens mix plastic, metal and ink, so they aren't recycled here.",
-      "contamination_note": null,
-      "aliases": ["ballpen", "ball pen", "marker", "highlighter"],
-      "source": "RA (spec §3.3)"
-    },
-    {
-      "class_key": "ink_cartridge",
-      "display_name": "Ink cartridge",
-      "display_name_fil": "Ink cartridge",
-      "category": "hazardous",
-      "detectable": false,
-      "short_instruction": "Bring it to a cartridge take-back or e-waste collection point.",
-      "reuse_tip": "Many printer shops refill cartridges.",
-      "prep_steps": [],
-      "why_text": "Ink and electronics in cartridges are harmful in regular waste.",
-      "contamination_note": null,
-      "aliases": ["printer ink", "toner", "cartridge", "ink"],
-      "source": "RA (spec §3.3)"
+     "title": "Sort it",
+     "detail": "Drop the clean cup in the blue bin. The straw goes in the black bin."
     }
-  ]
+   ],
+   "why_text": "Clean PP and PET cups are accepted by junk shops. Sticky residue makes them unrecyclable.",
+   "contamination_note": "If it has milk tea residue or food, rinse it or use the black bin.",
+   "aliases": [
+    "cup",
+    "milk tea cup",
+    "plastic glass",
+    "baso",
+    "plastik na baso",
+    "milktea"
+   ],
+   "source": "RA, FG (R5)"
+  },
+  {
+   "class_key": "aluminum_can",
+   "display_name": "Aluminum can",
+   "display_name_fil": "Lata",
+   "category": "recyclable",
+   "detectable": true,
+   "short_instruction": "Empty it and crush it, then drop it in the blue bin.",
+   "reuse_tip": null,
+   "prep_steps": [
+    {
+     "title": "Empty it",
+     "detail": "Make sure no drink is left inside."
+    },
+    {
+     "title": "Crush it",
+     "detail": "Step on it or squeeze it to save space."
+    },
+    {
+     "title": "Sort it",
+     "detail": "Drop it in the blue bin."
+    }
+   ],
+   "why_text": "Aluminum can be recycled again and again without losing quality.",
+   "contamination_note": "Empty it fully before sorting.",
+   "aliases": [
+    "can",
+    "soda can",
+    "softdrinks can",
+    "beer can",
+    "lata",
+    "tin can"
+   ],
+   "source": "RA, FG"
+  },
+  {
+   "class_key": "glass_bottle",
+   "display_name": "Glass bottle",
+   "display_name_fil": "Boteng salamin",
+   "category": "recyclable",
+   "detectable": true,
+   "short_instruction": "Empty it and keep it whole. Place it in the blue bin.",
+   "reuse_tip": "Reuse it as a container or vase.",
+   "prep_steps": [
+    {
+     "title": "Empty it",
+     "detail": "Pour out any liquid left inside."
+    },
+    {
+     "title": "Keep it whole",
+     "detail": "Place it gently so it does not break."
+    },
+    {
+     "title": "Sort it",
+     "detail": "Put it in the blue bin."
+    }
+   ],
+   "why_text": "Whole glass bottles can be reused or remelted. Broken glass is a danger to waste workers.",
+   "contamination_note": "Broken glass: wrap it and give it to staff. Do not put it in any bin loose.",
+   "aliases": [
+    "glass",
+    "bottle",
+    "jar",
+    "bote",
+    "boteng salamin",
+    "garapon"
+   ],
+   "source": "RA, FG"
+  },
+  {
+   "class_key": "paper_bag",
+   "display_name": "Paper bag",
+   "display_name_fil": "Supot na papel",
+   "category": "recyclable",
+   "detectable": true,
+   "short_instruction": "Empty it and flatten it, then drop it in the blue bin.",
+   "reuse_tip": "Reuse it first. If it is still clean and sturdy, keep it for another trip. Recycle it when it is no longer usable.",
+   "prep_steps": [
+    {
+     "title": "Check the bag",
+     "detail": "Keep it only if it is clean, dry and intact."
+    },
+    {
+     "title": "Give it another use",
+     "detail": "Use it for dry storage or your next shopping trip."
+    },
+    {
+     "title": "Recycle when worn out",
+     "detail": "Empty and flatten it, then use the blue bin."
+    }
+   ],
+   "why_text": "Reusing extends the life of paper fibers. Clean, dry paper can then be recycled; grease-soaked paper cannot.",
+   "contamination_note": "Greasy or food-soaked paper goes in the black bin.",
+   "aliases": [
+    "paper bag",
+    "brown bag",
+    "takeout bag",
+    "supot",
+    "supot na papel"
+   ],
+   "source": "RA, FG, FW"
+  },
+  {
+   "class_key": "cardboard",
+   "display_name": "Cardboard",
+   "display_name_fil": "Karton",
+   "category": "recyclable",
+   "detectable": true,
+   "short_instruction": "Flatten it and keep it dry. Place it in the blue bin.",
+   "reuse_tip": "Reuse it for storage or packing.",
+   "prep_steps": [
+    {
+     "title": "Empty it",
+     "detail": "Remove any contents, plastic wrap or foam."
+    },
+    {
+     "title": "Flatten it",
+     "detail": "Open the flaps and fold it flat."
+    },
+    {
+     "title": "Keep it dry",
+     "detail": "Put it in the blue bin away from wet waste."
+    }
+   ],
+   "why_text": "Dry cardboard is easy to recycle into new boxes. Wet or greasy cardboard is not.",
+   "contamination_note": "Wet or greasy cardboard (e.g. pizza box bottom) goes in the black bin.",
+   "aliases": [
+    "box",
+    "carton",
+    "karton",
+    "kahon",
+    "pizza box"
+   ],
+   "source": "RA, FG"
+  },
+  {
+   "class_key": "paper_sheet",
+   "display_name": "Paper",
+   "display_name_fil": "Papel",
+   "category": "recyclable",
+   "detectable": true,
+   "short_instruction": "Keep it dry and uncrumpled. Place it in the blue bin.",
+   "reuse_tip": "Use the blank side for notes.",
+   "prep_steps": [
+    {
+     "title": "Use both sides",
+     "detail": "Scratch paper still has a blank side for notes."
+    },
+    {
+     "title": "Keep it dry and flat",
+     "detail": "Do not crumple or wet it."
+    },
+    {
+     "title": "Sort it",
+     "detail": "Place it in the blue bin."
+    }
+   ],
+   "why_text": "Clean, flat paper has long fibers that recycle well.",
+   "contamination_note": "Wet or food-stained paper goes in the black bin.",
+   "aliases": [
+    "paper",
+    "bond paper",
+    "notebook paper",
+    "papel",
+    "scratch paper",
+    "printout"
+   ],
+   "source": "RA, FG"
+  },
+  {
+   "class_key": "banana_peel",
+   "display_name": "Banana peel",
+   "display_name_fil": "Balat ng saging",
+   "category": "biodegradable",
+   "detectable": true,
+   "short_instruction": "Remove stickers, then compost or use the green bin.",
+   "reuse_tip": null,
+   "prep_steps": [
+    {
+     "title": "Remove stickers",
+     "detail": "Fruit stickers are plastic and go in the black bin."
+    },
+    {
+     "title": "Compost or green bin",
+     "detail": "Add it to a compost pile or the green bin."
+    }
+   ],
+   "why_text": "Organic material breaks down naturally.",
+   "contamination_note": null,
+   "aliases": [
+    "banana",
+    "peel",
+    "fruit peel",
+    "saging",
+    "balat ng saging"
+   ],
+   "source": "RA, FG, FW"
+  },
+  {
+   "class_key": "food_scraps",
+   "display_name": "Food scraps",
+   "display_name_fil": "Tira-tirang pagkain",
+   "category": "biodegradable",
+   "detectable": true,
+   "short_instruction": "Scrape food into the green bin. No plastic or packaging.",
+   "reuse_tip": null,
+   "prep_steps": [
+    {
+     "title": "Separate the packaging",
+     "detail": "Take food out of wrappers and containers."
+    },
+    {
+     "title": "Scrape it in",
+     "detail": "Put only the food in the green bin."
+    }
+   ],
+   "why_text": "Food waste can be composted. Mixed with plastic, it can't.",
+   "contamination_note": "Remove any wrapper or container first.",
+   "aliases": [
+    "leftovers",
+    "food waste",
+    "rice",
+    "fruit peel",
+    "tira",
+    "tirang pagkain",
+    "kanin",
+    "mango peel"
+   ],
+   "source": "RA, FG"
+  },
+  {
+   "class_key": "leaves",
+   "display_name": "Leaves",
+   "display_name_fil": "Dahon",
+   "category": "biodegradable",
+   "detectable": true,
+   "short_instruction": "Place in the green bin or compost.",
+   "reuse_tip": null,
+   "prep_steps": [
+    {
+     "title": "Remove litter",
+     "detail": "Pick out any plastic or wrappers mixed in."
+    },
+    {
+     "title": "Compost or green bin",
+     "detail": "Leaves make good compost."
+    }
+   ],
+   "why_text": "Garden waste breaks down into useful compost.",
+   "contamination_note": null,
+   "aliases": [
+    "leaf",
+    "dry leaves",
+    "dahon",
+    "twigs",
+    "grass",
+    "garden waste"
+   ],
+   "source": "RA, FG"
+  },
+  {
+   "class_key": "used_tissue",
+   "display_name": "Used tissue",
+   "display_name_fil": "Gamit na tisyu",
+   "category": "biodegradable",
+   "detectable": true,
+   "short_instruction": "Place in the green bin.",
+   "reuse_tip": null,
+   "prep_steps": [
+    {
+     "title": "Check what it touched",
+     "detail": "Plain tissue can be composted."
+    },
+    {
+     "title": "Sort it",
+     "detail": "Use the green bin, or the black bin if it touched chemicals or blood."
+    }
+   ],
+   "why_text": "Plain tissue is paper fiber and breaks down naturally.",
+   "contamination_note": "Tissue used with chemicals or for blood goes in the black bin.",
+   "aliases": [
+    "tissue",
+    "table napkin",
+    "paper towel",
+    "tisyu"
+   ],
+   "source": "FG (R2)"
+  },
+  {
+   "class_key": "snack_wrapper",
+   "display_name": "Snack wrapper",
+   "display_name_fil": "Balot ng chichirya",
+   "category": "residual",
+   "detectable": true,
+   "short_instruction": "Empty any food, then place it in the black bin.",
+   "reuse_tip": null,
+   "prep_steps": [
+    {
+     "title": "Empty it",
+     "detail": "Shake out crumbs into the green bin."
+    },
+    {
+     "title": "Sort it",
+     "detail": "Place the wrapper in the black bin."
+    }
+   ],
+   "why_text": "Mixed-layer film is not recyclable here.",
+   "contamination_note": null,
+   "aliases": [
+    "chips bag",
+    "candy wrapper",
+    "junk food",
+    "chichirya",
+    "balot",
+    "sitsirya",
+    "biscuit wrapper"
+   ],
+   "source": "RA, FG, FW"
+  },
+  {
+   "class_key": "styrofoam",
+   "display_name": "Styrofoam",
+   "display_name_fil": "Styro",
+   "category": "residual",
+   "detectable": true,
+   "short_instruction": "Empty any food, then place it in the black bin.",
+   "reuse_tip": null,
+   "prep_steps": [
+    {
+     "title": "Empty it",
+     "detail": "Scrape leftover food into the green bin."
+    },
+    {
+     "title": "Sort it",
+     "detail": "Place the styrofoam in the black bin."
+    }
+   ],
+   "why_text": "Styrofoam is not recycled locally and breaks into small pieces that pollute.",
+   "contamination_note": null,
+   "aliases": [
+    "styro",
+    "foam",
+    "styrofoam box",
+    "styrofoam cup",
+    "polystyrene"
+   ],
+   "source": "RA, FG"
+  },
+  {
+   "class_key": "plastic_utensil",
+   "display_name": "Plastic utensil",
+   "display_name_fil": "Plastik na kubyertos",
+   "category": "residual",
+   "detectable": true,
+   "short_instruction": "Place it in the black bin.",
+   "reuse_tip": "Wash and reuse it if it is still intact.",
+   "prep_steps": [
+    {
+     "title": "Reuse if you can",
+     "detail": "Wash it and keep it for another meal."
+    },
+    {
+     "title": "Sort it",
+     "detail": "When worn out, place it in the black bin."
+    }
+   ],
+   "why_text": "Small single-use plastics are too small and mixed to recycle here.",
+   "contamination_note": null,
+   "aliases": [
+    "spoon",
+    "fork",
+    "plastic spoon",
+    "plastic fork",
+    "kutsara",
+    "tinidor",
+    "kubyertos"
+   ],
+   "source": "RA, FG"
+  },
+  {
+   "class_key": "straw",
+   "display_name": "Straw",
+   "display_name_fil": "Straw",
+   "category": "residual",
+   "detectable": true,
+   "short_instruction": "Place it in the black bin.",
+   "reuse_tip": "Next time, skip the straw or bring a reusable one.",
+   "prep_steps": [
+    {
+     "title": "Sort it",
+     "detail": "Place the straw in the black bin."
+    },
+    {
+     "title": "Skip it next time",
+     "detail": "Bring a reusable straw or drink without one."
+    }
+   ],
+   "why_text": "Straws are too small and light to be recycled.",
+   "contamination_note": null,
+   "aliases": [
+    "straw",
+    "plastic straw",
+    "drinking straw",
+    "istro"
+   ],
+   "source": "RA, FG"
+  },
+  {
+   "class_key": "tetra_pack",
+   "display_name": "Tetra Pak / juice carton",
+   "display_name_fil": "Karton ng juice",
+   "category": "residual",
+   "detectable": true,
+   "short_instruction": "Empty and flatten it, then place it in the black bin.",
+   "reuse_tip": null,
+   "prep_steps": [
+    {
+     "title": "Empty it",
+     "detail": "Finish or pour out the drink."
+    },
+    {
+     "title": "Flatten it",
+     "detail": "Press it flat to save space."
+    },
+    {
+     "title": "Sort it",
+     "detail": "Place it in the black bin, or a carton drop-off if your area has one."
+    }
+   ],
+   "why_text": "Cartons mix paper, plastic and aluminum layers that most junk shops don't accept.",
+   "contamination_note": "Some drop-off programs accept clean cartons. Check locally.",
+   "aliases": [
+    "tetra pak",
+    "juice box",
+    "milk carton",
+    "zesto",
+    "karton ng juice",
+    "drink box"
+   ],
+   "source": "RA (R3)"
+  },
+  {
+   "class_key": "soiled_food_container",
+   "display_name": "Soiled food container",
+   "display_name_fil": "Maruming lalagyan ng pagkain",
+   "category": "residual",
+   "detectable": true,
+   "short_instruction": "Scrape leftover food into the green bin, then put the container in the black bin.",
+   "reuse_tip": null,
+   "prep_steps": [
+    {
+     "title": "Scrape the food",
+     "detail": "Put leftover food in the green bin."
+    },
+    {
+     "title": "Sort the container",
+     "detail": "Place the dirty container in the black bin."
+    }
+   ],
+   "why_text": "Food-soiled packaging can't be recycled, but the food itself can be composted.",
+   "contamination_note": null,
+   "aliases": [
+    "takeout box",
+    "food container",
+    "lunch box",
+    "lalagyan",
+    "baonan",
+    "packed lunch"
+   ],
+   "source": "RA, FG"
+  },
+  {
+   "class_key": "sanitary_napkin",
+   "display_name": "Sanitary napkin",
+   "display_name_fil": "Napkin",
+   "category": "residual",
+   "detectable": true,
+   "short_instruction": "Wrap it in paper, then place it in the black bin.",
+   "reuse_tip": null,
+   "prep_steps": [
+    {
+     "title": "Wrap it",
+     "detail": "Wrap it in paper or its wrapper."
+    },
+    {
+     "title": "Sort it",
+     "detail": "Place it in the black bin."
+    }
+   ],
+   "why_text": "Sanitary waste is a health risk and must not be recycled or composted.",
+   "contamination_note": null,
+   "aliases": [
+    "pad",
+    "sanitary pad",
+    "napkin",
+    "feminine napkin",
+    "panty liner"
+   ],
+   "source": "RA, FG"
+  },
+  {
+   "class_key": "face_mask",
+   "display_name": "Face mask",
+   "display_name_fil": "Face mask",
+   "category": "residual",
+   "detectable": true,
+   "short_instruction": "Fold it inward, cut the ear loops, and place it in the black bin.",
+   "reuse_tip": null,
+   "prep_steps": [
+    {
+     "title": "Fold it inward",
+     "detail": "Keep the used side inside."
+    },
+    {
+     "title": "Cut the ear loops",
+     "detail": "Loops can trap animals."
+    },
+    {
+     "title": "Sort it",
+     "detail": "Place it in the black bin."
+    }
+   ],
+   "why_text": "Used masks may carry germs and are made of mixed materials that can't be recycled.",
+   "contamination_note": null,
+   "aliases": [
+    "mask",
+    "surgical mask",
+    "facemask",
+    "kn95"
+   ],
+   "source": "RA (R4)"
+  },
+  {
+   "class_key": "battery",
+   "display_name": "Battery",
+   "display_name_fil": "Baterya",
+   "category": "hazardous",
+   "detectable": true,
+   "short_instruction": "Tape the terminals. Take it to a battery collection point.",
+   "reuse_tip": null,
+   "prep_steps": [
+    {
+     "title": "Tape the terminals",
+     "detail": "Cover both ends with tape to prevent sparks."
+    },
+    {
+     "title": "Bring it to a collection point",
+     "detail": "Use the red bin or a battery drop-off."
+    }
+   ],
+   "why_text": "Batteries can leak or start fires. Never mix with regular waste.",
+   "contamination_note": "Never mix with regular waste. Batteries can leak or start fires.",
+   "aliases": [
+    "batteries",
+    "aa battery",
+    "aaa battery",
+    "baterya",
+    "lithium battery",
+    "battery cell"
+   ],
+   "source": "RA, FG, FW"
+  },
+  {
+   "class_key": "light_bulb",
+   "display_name": "Light bulb",
+   "display_name_fil": "Bombilya",
+   "category": "hazardous",
+   "detectable": true,
+   "short_instruction": "Keep it whole and wrap it. Give it to staff or a collection point.",
+   "reuse_tip": null,
+   "prep_steps": [
+    {
+     "title": "Keep it whole",
+     "detail": "Do not break it."
+    },
+    {
+     "title": "Wrap it",
+     "detail": "Use paper or its original box."
+    },
+    {
+     "title": "Hand it over",
+     "detail": "Give it to staff or a hazardous waste collection point."
+    }
+   ],
+   "why_text": "Fluorescent bulbs contain mercury, which is toxic when released.",
+   "contamination_note": "Fluorescent bulbs contain mercury. Do not break them.",
+   "aliases": [
+    "bulb",
+    "lamp",
+    "fluorescent",
+    "led bulb",
+    "bombilya",
+    "ilaw"
+   ],
+   "source": "RA, FG"
+  },
+  {
+   "class_key": "expired_medicine",
+   "display_name": "Medicine / blister pack",
+   "display_name_fil": "Gamot",
+   "category": "hazardous",
+   "detectable": true,
+   "short_instruction": "Keep it in its pack. Bring it to a pharmacy or hazardous waste collection point.",
+   "reuse_tip": null,
+   "prep_steps": [
+    {
+     "title": "Keep it packed",
+     "detail": "Leave pills in their blister or bottle."
+    },
+    {
+     "title": "Bring it to a drop-off",
+     "detail": "Use a pharmacy take-back or a hazardous waste collection point."
+    }
+   ],
+   "why_text": "Medicines can poison water and soil if thrown away or flushed.",
+   "contamination_note": "Do not flush or throw it in regular bins.",
+   "aliases": [
+    "medicine",
+    "pills",
+    "tablets",
+    "blister pack",
+    "gamot",
+    "expired medicine",
+    "syrup"
+   ],
+   "source": "RA, FG"
+  },
+  {
+   "class_key": "spray_can",
+   "display_name": "Spray / aerosol can",
+   "display_name_fil": "Spray can",
+   "category": "hazardous",
+   "detectable": true,
+   "short_instruction": "Do not puncture or burn it. Place it in the red bin or a collection point.",
+   "reuse_tip": null,
+   "prep_steps": [
+    {
+     "title": "Do not puncture it",
+     "detail": "Pressurized cans can explode."
+    },
+    {
+     "title": "Sort it",
+     "detail": "Place it in the red bin or a collection point."
+    }
+   ],
+   "why_text": "Aerosol cans hold pressure and chemicals that are dangerous in regular waste.",
+   "contamination_note": "Can explode under heat or pressure.",
+   "aliases": [
+    "aerosol",
+    "spray",
+    "insect spray",
+    "deodorant spray",
+    "spray paint",
+    "baygon"
+   ],
+   "source": "RA, FG"
+  },
+  {
+   "class_key": "paper_cup",
+   "display_name": "Paper cup",
+   "display_name_fil": "Papel na baso",
+   "category": "residual",
+   "detectable": false,
+   "short_instruction": "Empty it, then place it in the black bin.",
+   "reuse_tip": "Bring a reusable tumbler next time.",
+   "prep_steps": [],
+   "why_text": "Paper cups have a plastic lining, so they can't be recycled with paper.",
+   "contamination_note": null,
+   "aliases": [
+    "coffee cup",
+    "paper cup",
+    "hot cup"
+   ],
+   "source": "RA (spec §3.3)"
+  },
+  {
+   "class_key": "cigarette_butt",
+   "display_name": "Cigarette butt",
+   "display_name_fil": "Upos",
+   "category": "residual",
+   "detectable": false,
+   "short_instruction": "Make sure it is fully out, then place it in the black bin.",
+   "reuse_tip": null,
+   "prep_steps": [],
+   "why_text": "Filters are plastic and contain toxins.",
+   "contamination_note": null,
+   "aliases": [
+    "cigarette",
+    "upos",
+    "yosi",
+    "filter"
+   ],
+   "source": "RA (spec §3.3)"
+  },
+  {
+   "class_key": "bamboo_skewer",
+   "display_name": "Chopsticks / bamboo skewer",
+   "display_name_fil": "Barbecue stick",
+   "category": "biodegradable",
+   "detectable": false,
+   "short_instruction": "Break sharp tips, then place it in the green bin.",
+   "reuse_tip": null,
+   "prep_steps": [],
+   "why_text": "Untreated bamboo and wood break down naturally.",
+   "contamination_note": "Plastic chopsticks go in the black bin.",
+   "aliases": [
+    "chopsticks",
+    "skewer",
+    "barbecue stick",
+    "bbq stick",
+    "toothpick"
+   ],
+   "source": "RA (spec §3.3)"
+  },
+  {
+   "class_key": "eggshell",
+   "display_name": "Eggshell",
+   "display_name_fil": "Balat ng itlog",
+   "category": "biodegradable",
+   "detectable": false,
+   "short_instruction": "Place it in the green bin or compost.",
+   "reuse_tip": "Crushed eggshells are good for garden soil.",
+   "prep_steps": [],
+   "why_text": "Eggshells are organic and add calcium to compost.",
+   "contamination_note": null,
+   "aliases": [
+    "egg",
+    "egg shell",
+    "itlog",
+    "balat ng itlog"
+   ],
+   "source": "RA (spec §3.3)"
+  },
+  {
+   "class_key": "coffee_grounds",
+   "display_name": "Coffee grounds",
+   "display_name_fil": "Sapal ng kape",
+   "category": "biodegradable",
+   "detectable": false,
+   "short_instruction": "Place them in the green bin or compost.",
+   "reuse_tip": "Use them as garden fertilizer.",
+   "prep_steps": [],
+   "why_text": "Coffee grounds are organic and compost well.",
+   "contamination_note": "Coffee pods and sachets go in the black bin.",
+   "aliases": [
+    "coffee",
+    "grounds",
+    "kape",
+    "tea leaves"
+   ],
+   "source": "RA (spec §3.3)"
+  },
+  {
+   "class_key": "plastic_sachet",
+   "display_name": "Plastic sachet",
+   "display_name_fil": "Sachet",
+   "category": "residual",
+   "detectable": false,
+   "short_instruction": "Empty it, then place it in the black bin.",
+   "reuse_tip": "Choose refill stations or bigger packs when you can.",
+   "prep_steps": [],
+   "why_text": "Sachets are multi-layer plastic and are not recycled here.",
+   "contamination_note": null,
+   "aliases": [
+    "sachet",
+    "shampoo sachet",
+    "coffee sachet",
+    "3in1",
+    "ketchup packet"
+   ],
+   "source": "RA (spec §3.3)"
+  },
+  {
+   "class_key": "rubber_band",
+   "display_name": "Rubber band",
+   "display_name_fil": "Goma",
+   "category": "residual",
+   "detectable": false,
+   "short_instruction": "Reuse it, or place it in the black bin.",
+   "reuse_tip": "Keep it for bundling things.",
+   "prep_steps": [],
+   "why_text": "Small rubber items are not recycled here.",
+   "contamination_note": null,
+   "aliases": [
+    "rubber",
+    "goma",
+    "rubber band",
+    "lastiko"
+   ],
+   "source": "RA (spec §3.3)"
+  },
+  {
+   "class_key": "e_waste",
+   "display_name": "E-waste (phones, cables, chargers)",
+   "display_name_fil": "E-waste",
+   "category": "hazardous",
+   "detectable": false,
+   "short_instruction": "Do not throw it in any bin. Bring it to an e-waste collection point.",
+   "reuse_tip": "Donate or repair working devices.",
+   "prep_steps": [],
+   "why_text": "Electronics contain metals and chemicals that are harmful but valuable to recover.",
+   "contamination_note": null,
+   "aliases": [
+    "phone",
+    "cellphone",
+    "charger",
+    "cable",
+    "earphones",
+    "electronics",
+    "gadget"
+   ],
+   "source": "RA (spec §3.3)"
+  },
+  {
+   "class_key": "paint_can",
+   "display_name": "Paint can",
+   "display_name_fil": "Lata ng pintura",
+   "category": "hazardous",
+   "detectable": false,
+   "short_instruction": "Keep it closed. Bring it to a hazardous waste collection point.",
+   "reuse_tip": null,
+   "prep_steps": [],
+   "why_text": "Leftover paint and solvents are toxic.",
+   "contamination_note": null,
+   "aliases": [
+    "paint",
+    "pintura",
+    "thinner",
+    "solvent"
+   ],
+   "source": "RA (spec §3.3)"
+  },
+  {
+   "class_key": "broken_glass",
+   "display_name": "Broken glass",
+   "display_name_fil": "Basag na salamin",
+   "category": "residual",
+   "detectable": false,
+   "short_instruction": "Wrap it well and label it \"sharp\". Give it to staff.",
+   "reuse_tip": null,
+   "prep_steps": [],
+   "why_text": "Loose broken glass injures waste workers.",
+   "contamination_note": "Never put loose broken glass in any bin.",
+   "aliases": [
+    "glass shards",
+    "bubog",
+    "basag",
+    "broken bottle"
+   ],
+   "source": "RA (spec §3.3)"
+  },
+  {
+   "class_key": "diaper",
+   "display_name": "Diaper",
+   "display_name_fil": "Lampin",
+   "category": "residual",
+   "detectable": false,
+   "short_instruction": "Roll it up and tape it, then place it in the black bin.",
+   "reuse_tip": null,
+   "prep_steps": [],
+   "why_text": "Diapers are sanitary waste and can't be recycled or composted.",
+   "contamination_note": null,
+   "aliases": [
+    "diaper",
+    "nappy",
+    "lampin",
+    "adult diaper"
+   ],
+   "source": "RA (spec §3.3)"
+  },
+  {
+   "class_key": "pen",
+   "display_name": "Pen",
+   "display_name_fil": "Ballpen",
+   "category": "residual",
+   "detectable": false,
+   "short_instruction": "Place it in the black bin.",
+   "reuse_tip": "Use refillable pens.",
+   "prep_steps": [],
+   "why_text": "Pens mix plastic, metal and ink, so they aren't recycled here.",
+   "contamination_note": null,
+   "aliases": [
+    "ballpen",
+    "ball pen",
+    "marker",
+    "highlighter"
+   ],
+   "source": "RA (spec §3.3)"
+  },
+  {
+   "class_key": "ink_cartridge",
+   "display_name": "Ink cartridge",
+   "display_name_fil": "Ink cartridge",
+   "category": "hazardous",
+   "detectable": false,
+   "short_instruction": "Bring it to a cartridge take-back or e-waste collection point.",
+   "reuse_tip": "Many printer shops refill cartridges.",
+   "prep_steps": [],
+   "why_text": "Ink and electronics in cartridges are harmful in regular waste.",
+   "contamination_note": null,
+   "aliases": [
+    "printer ink",
+    "toner",
+    "cartridge",
+    "ink"
+   ],
+   "source": "RA (spec §3.3)"
+  }
+ ]
 }

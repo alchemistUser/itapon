@@ -6,3 +6,4 @@ services/
 ml/
 supabase/migrations/
 *.md
+apps/web/src/content/
