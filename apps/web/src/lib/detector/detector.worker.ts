@@ -59,7 +59,7 @@ async function load(msg: Extract<ToWorker, { type: "load" }>) {
   minConfidence = msg.minConfidence;
 
   ort.env.wasm.wasmPaths = msg.wasmPath;
-  // Threads need cross-origin isolation (COOP/COEP headers on /scan and /dev).
+  // Threads need cross-origin isolation (site-wide COOP/COEP, see next.config.ts).
   const threads = self.crossOriginIsolated ? Math.min(4, navigator.hardwareConcurrency || 1) : 1;
   ort.env.wasm.numThreads = threads;
 
@@ -75,6 +75,7 @@ async function load(msg: Extract<ToWorker, { type: "load" }>) {
     }),
   );
 
+  const tFetched = performance.now();
   post({ type: "progress", progress: { phase: "init" } });
   session = await ort.InferenceSession.create(new Uint8Array(buffer), {
     executionProviders: ["wasm"],
@@ -86,8 +87,10 @@ async function load(msg: Extract<ToWorker, { type: "load" }>) {
   ctx = canvas.getContext("2d", { willReadFrequently: true });
   input = new Float32Array(3 * size * size);
 
+  const tSession = performance.now();
   post({ type: "progress", progress: { phase: "warmup" } });
   await infer(new Float32Array(3 * size * size)); // first run builds kernels; do it before "ready"
+  const tReady = performance.now();
 
   post({
     type: "ready",
@@ -97,7 +100,13 @@ async function load(msg: Extract<ToWorker, { type: "load" }>) {
       backend: "wasm",
       threads,
       fromCache,
-      loadMs: Math.round(performance.now() - start),
+      loadMs: Math.round(tReady - start),
+      // F9-1: where startup time goes (fetch/cache read vs engine+session vs first run)
+      timings: {
+        fetchMs: Math.round(tFetched - start),
+        sessionMs: Math.round(tSession - tFetched),
+        warmupMs: Math.round(tReady - tSession),
+      },
     },
   });
 }
@@ -130,8 +139,12 @@ async function detect(id: number, bitmap: ImageBitmap) {
   });
 }
 
-scope.onmessage = async (event: MessageEvent<ToWorker>) => {
-  const msg = event.data;
+// Handle messages strictly one at a time. An async onmessage would let a second "detect"
+// start while the first awaits session.run(); ONNX Runtime doesn't support concurrent runs
+// on one session (with WASM threads it can hang). Seen when a photo arrived mid-scan.
+let queue: Promise<void> = Promise.resolve();
+
+async function handle(msg: ToWorker) {
   try {
     if (msg.type === "load") await load(msg);
     else if (msg.type === "detect") await detect(msg.id, msg.bitmap);
@@ -142,4 +155,8 @@ scope.onmessage = async (event: MessageEvent<ToWorker>) => {
       message: err instanceof Error ? err.message : String(err),
     });
   }
+}
+
+scope.onmessage = (event: MessageEvent<ToWorker>) => {
+  queue = queue.then(() => handle(event.data));
 };

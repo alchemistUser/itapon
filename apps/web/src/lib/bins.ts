@@ -10,6 +10,7 @@ export interface BinMeta {
   binLabel: string;
   colorWord: string; // "blue" in "drop it in the blue bin"
   solid: string; // bg for active tiles / icons
+  border: string; // detection box outline
   pale: string; // bg for inactive tiles
   tint: string; // chip / icon-well background
   text: string; // coloured text on white (AA contrast)
@@ -24,6 +25,7 @@ export const BINS: Record<Category, BinMeta> = {
     binLabel: "Green Bin",
     colorWord: "green",
     solid: "bg-bin-green",
+    border: "border-bin-green",
     pale: "bg-bin-green-pale",
     tint: "bg-bin-green-tint",
     text: "text-[#1a7f37]",
@@ -36,6 +38,7 @@ export const BINS: Record<Category, BinMeta> = {
     binLabel: "Blue Bin",
     colorWord: "blue",
     solid: "bg-bin-blue",
+    border: "border-bin-blue",
     pale: "bg-bin-blue-pale",
     tint: "bg-bin-blue-tint",
     text: "text-brand-strong",
@@ -48,6 +51,7 @@ export const BINS: Record<Category, BinMeta> = {
     binLabel: "Black Bin",
     colorWord: "black",
     solid: "bg-bin-black",
+    border: "border-bin-black",
     pale: "bg-bin-black-pale",
     tint: "bg-bin-black-tint",
     text: "text-ink",
@@ -60,6 +64,7 @@ export const BINS: Record<Category, BinMeta> = {
     binLabel: "Red Bin",
     colorWord: "red",
     solid: "bg-bin-red",
+    border: "border-bin-red",
     pale: "bg-bin-red-pale",
     tint: "bg-bin-red-tint",
     text: "text-[#c4282d]",

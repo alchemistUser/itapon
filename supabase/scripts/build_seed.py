@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""Generate supabase/seed.sql from supabase/content/waste_content.json.
+"""Generate supabase/seed.sql and the web app's offline content copy from waste_content.json.
 
-    python supabase/scripts/build_seed.py          # write seed.sql
-    python supabase/scripts/build_seed.py --check  # fail if seed.sql is out of date (CI)
+    python supabase/scripts/build_seed.py          # write seed.sql + web copy
+    python supabase/scripts/build_seed.py --check  # fail if either is out of date (CI)
 
 The seed upserts (insert ... on conflict do update), so it can be re-run safely.
+The web copy (apps/web/src/content/waste_content.json) lets the scanner show items
+before Supabase answers and while offline (Phases 12, 21).
 """
 
 import argparse
@@ -15,6 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / "content" / "waste_content.json"
 SEED = ROOT / "seed.sql"
+WEB_COPY = ROOT.parent / "apps" / "web" / "src" / "content" / "waste_content.json"
 
 
 def q(value: object) -> str:
@@ -58,8 +61,15 @@ def build(content: dict) -> str:
             + ", ".join(
                 q(c[k])
                 for k in (
-                    "key", "name", "bin_label", "bin_color", "description",
-                    "examples", "ra9003_term", "icon", "sort_order",
+                    "key",
+                    "name",
+                    "bin_label",
+                    "bin_color",
+                    "description",
+                    "examples",
+                    "ra9003_term",
+                    "icon",
+                    "sort_order",
                 )
             )
             + ")"
@@ -70,7 +80,8 @@ def build(content: dict) -> str:
         "on conflict (key) do update set",
         "  name = excluded.name, bin_label = excluded.bin_label, bin_color = excluded.bin_color,",
         "  description = excluded.description, examples = excluded.examples,",
-        "  ra9003_term = excluded.ra9003_term, icon = excluded.icon, sort_order = excluded.sort_order;",
+        "  ra9003_term = excluded.ra9003_term, icon = excluded.icon,"
+        " sort_order = excluded.sort_order;",
         "",
         "insert into public.waste_items",
         "  (class_key, display_name, display_name_fil, category_key, short_instruction, reuse_tip,",
@@ -117,15 +128,24 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true", help="fail if seed.sql is stale")
     args = parser.parse_args()
-    sql = build(json.loads(CONTENT.read_text(encoding="utf-8")))
+    content = json.loads(CONTENT.read_text(encoding="utf-8"))
+    sql = build(content)
+    public = {k: v for k, v in content.items() if not k.startswith("_")}
+    web = json.dumps(public, ensure_ascii=False, indent=1) + "\n"
     if args.check:
-        if not SEED.exists() or SEED.read_text(encoding="utf-8") != sql:
-            sys.exit("seed.sql is out of date: run python supabase/scripts/build_seed.py")
-        print("seed.sql is up to date")
+        stale = [
+            str(path.relative_to(ROOT.parent))
+            for path, text in ((SEED, sql), (WEB_COPY, web))
+            if not path.exists() or path.read_text(encoding="utf-8") != text
+        ]
+        if stale:
+            sys.exit(f"Out of date: {', '.join(stale)}. Run python supabase/scripts/build_seed.py")
+        print("seed.sql and the web content copy are up to date")
         return
     SEED.write_text(sql, encoding="utf-8", newline="\n")
-    n = len(json.loads(CONTENT.read_text(encoding="utf-8"))["items"])
-    print(f"Wrote {SEED.relative_to(ROOT.parent)} ({n} items)")
+    WEB_COPY.parent.mkdir(parents=True, exist_ok=True)
+    WEB_COPY.write_text(web, encoding="utf-8", newline="\n")
+    print(f"Wrote {SEED.relative_to(ROOT.parent)} + web copy ({len(content['items'])} items)")
 
 
 if __name__ == "__main__":

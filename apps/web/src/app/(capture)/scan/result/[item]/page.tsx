@@ -10,21 +10,22 @@ import { ButtonLink } from "@/components/ui/button";
 import { ReadAloudButton } from "@/components/ui/read-aloud-button";
 import { BINS } from "@/lib/bins";
 import { cn } from "@/lib/cn";
-import { MOCK_ITEMS } from "@/lib/mock";
+import { DETECTABLE_KEYS, getItem } from "@/lib/content";
 
 export function generateStaticParams() {
-  return Object.keys(MOCK_ITEMS).map((item) => ({ item }));
+  return DETECTABLE_KEYS.map((item) => ({ item }));
 }
 
 export async function generateMetadata(props: PageProps<"/scan/result/[item]">): Promise<Metadata> {
   const { item } = await props.params;
-  return { title: MOCK_ITEMS[item] ? `${MOCK_ITEMS[item].name} result` : "Result" };
+  const found = getItem(item);
+  return { title: found ? `${found.name} result` : "Result" };
 }
 
-// S2 Result: full-colour "Blue Bin" screen on phones, split view on md+.
+// S2 Result for any item (bundled content): full-colour bin screen on phones, split on md+.
 export default async function ResultPage(props: PageProps<"/scan/result/[item]">) {
   const { item: key } = await props.params;
-  const item = MOCK_ITEMS[key];
+  const item = getItem(key);
   if (!item) notFound();
   const bin = BINS[item.category];
 

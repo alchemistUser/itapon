@@ -185,7 +185,8 @@ export function DetectorLab({ samples }: { samples: string[] }) {
             <p data-testid="ready">
               ✅ Ready · {ready.modelVersion} · {ready.modelId} · {ready.backend} × {ready.threads}{" "}
               thread(s) · loaded in {ready.loadMs} ms{" "}
-              {ready.fromCache ? "(from cache)" : "(downloaded)"}
+              {ready.fromCache ? "(from cache)" : "(downloaded)"} · fetch {ready.timings.fetchMs} /
+              session {ready.timings.sessionMs} / warm-up {ready.timings.warmupMs} ms
             </p>
           ) : progress?.phase === "download" ? (
             <div>

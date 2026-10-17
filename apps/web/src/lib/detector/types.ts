@@ -54,6 +54,7 @@ export interface ReadyInfo {
   threads: number;
   fromCache: boolean;
   loadMs: number;
+  timings: { fetchMs: number; sessionMs: number; warmupMs: number };
 }
 
 export interface DetectResult {

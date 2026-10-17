@@ -23,6 +23,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter web lint
       - run: pnpm --filter web typecheck
+      - run: pnpm --filter web test
       - run: pnpm --filter web build
 
   api:
@@ -37,8 +38,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: uv sync --locked
-      - run: uv run ruff check .
-      - run: uv run ruff format --check .
+      - run: uv run ruff check . ../../supabase/scripts
+      - run: uv run ruff format --check . ../../supabase/scripts
       - run: uv run pytest -q
       - name: Supabase seed is up to date
         working-directory: .
