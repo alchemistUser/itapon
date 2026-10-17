@@ -49,8 +49,8 @@ GitHub CLI is installed at `C:\Program Files\GitHub CLI\gh.exe` (open a new term
 
 ## 4. Supabase: auth & database
 
-- [ ] Sign up at supabase.com with GitHub.
-- [ ] Create project **`itapon-dev`**, region **Southeast Asia (Singapore)**. Save the DB password in a team password manager.
+- [x] Sign up at supabase.com with GitHub.
+- [x] Create project **`itapon-dev`** (ref `svvbvkdkgduyphkkaiio`; created in Tokyo, ap-northeast-1). Save the DB password in a team password manager. Anonymous sign-ins enabled.
 - [ ] Create project **`itapon-prod`**, same region (the free tier allows 2 projects).
 - [ ] Note each project's URL and anon key for Phase 10. **Never** share the `service_role` key outside the dashboard and CI secrets.
 
@@ -86,4 +86,4 @@ pre-commit install
 - [ ] Every member can clone the repo, run `pnpm dev` (web) and `uv run uvicorn app.main:app --port 7860` (API) locally.
 - [x] CI passes all three jobs (web, api, secrets) on `main`.
 - [ ] Vercel production + preview deployments work.
-- [ ] HF model repo `itapon-yolo` ✅ and both Supabase projects exist.
+- [ ] HF model repo `itapon-yolo` ✅ and both Supabase projects exist (dev ✅, prod in Phase 24).

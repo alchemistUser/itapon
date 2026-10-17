@@ -491,6 +491,10 @@ itapon/
 
 ## Phase 10: Supabase schema, auth & content seed
 
+> **Status (2026-10-17): Done on dev.** `itapon-dev` (ref `svvbvkdkgduyphkkaiio`, Tokyo) has 4 migrations (schema, RLS, functions, storage) and the seed applied. **RLS check: 23/23 pass** (two anonymous users, see `supabase/tests/rls-check.mjs`), and `db lint` is clean. Content lives in `supabase/content/waste_content.json` (4 bins, 36 items: 23 detectable + 13 Bin-Guide-only, with Filipino names and aliases) → `seed.sql` via `supabase/scripts/build_seed.py` (CI checks it's up to date; a test checks it matches the model's classes). TS types are in `apps/web/src/lib/database.types.ts`. Details and ERD: [`docs/database.md`](docs/database.md).
+> **Deviations:** `category_key` (text PK) instead of `category_id`. Every scan has a `user_id` (guests are anonymous users). There's no local `supabase start`, because Docker Desktop isn't set up, so migrations were tested against dev. Auth providers: anonymous sign-in is on; **email magic link and Google OAuth are configured in Phase 16**. **Prod project + CI migrations: Phase 24** (create it in Singapore).
+> **Note:** supabase-js warns that Node ≤ 20 is deprecated. The RLS check runs with `--experimental-websocket` on Node 20. Consider moving the team and `.nvmrc` to Node 22.
+
 **Goal:** The database, auth and storage that the app reads from and writes to, secured with Row Level Security from day one.
 
 **Why now:** The Bin Guide, result mapping, history and analytics all need this. It can be built right after Phase 1, in parallel with ML work.

@@ -13,10 +13,15 @@
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "db:seed:build": "python supabase/scripts/build_seed.py",
+    "db:push": "supabase db push --include-seed",
+    "db:rls-check": "node --experimental-websocket supabase/tests/rls-check.mjs"
   },
   "devDependencies": {
+    "@supabase/supabase-js": "^2.118.0",
     "prettier": "^3.9.10",
-    "prettier-plugin-tailwindcss": "^0.8.1"
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "supabase": "^2.121.0"
   }
 }
