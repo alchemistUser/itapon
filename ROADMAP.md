@@ -637,13 +637,13 @@ itapon/
 
 ## Phase 13: Result screen & bin guidance
 
-> **Status (2026-10-17): Done in code and verified on dev; production logging needs the Vercel env vars, and the 5-item phone demo is still to do.**
+> **Status (2026-10-17): Done and verified on production; the 5-item phone demo is still to do.**
 > 1. **Mapping:** `lib/content-store.ts` starts from the bundled copy (instant, offline), loads the last copy from localStorage, then refreshes from Supabase `waste_items` once per tab. A plain store, not TanStack Query: one read-mostly table didn't justify another dependency. Unknown `class_key` → "Not sure what that is" with Scan again / Bin Guide (the scanner no longer freezes on it).
 > 2–3. **Result screens:** the full-colour mobile result (`/scan/result/[item]`, all 23 items) and the split panel with the 4-bin row were already in place from Phases 11–12.
 > 4. **Low-confidence variant:** below 0.35, the sheet and panel show "We think this is *x* (32%)", up to two alternatives from the same frame with their bins, and a Bin Guide link.
 > 5. **Scan logging:** `lib/scan/log-scan.ts`, fire-and-forget on every lock (live or photo). An anonymous Supabase user is created on first need (`lib/supabase/client.ts`). It inserts `scan_sessions` (model version, latency from scan start to lock, backend, source) plus up to 5 `scan_detections` (primary first, server sets the bin). **Verified:** a row in `itapon-dev` with `paper_bag → recyclable`, anonymous user, latency 384 ms.
 > 6. **Next Scan** resets on the live camera without restarting it (Phase 12).
-> **Needs you:** add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in Vercel (Production + Preview) and redeploy. Without them the site still works, but it doesn't log scans or refresh content. **Offline queueing** of failed logs moves to Phase 21.
+> **Production check:** Vercel has `NEXT_PUBLIC_SUPABASE_URL` (the bare project ref also works: `normalizeSupabaseUrl` turns it into the URL) and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (publishable key). A photo scan on https://itapon.vercel.app/scan logged scan `2997c6ed…` under an anonymous user: `plastic_cup` → recyclable (0.43, primary) + `paper_bag` → recyclable (0.26), model `world-v0`, wasm, 369 ms. **Offline queueing** of failed logs moves to Phase 21.
 
 **Goal:** Turn a locked detection into the clear, unmistakable "put it in **this** bin" instruction from the Figma Result screens.
 
