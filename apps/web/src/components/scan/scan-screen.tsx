@@ -20,7 +20,8 @@ import { Button, ButtonLink } from "@/components/ui/button";
 import { WarmingUpOverlay } from "@/components/ui/warming-up-overlay";
 import { BINS } from "@/lib/bins";
 import { cn } from "@/lib/cn";
-import { getItem } from "@/lib/content";
+import { getItemLive as getItem, useContentSource } from "@/lib/content-store";
+import { logScan } from "@/lib/scan/log-scan";
 import { CONFIDENT_THRESHOLD, POSSIBLE_THRESHOLD } from "@/lib/detector/models";
 import { detect, ensureDetector, retryDetector, useDetectorState } from "@/lib/detector/store";
 import type { Detection } from "@/lib/detector/types";
@@ -30,6 +31,20 @@ import { useScanLoop, type ScanFrame } from "@/lib/scan/use-scan-loop";
 
 const SLOW_AFTER_MS = 10_000;
 const GIVE_UP_AFTER_MS = 90_000;
+
+/** Other items seen in the same frame, for the low-confidence "it could also be" list. */
+function alternativesFor(frame: ScanFrame | null, classKey: string): ResultView[] {
+  const seen = new Set([classKey]);
+  const out: ResultView[] = [];
+  for (const d of frame?.detections ?? []) {
+    if (d.confidence < POSSIBLE_THRESHOLD || seen.has(d.class_key)) continue;
+    seen.add(d.class_key);
+    const v = toView(d.class_key, d.confidence);
+    if (v) out.push(v);
+    if (out.length === 2) break;
+  }
+  return out;
+}
 
 function toView(classKey: string, confidence?: number): ResultView | null {
   const item = getItem(classKey);
@@ -179,19 +194,50 @@ export function ScanScreen() {
   const [photo, setPhoto] = useState<{ url: string; frame: ScanFrame } | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [photoBusy, setPhotoBusy] = useState(false);
+  const [unknown, setUnknown] = useState(false);
+  const [loggedScanId, setLoggedScanId] = useState<string | null>(null);
+  useContentSource(); // re-render when fresher item copy arrives from Supabase
 
   useEffect(() => ensureDetector(), []);
 
   const ready = det.status === "ready";
-  const scanning = ready && camera.status === "live" && !locked && !photo && !photoBusy;
+  const scanning = ready && camera.status === "live" && !locked && !photo && !photoBusy && !unknown;
 
-  const onLock = useCallback((s: { classKey: string; confidence: number }, frame: ScanFrame) => {
-    const view = toView(s.classKey, s.confidence);
-    if (!view) return;
+  // Latency for the log = when this scan started (scanner became active) → result locked.
+  const scanStartRef = useRef(0);
+  useEffect(() => {
+    if (scanning) scanStartRef.current = performance.now();
+  }, [scanning]);
+  const infoRef = useRef(det.info);
+  useEffect(() => {
+    infoRef.current = det.info;
+  }, [det.info]);
+
+  const lockOn = useCallback((classKey: string, confidence: number, frame: ScanFrame) => {
+    const base = toView(classKey, confidence);
+    if (!base) {
+      setUnknown(true); // model class with no content: show "not sure" instead of freezing
+      return;
+    }
+    const view = { ...base, alternatives: alternativesFor(frame, classKey) };
     // Browsers ignore (and log) vibrate() before the user has interacted with the page.
     if (navigator.userActivation?.hasBeenActive) navigator.vibrate?.(40);
     setLocked({ view, frame });
+    setLoggedScanId(null);
+    void logScan({
+      modelVersion: infoRef.current?.modelVersion ?? "unknown",
+      backend: infoRef.current?.backend ?? "wasm",
+      latencyMs: performance.now() - scanStartRef.current,
+      primaryClassKey: classKey,
+      detections: frame.detections,
+    }).then(setLoggedScanId);
   }, []);
+
+  const onLock = useCallback(
+    (s: { classKey: string; confidence: number }, frame: ScanFrame) =>
+      lockOn(s.classKey, s.confidence, frame),
+    [lockOn],
+  );
 
   const loop = useScanLoop(videoRef, {
     enabled: scanning,
@@ -200,6 +246,7 @@ export function ScanScreen() {
 
   function next() {
     setLocked(null);
+    setUnknown(false);
     setPhotoError(null);
     if (photo) URL.revokeObjectURL(photo.url);
     setPhoto(null);
@@ -209,6 +256,7 @@ export function ScanScreen() {
     if (!file) return;
     setPhotoError(null);
     setPhotoBusy(true); // pauses the live loop while the photo is analysed
+    scanStartRef.current = performance.now();
     const url = URL.createObjectURL(file);
     try {
       const img = await createImageBitmap(file);
@@ -224,8 +272,7 @@ export function ScanScreen() {
       setPhoto({ url, frame });
       const top = topOf(result.detections);
       if (top && top.confidence >= POSSIBLE_THRESHOLD) {
-        const view = toView(top.classKey, top.confidence);
-        if (view) setLocked({ view, frame });
+        lockOn(top.classKey, top.confidence, frame);
       } else {
         setPhotoError(
           "We couldn't recognise an item in that photo. Try again closer, or check the Bin Guide.",
@@ -377,44 +424,56 @@ export function ScanScreen() {
   );
 
   // ---------- status / result areas ----------
-  const statusContent =
-    loop.error && !photoError ? (
-      // The loop retries every second; tell the user instead of silently showing nothing.
-      <div role="alert">
-        <p className="font-semibold text-ink">The scanner hit a problem</p>
-        <p className="mt-1 text-sm text-ink-3">Retrying… ({loop.error})</p>
-        <Button variant="outline" className="mt-3" onClick={retryDetector}>
-          <RefreshCw aria-hidden className="size-4" /> Restart scanner
+  const statusContent = unknown ? (
+    <>
+      <p className="font-semibold text-ink">Not sure what that is</p>
+      <p className="mt-1 text-sm text-ink-3">
+        Try again with the item closer and well lit, or look it up in the Bin Guide.
+      </p>
+      <div className="mt-4 flex gap-3">
+        <Button variant="outline" onClick={next}>
+          Scan again
         </Button>
+        <ButtonLink href="/guide">Bin Guide</ButtonLink>
       </div>
-    ) : photoError ? (
-      <>
-        <p className="font-semibold text-ink">Not sure what that is</p>
-        <p className="mt-1 text-sm text-ink-3">{photoError}</p>
-        <div className="mt-4 flex gap-3">
-          <Button variant="outline" onClick={next}>
-            Back to camera
-          </Button>
-          <ButtonLink href="/guide">Bin Guide</ButtonLink>
-        </div>
-      </>
-    ) : tentative ? (
-      <div className="flex items-center gap-3">
-        <BinTile category={tentative.category} size="md" className="opacity-60" />
-        <div>
-          <p className="text-xs font-medium text-ink-3">Possibly</p>
-          <p className="font-semibold text-ink">{tentative.name}</p>
-          <p className="text-sm text-ink-3">{hint}</p>
-        </div>
+    </>
+  ) : loop.error && !photoError ? (
+    // The loop retries every second; tell the user instead of silently showing nothing.
+    <div role="alert">
+      <p className="font-semibold text-ink">The scanner hit a problem</p>
+      <p className="mt-1 text-sm text-ink-3">Retrying… ({loop.error})</p>
+      <Button variant="outline" className="mt-3" onClick={retryDetector}>
+        <RefreshCw aria-hidden className="size-4" /> Restart scanner
+      </Button>
+    </div>
+  ) : photoError ? (
+    <>
+      <p className="font-semibold text-ink">Not sure what that is</p>
+      <p className="mt-1 text-sm text-ink-3">{photoError}</p>
+      <div className="mt-4 flex gap-3">
+        <Button variant="outline" onClick={next}>
+          Back to camera
+        </Button>
+        <ButtonLink href="/guide">Bin Guide</ButtonLink>
       </div>
-    ) : (
-      <>
-        <p className="font-semibold text-ink">Point your camera at an item</p>
-        <p className="mt-1 text-sm text-ink-3">
-          Keep it inside the frame. iTapon will tell you which bin it goes in.
-        </p>
-      </>
-    );
+    </>
+  ) : tentative ? (
+    <div className="flex items-center gap-3">
+      <BinTile category={tentative.category} size="md" className="opacity-60" />
+      <div>
+        <p className="text-xs font-medium text-ink-3">Possibly</p>
+        <p className="font-semibold text-ink">{tentative.name}</p>
+        <p className="text-sm text-ink-3">{hint}</p>
+      </div>
+    </div>
+  ) : (
+    <>
+      <p className="font-semibold text-ink">Point your camera at an item</p>
+      <p className="mt-1 text-sm text-ink-3">
+        Keep it inside the frame. iTapon will tell you which bin it goes in.
+      </p>
+    </>
+  );
 
   const photoLink = (
     <button
@@ -430,6 +489,7 @@ export function ScanScreen() {
   return (
     <>
       {photoInput}
+      <span hidden data-testid="scan-log" data-scan-id={loggedScanId ?? ""} />
       <p className="sr-only" role="status" aria-live="polite">
         {locked ? `${locked.view.name}. ${BINS[locked.view.category].binLabel}.` : ""}
       </p>

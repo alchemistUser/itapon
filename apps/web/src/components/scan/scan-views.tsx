@@ -11,6 +11,7 @@ import { ConfidenceBadge } from "@/components/ui/primitives";
 import { ReadAloudButton } from "@/components/ui/read-aloud-button";
 import { BINS } from "@/lib/bins";
 import { cn } from "@/lib/cn";
+import { CONFIDENT_THRESHOLD } from "@/lib/detector/models";
 import type { Category } from "@/lib/detector/types";
 
 /** What a result screen needs to know about an item. */
@@ -20,6 +21,38 @@ export interface ResultView {
   category: Category;
   instruction: string;
   confidence?: number;
+  /** Other items seen in the same frame (low-confidence variant). */
+  alternatives?: ResultView[];
+}
+
+const isUnsure = (item: ResultView) =>
+  item.confidence !== undefined && item.confidence < CONFIDENT_THRESHOLD;
+
+/** "We think this is X (32%)" + alternatives + Bin Guide link (Phase 13 task 4). */
+function UnsureNote({ item }: { item: ResultView }) {
+  return (
+    <div className="rounded-tile bg-surface p-3 text-sm">
+      <p className="font-semibold text-ink">
+        We think this is {item.name.toLowerCase()} ({Math.round((item.confidence ?? 0) * 100)}%)
+      </p>
+      {item.alternatives?.length ? (
+        <p className="mt-1 text-ink-3">
+          It could also be{" "}
+          {item.alternatives.map((a, i) => (
+            <span key={a.classKey}>
+              {i > 0 ? " or " : ""}
+              <span className="font-medium text-ink-2">{a.name.toLowerCase()}</span> (
+              {BINS[a.category].binLabel.toLowerCase()})
+            </span>
+          ))}
+          .
+        </p>
+      ) : null}
+      <Link href="/guide" className="mt-1 inline-block font-medium text-brand-strong underline">
+        Check the Bin Guide
+      </Link>
+    </div>
+  );
 }
 
 export function speechFor(item: Pick<ResultView, "name" | "category" | "instruction">) {
@@ -132,6 +165,7 @@ export function ResultPanel({
         ) : null}
       </div>
       <Instruction text={item.instruction} category={item.category} className="text-xl text-ink" />
+      {isUnsure(item) ? <UnsureNote item={item} /> : null}
       <BinRow active={item.category} className="mt-auto pt-4" />
       <div className="flex items-center justify-between gap-3">
         <ReadAloudButton text={speechFor(item)} variant="outline" />
@@ -161,6 +195,11 @@ export function ResultSheet({ item, onNext }: { item: ResultView; onNext?: () =>
           className="text-sm text-ink"
         />
       </div>
+      {isUnsure(item) ? (
+        <div className="mt-3">
+          <UnsureNote item={item} />
+        </div>
+      ) : null}
       <div className="mt-4 mb-3 grid grid-cols-[auto_1fr] gap-3">
         {onNext ? (
           <Button variant="outline" onClick={onNext}>
