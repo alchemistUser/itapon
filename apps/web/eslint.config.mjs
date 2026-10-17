@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
     // Generated / vendored assets (scripts/copy-ort.mjs, scripts/copy-models.mjs)
     "public/ort/**",
     "public/models/**",
+    "public/dev-samples/**",
   ]),
 ]);
 
