@@ -33,18 +33,18 @@ GitHub CLI is installed at `C:\Program Files\GitHub CLI\gh.exe` (open a new term
 
 ## 2. Vercel: web hosting
 
-- [ ] Sign up at vercel.com with GitHub.
-- [ ] **Add New → Project →** import `itapon`.
-- [ ] Set **Root Directory** = `apps/web`. The framework (Next.js) and pnpm are auto-detected.
+- [x] Sign up at vercel.com with GitHub. Live: https://itapon.vercel.app
+- [x] **Add New → Project →** import `itapon`.
+- [x] Set **Root Directory** = `apps/web`. The framework (Next.js) and pnpm are auto-detected.
 - [ ] Add the environment variables from `apps/web/.env.example` (values can stay blank until Phases 9–10, except `NEXT_PUBLIC_SOURCE_URL` = your GitHub repo URL).
-- [ ] Deploy. Confirm that `itapon.vercel.app` (or the assigned URL) shows the iTapon placeholder page.
+- [x] Deploy. Confirm that `itapon.vercel.app` (or the assigned URL) shows the iTapon placeholder page.
 - [ ] Confirm that a PR gets a **preview deployment** comment.
 
 ## 3. Hugging Face: model files (D12)
 
-- [ ] Sign up at huggingface.co (team account or organization).
+- [x] Sign up at huggingface.co. Account: `alchemistUserhf`.
 - ~~New Docker Space~~: **not needed**. Free accounts can only create Static Spaces since July 2026, so inference runs in the browser instead (D12).
-- [ ] **New Model** → name `itapon-yolo` → Public → license `agpl-3.0`.
+- [x] Model repo `alchemistUserhf/itapon-yolo` (public, AGPL-3.0), tag `v0.1`. Created via `hf repo create` + `hf upload`.
 - [ ] *(Phase 9)* Create a write-scoped access token for CI and store it as GitHub secret `HF_TOKEN`.
 
 ## 4. Supabase: auth & database
@@ -86,4 +86,4 @@ pre-commit install
 - [ ] Every member can clone the repo, run `pnpm dev` (web) and `uv run uvicorn app.main:app --port 7860` (API) locally.
 - [x] CI passes all three jobs (web, api, secrets) on `main`.
 - [ ] Vercel production + preview deployments work.
-- [ ] HF model repo `itapon-yolo` and both Supabase projects exist.
+- [ ] HF model repo `itapon-yolo` ✅ and both Supabase projects exist.
