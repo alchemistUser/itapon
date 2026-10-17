@@ -40,3 +40,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Generated assets (scripts/copy-ort.mjs, scripts/copy-models.mjs)
+/public/ort/
+/public/models/
+# Private test photos (derived from coursework Figma exports)
+/public/dev-samples/

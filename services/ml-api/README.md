@@ -29,9 +29,29 @@ This writes `weights/itapon-world-v0-640.onnx` and `weights/itapon-world-v0.labe
 | Input | `images` float32 `[1, 3, 640, 640]`, RGB scaled 0–1, letterboxed (gray 114 padding) |
 | Output | `[1, 10, 6]` = `x1, y1, x2, y2` (input pixels), `score`, `class_index`, with class-agnostic NMS built in (cutoff 0.10) |
 | Labels | `labels.json`: class index → `class_key`, `default_category` (46 prompts → 23 classes) |
-| Size | **50.5 MB** (fp32). Shrinking it is a Phase 9 task |
+| Size | 50.5 MB (fp32) → **13.2 MB INT8** (see below) |
 
-Parity on the 3 smoke photos (raw `onnxruntime`, browser-style preprocessing): `paper_bag` 0.59 / 0.64 and `plastic_cup` 0.37 (+ `paper_bag` 0.26), at ~125–150 ms per image on a laptop CPU. That's the same top result as PyTorch.
+Shrink to INT8 (dynamic weight quantization, 4× smaller, float32 in/out):
+
+```bash
+uv run --group build python scripts/shrink_onnx.py weights/itapon-world-v0-480.onnx --check path/to/photo.jpg
+```
+
+### Variant comparison (Phase 9, 2026-10-17)
+
+Browser numbers: `/dev/detector`, desktop Chrome, ONNX Runtime Web WASM × 4 threads, tablet paper-bag photo, 20 runs.
+
+| Variant | Download | Browser p50 / p95 | Paper bag | Bag + cup photo |
+|---|---|---|---|---|
+| **int8-480 (default)** | **13.2 MB** | **419 / 447 ms** | 0.51 ✅ | cup 0.43 ✅, bag 0.26 ("possibly") |
+| int8-640 | 13.3 MB | 701 / 742 ms | 0.75 ✅ | cup 0.64 ✅, bag 0.44 ✅ |
+| fp32-480 | 50.4 MB | 702 / 725 ms | 0.57 ✅ | |
+| fp32-640 | 50.5 MB | 631 / 1019 ms | 0.58 ✅ | |
+
+- INT8 is *slower* than FP32 in native Python ONNX Runtime but *faster* in the browser.
+- int8-640 is more accurate (higher scores, catches both items), so it's a candidate for kiosks with strong hardware.
+- FP16 was tried and dropped: the converter produced graphs ONNX Runtime refuses to load (`Resize` type errors), and INT8 already meets the size target.
+- **Phone numbers are still to be measured** (Phase 9 task 5).
 
 ## Endpoints (contract v1)
 

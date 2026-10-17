@@ -63,8 +63,7 @@ def main() -> None:
     meta = json.loads(meta_file.read_text()) if meta_file.exists() else {}
     labels = {
         "model_version": meta.get("model_version", weights.stem),
-        "imgsz": args.imgsz,
-        "output": "[1, max_det, 6] = x1, y1, x2, y2 (input px), score, class_index",
+        "output": "[1, max_det, 6] = x1, y1, x2, y2 (input px), score, class_index",  # all sizes
         "labels": [
             {"index": i, "class_key": c.key, "default_category": c.default_category}
             for i, c in enumerate(PROMPT_TO_CLASS)

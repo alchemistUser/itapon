@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated / vendored assets (scripts/copy-ort.mjs, scripts/copy-models.mjs)
+    "public/ort/**",
+    "public/models/**",
   ]),
 ]);
 

@@ -438,6 +438,11 @@ itapon/
 > **Replaces** "Inference API deployment to Hugging Face Spaces". Free HF accounts can no longer host Docker Spaces (July 2026), so inference moves into the browser.
 > **Already proven (2026-10-17):** `scripts/export_onnx.py` exports the custom-vocabulary YOLO-World to ONNX with class-agnostic NMS built in (input `images [1,3,640,640]` RGB 0–1, output `[1,10,6]` = x1,y1,x2,y2,score,class). Raw `onnxruntime` gives the same top detections as PyTorch (paper bag 0.59/0.64, cup 0.37), at ~125–150 ms on a laptop CPU. **Open issue: the file is 50.5 MB.**
 
+> **Status (2026-10-17): In progress. Desktop done; hosting and phone benchmarks pending.**
+> **Done:** (1) **Shrunk to 13.2 MB** with INT8 dynamic quantization (`scripts/shrink_onnx.py`). FP16 was dropped because of converter bugs. **Default `int8-480`**. (3) Browser module `apps/web/src/lib/detector/` (`BrowserDetector`: Web Worker + `onnxruntime-web/wasm`, letterbox → infer → decode into the same `Detection` shape as the FastAPI contract). WASM engine is served from `/public/ort` (copied on install). Multi-threading via COOP/COEP on `/scan`, `/dev`, plus COEP on `/_next/static` and `/ort` so workers aren't blocked. (4) Cache API model cache, download progress, warm-up before "ready". Deliverable: **`/dev/detector`** test page: model picker, progress, sample/photo upload, box overlay, ×20 benchmark. (6) `model-export.yml` manual CI workflow (build → export → INT8 → SHA256 → artifact).
+> **Measured (desktop Chrome, dev + production build):** paper bag ✅ on all variants; int8-480 p50 **419 ms** / p95 447 ms; cached load **0.9 s**, fresh download + load 1.8 s on localhost (exit targets: ≤ 1.5 s per frame, ≤ 3 s cached ✅ on desktop).
+> **Pending:** (2) publish to the HF model repo `itapon-yolo` and pin a tag (needs the repo/token from you), then set `NEXT_PUBLIC_MODEL_BASE_URL`; (5) **real-phone benchmarks** (needs a deployed URL, so Vercel setup comes first, or the LAN dev server); unit tests for `processing.ts` arrive with Vitest (Phase 23).
+
 **Goal:** A small, versioned ONNX model hosted for free, plus a browser inference module that the scanner (Phase 12) can call like a function.
 
 **Why now:** Phase 12 needs a working `detect(frame)` in the browser, and model size decides whether the app is usable on mobile data.

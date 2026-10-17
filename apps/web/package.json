@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "postinstall": "node scripts/copy-ort.mjs",
+    "predev": "node scripts/copy-models.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -11,6 +13,7 @@
   },
   "dependencies": {
     "next": "16.4.2",
+    "onnxruntime-web": "^1.30.0",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
