@@ -22,7 +22,10 @@ export interface Detection {
 export interface Label {
   index: number;
   class_key: string;
-  default_category: Category;
+  /** "none" for not-waste distractor labels (model v0.2+). */
+  default_category: Category | "none";
+  /** True for not-waste distractors (F9-2); such detections are dropped. */
+  ignore?: boolean;
 }
 
 export interface LabelsFile {

@@ -65,23 +65,29 @@ class YoloDetector:
             agnostic_nms=True,
             verbose=False,
         )[0]
-
-        detections = []
         boxes = result.boxes
-        for xyxyn, conf, cls in zip(
-            boxes.xyxyn.tolist(), boxes.conf.tolist(), boxes.cls.tolist(), strict=True
-        ):
-            waste = PROMPT_TO_CLASS[int(cls)]
-            x1, y1, x2, y2 = (_clip01(v) for v in xyxyn)
-            detections.append(
-                Detection(
-                    class_key=waste.key,
-                    confidence=round(conf, 4),
-                    bbox=BBox(x1=x1, y1=y1, x2=x2, y2=y2),
-                    default_category=waste.default_category,
-                )
+        return to_detections(boxes.xyxyn.tolist(), boxes.conf.tolist(), boxes.cls.tolist())
+
+
+def to_detections(
+    boxes: list[list[float]], scores: list[float], class_indices: list[float]
+) -> list[Detection]:
+    """Map raw model rows to API detections, dropping not-waste distractors (F9-2)."""
+    detections = []
+    for xyxyn, conf, cls in zip(boxes, scores, class_indices, strict=True):
+        waste = PROMPT_TO_CLASS[int(cls)]
+        if waste.ignore:
+            continue
+        x1, y1, x2, y2 = (_clip01(v) for v in xyxyn)
+        detections.append(
+            Detection(
+                class_key=waste.key,
+                confidence=round(conf, 4),
+                bbox=BBox(x1=x1, y1=y1, x2=x2, y2=y2),
+                default_category=waste.default_category,
             )
-        return sorted(detections, key=lambda d: d.confidence, reverse=True)
+        )
+    return sorted(detections, key=lambda d: d.confidence, reverse=True)
 
 
 def _clip01(v: float) -> float:

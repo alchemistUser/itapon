@@ -54,7 +54,8 @@ export function decodeDetections(
     const score = output[r + 4];
     if (!(score >= minConfidence)) continue;
     const label = labels[Math.round(output[r + 5])];
-    if (!label) continue;
+    // Unknown index, or a not-waste distractor (mug, phone, hand…) that won NMS: drop it.
+    if (!label || label.ignore || label.default_category === "none") continue;
     const toX = (v: number) => clip01((v - box.padX) / box.scale / srcW);
     const toY = (v: number) => clip01((v - box.padY) / box.scale / srcH);
     detections.push({

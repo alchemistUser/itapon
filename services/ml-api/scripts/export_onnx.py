@@ -65,7 +65,13 @@ def main() -> None:
         "model_version": meta.get("model_version", weights.stem),
         "output": "[1, max_det, 6] = x1, y1, x2, y2 (input px), score, class_index",  # all sizes
         "labels": [
-            {"index": i, "class_key": c.key, "default_category": c.default_category}
+            {
+                "index": i,
+                "class_key": c.key,
+                "default_category": c.default_category,
+                # Not-waste distractors (F9-2): the web decoder drops these rows.
+                **({"ignore": True} if c.ignore else {}),
+            }
             for i, c in enumerate(PROMPT_TO_CLASS)
         ],
     }

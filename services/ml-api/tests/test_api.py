@@ -7,8 +7,9 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from app.classes import PROMPT_TO_CLASS, PROMPTS, WASTE_CLASSES
+from app.classes import MODEL_CLASSES, NOT_WASTE, PROMPT_TO_CLASS, PROMPTS, WASTE_CLASSES
 from app.config import Settings
+from app.detector import to_detections
 from app.main import create_app
 from app.schemas import BBox, Detection
 
@@ -65,6 +66,27 @@ def test_class_list_matches_spec():
         "residual",
         "hazardous",
     }
+
+
+def test_not_waste_is_model_only():
+    assert NOT_WASTE.ignore and NOT_WASTE not in WASTE_CLASSES
+    assert MODEL_CLASSES[-1] is NOT_WASTE  # appended last: waste indices unchanged from v0.1
+    assert PROMPTS[: sum(len(c.prompts) for c in WASTE_CLASSES)] == tuple(
+        p for c in WASTE_CLASSES for p in c.prompts
+    )
+
+
+def test_to_detections_drops_not_waste_and_sorts():
+    bag = PROMPTS.index("paper bag")
+    phone = PROMPTS.index("mobile phone")
+    cup = PROMPTS.index("plastic cup")
+    dets = to_detections(
+        boxes=[[0.1, 0.1, 0.5, 0.5], [0.5, 0.5, 0.9, 0.9], [0.0, 0.0, 1.2, 0.3]],
+        scores=[0.3, 0.8, 0.6],
+        class_indices=[float(bag), float(phone), float(cup)],
+    )
+    assert [d.class_key for d in dets] == ["plastic_cup", "paper_bag"]
+    assert dets[0].bbox.x2 == 1.0  # clipped to 0–1
 
 
 # --- health / loading -----------------------------------------------------------

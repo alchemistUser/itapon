@@ -51,7 +51,21 @@ Browser numbers: `/dev/detector`, desktop Chrome, ONNX Runtime Web WASM × 4 thr
 - INT8 is *slower* than FP32 in native Python ONNX Runtime but *faster* in the browser.
 - int8-640 is more accurate (higher scores, catches both items), so it's a candidate for kiosks with strong hardware.
 - FP16 was tried and dropped: the converter produced graphs ONNX Runtime refuses to load (`Resize` type errors), and INT8 already meets the size target.
-- **Phone (Android, Brave, live site, int8-480):** p50 691 ms / p95 1575 ms, cached load 9.3 s. A ceramic mug was detected as `plastic_cup` 0.40, a zero-shot false positive on non-waste (follow-up F9-2: "not waste" distractor prompts in model v0.2).
+- **Phone (Android, Brave, live site, int8-480):** p50 691 ms / p95 1575 ms, cached load 9.3 s. A ceramic mug was detected as `plastic_cup` 0.40, a zero-shot false positive on non-waste (F9-2, below).
+
+### Not-waste distractors (F9-2, model v0.2, 2026-10-17)
+
+`app/classes.py` has a `NOT_WASTE` class (`ignore=True`) whose prompts compete with the waste prompts in class-agnostic NMS. If a distractor wins, the API and the web decoder drop the box. Tested on 5 photos (paper bag ×2, bag + plastic cup, the phone mug photo ×2), INT8 480 / 640:
+
+| Distractor prompts | Mug | Real plastic cup | Paper bags |
+|---|---|---|---|
+| none (v0.1) | plastic_cup ❌ | ✅ | ✅ |
+| + "ceramic mug", "coffee mug", "drinking glass", … | 480: ignored ✅ · 640: plastic_cup ❌ | **480: hidden ❌** (0.98) | ✅ |
+| + "ceramic mug with a handle" | ignored ✅ | **hidden ❌** (0.88–0.97) | ✅ |
+| + "white porcelain coffee mug with handle" | ignored ✅ | **hidden ❌** (0.93–0.98) | ✅ |
+| **v0.2: phone, person, keys, eyeglasses, laptop, remote, wallet** | plastic_cup ❌ | ✅ | ✅ (same as v0.1) |
+
+**Conclusion:** zero-shot can't separate a white mug from a plastic cup without hiding real cups, so it's left to the trained model (ceramic mugs and glasses as hard negatives in Phase 3). "human hand" and "pen" are excluded on purpose: items are held in hand, and pens compete with straws and utensils. v0.2 is built locally but **not published** until photos of phones/keys/etc. show it helps.
 
 ## Endpoints (contract v1)
 

@@ -350,7 +350,7 @@ itapon/
 1. **Error analysis on the baseline:** confusion matrix, false positives on backgrounds, per-lighting-condition breakdown. List the top 5 failure modes.
 2. **Targeted fixes:**
    - Augmentation tuning: HSV/brightness (lighting), mosaic/mixup (multi-item), blur (motion from hand-held phones), rotation/perspective.
-   - Collect **hard-negative images** (empty tables, hands with no items, bins with nothing in front) to cut false positives.
+   - Collect **hard-negative images** (empty tables, hands with no items, bins with nothing in front) to cut false positives. Include **ceramic mugs, drinking glasses and tumblers** next to real plastic cups: zero-shot YOLO-World can't tell them apart (F9-2).
    - Collect more data for weak classes, then version the dataset as v1.1.
 3. **Hyperparameter search:** image size (480/640), epochs, learning rate, model size (n/s/m). Use `model.tune()` sparingly, since GPU hours are limited.
 4. Optional **ablation study** for the manuscript: with vs. without the local data, with vs. without augmentation, and n vs. s vs. m. Report it as a table.
@@ -445,7 +445,7 @@ itapon/
 > **Phone benchmark (5), Android / Brave (Chromium), live site, int8-480, WASM × 4 threads:** inference **p50 691 ms / p95 1575 ms** (target p95 ≤ 1.5 s: ⚠️ 5% over), cached load **9.3 s** (target ≤ 3 s: ❌). Detection: a **ceramic mug** was labelled `plastic_cup` 0.40 → Recyclable (**false positive**: the zero-shot model forces non-waste objects into the nearest waste class). Not yet tested: iPhone Safari, iPad.
 > **Follow-ups (carried forward):**
 > - **F9-1 Slow phone startup (9.3 s cached):** most likely WASM compilation of the 14 MB engine plus session init. Phase 12: start loading on app open (not on /scan) and keep the warming-up screen (D3). Phase 21: precache `/ort/*` and the model in the service worker, and measure where the time goes (engine fetch vs. compile vs. session create).
-> - **F9-2 Non-waste false positives:** add "not waste" distractor prompts (e.g. ceramic mug, phone, hand, keys, person, glasses) mapped to an `ignore` class that the app drops, then rebuild → **model v0.2**. Check that the mug no longer becomes `plastic_cup`. Can be done any time (a model-content change only).
+> - **F9-2 Non-waste false positives, partly done (2026-10-17):** the **ignore mechanism** shipped: a `not_waste` class with `ignore=True` in `app/classes.py`, dropped by the API (`to_detections`) and the web decoder (`labels.json` `"ignore": true`). Model **v0.2** (built locally, **not published**; the web app stays pinned to v0.1) adds safe distractors: phone, person, keys, eyeglasses, laptop, remote, wallet. It matches v0.1 on all test photos. **The mug is NOT fixed:** every mug/glass prompt tried ("ceramic mug", "coffee mug", "drinking glass", "ceramic mug with a handle", "white porcelain coffee mug with handle") also hid a **real plastic cup** (not_waste 0.88–0.98), which is worse than the bug. Mug vs. plastic cup needs the **trained model** (Phase 3: ceramic mugs and glasses as hard negatives). Publishing v0.2 is worth it only after photos of phones/keys/etc. confirm a benefit.
 > - **F9-3 p95 slightly over 1.5 s:** the Phase 12 stability gate needs 3 of 4 frames, so a single slow frame doesn't hurt the experience. Fall back to `imgsz 416` if real scanning feels laggy.
 > - **F9-4 iPhone / iPad** benchmarks still to run (Safari memory limits are the main risk).
 > - Unit tests for `processing.ts` arrive with Vitest (Phase 23).

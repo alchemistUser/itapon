@@ -18,7 +18,7 @@ sys.path.insert(0, str(ROOT))
 
 from ultralytics import YOLOWorld  # noqa: E402
 
-from app.classes import PROMPTS, WASTE_CLASSES  # noqa: E402
+from app.classes import MODEL_VERSION, PROMPTS, WASTE_CLASSES  # noqa: E402
 
 
 def main() -> None:
@@ -37,13 +37,13 @@ def main() -> None:
     model.save(str(out))
 
     meta = {
-        "model_version": f"world-v0 ({Path(args.base).stem})",
+        "model_version": f"{MODEL_VERSION} ({Path(args.base).stem})",
         "base": args.base,
         "prompts": list(PROMPTS),
         "classes": [c.key for c in WASTE_CLASSES],
     }
     out.with_suffix(".json").write_text(json.dumps(meta, indent=2))
-    print(f"Saved {out} with {len(PROMPTS)} prompts / {len(WASTE_CLASSES)} classes")
+    print(f"Saved {out} ({MODEL_VERSION}): {len(PROMPTS)} prompts, {len(WASTE_CLASSES)} classes")
 
 
 if __name__ == "__main__":
