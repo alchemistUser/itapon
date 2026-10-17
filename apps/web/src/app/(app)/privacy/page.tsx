@@ -66,8 +66,10 @@ export default function PrivacyPage() {
         </ul>
         <p>
           We don&apos;t collect your location, contacts or advertising ids, and there are no ads or
-          third-party trackers. Your browser keeps your session, preferences and offline copies of
-          the app in its own storage on your device.
+          third-party trackers. To keep the app working we count page views and page speed
+          anonymously (Vercel Web Analytics, no cookies) and log app errors without any account or
+          device id. Your browser keeps your session, preferences and offline copies of the app in
+          its own storage on your device.
         </p>
       </Section>
 

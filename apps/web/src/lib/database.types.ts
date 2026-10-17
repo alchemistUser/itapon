@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      client_errors: {
+        Row: {
+          browser: string | null
+          build: string
+          created_at: string
+          id: number
+          kind: string
+          message: string
+          path: string
+          stack: string | null
+        }
+        Insert: {
+          browser?: string | null
+          build: string
+          created_at?: string
+          id?: never
+          kind: string
+          message: string
+          path: string
+          stack?: string | null
+        }
+        Update: {
+          browser?: string | null
+          build?: string
+          created_at?: string
+          id?: never
+          kind?: string
+          message?: string
+          path?: string
+          stack?: string | null
+        }
+        Relationships: []
+      }
       devices: {
         Row: {
           bin_order: string[]
@@ -432,6 +465,7 @@ export type Database = {
           scans_deleted: number
         }[]
       }
+      purge_client_errors: { Args: { p_days?: number }; Returns: number }
       top_items: {
         Args: { p_from?: string; p_limit?: number; p_to?: string }
         Returns: {

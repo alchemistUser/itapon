@@ -53,6 +53,7 @@ export function SourceFooter({ className }: { className?: string }) {
       <Link href="/privacy" className="font-medium text-brand-strong underline">
         Privacy
       </Link>
+      <span className="ml-1 text-ink-4">· v{process.env.NEXT_PUBLIC_APP_VERSION}</span>
     </footer>
   );
 }

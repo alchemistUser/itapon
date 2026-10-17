@@ -30,6 +30,8 @@ export interface AnalyticsScan {
   deviceId: string | null;
   source: string;
   modelVersion?: string;
+  latencyMs?: number | null; // scan start → result locked, measured on the device (D12)
+  backend?: string | null; // "wasm" | "webgpu"
   detections: AnalyticsDetection[];
 }
 
@@ -347,4 +349,24 @@ export function byModelVersion(scans: AnalyticsScan[], feedback: FeedbackRow[]) 
       wrongPct: e.answers ? Math.round((e.wrong / e.answers) * 100) : null,
     }))
     .sort((a, b) => b.version.localeCompare(a.version));
+}
+
+/** Real-device speed (Phase 24): time to a locked result by device type and backend. */
+export function latencyBySource(scans: AnalyticsScan[]) {
+  const groups = new Map<string, number[]>();
+  for (const s of scans) {
+    if (s.latencyMs == null) continue;
+    const key = `${s.source}|${s.backend ?? "unknown"}`;
+    const g = groups.get(key) ?? [];
+    g.push(s.latencyMs);
+    groups.set(key, g);
+  }
+  const pct = (xs: number[], p: number) => xs[Math.min(xs.length - 1, Math.floor(p * xs.length))];
+  return [...groups.entries()]
+    .map(([key, xs]) => {
+      const [source, backend] = key.split("|");
+      xs.sort((a, b) => a - b);
+      return { source, backend, scans: xs.length, p50: pct(xs, 0.5), p90: pct(xs, 0.9) };
+    })
+    .sort((a, b) => b.scans - a.scans);
 }

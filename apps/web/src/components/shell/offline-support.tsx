@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import "@/lib/install"; // starts listening for beforeinstallprompt on every page
 import { BIN_ORDER } from "@/lib/bins";
 import { DETECTABLE_KEYS } from "@/lib/content";
+import { installErrorReporting } from "@/lib/monitoring";
 import { flushScanLogs } from "@/lib/scan/log-scan";
 
 const OFFLINE_PAGES = [
@@ -26,6 +27,7 @@ const OFFLINE_PAGES = [
 
 export function OfflineSupport() {
   useEffect(() => {
+    const stopReporting = installErrorReporting(); // Phase 24 (production only)
     void flushScanLogs();
     const onOnline = () => void flushScanLogs();
     window.addEventListener("online", onOnline);
@@ -43,7 +45,10 @@ export function OfflineSupport() {
         )
         .catch((e) => console.warn("[itapon] Service worker unavailable.", e));
     }
-    return () => window.removeEventListener("online", onOnline);
+    return () => {
+      stopReporting();
+      window.removeEventListener("online", onOnline);
+    };
   }, []);
   return null;
 }

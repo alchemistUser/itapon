@@ -1,6 +1,6 @@
 {
   "name": "web",
-  "version": "0.1.0",
+  "version": "1.0.0-rc.1",
   "private": true,
   "scripts": {
     "postinstall": "node scripts/copy-ort.mjs",
@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
+    "@vercel/analytics": "1",
+    "@vercel/speed-insights": "1",
     "clsx": "^2.1.1",
     "fuse.js": "^7.5.0",
     "lucide-react": "^1.59.0",

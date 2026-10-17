@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   applyFilters,
   byModelVersion,
+  latencyBySource,
   filterFeedback,
   wrongRateByItem,
   type FeedbackRow,
@@ -175,5 +176,25 @@ describe("feedback", () => {
     expect(res[0]).toMatchObject({ scans: 2, answers: 2, wrongPct: 50 });
     expect(res[0].avgConfidence).toBeCloseTo(0.6);
     expect(res[1]).toMatchObject({ scans: 1, answers: 0, wrongPct: null });
+  });
+});
+
+describe("real-device speed", () => {
+  it("groups time-to-result by device type and backend", () => {
+    const mk = (id: string, source: string, latencyMs: number | null, backend = "wasm") => ({
+      ...scan(id, "2026-10-10T02:00:00Z", null, [["tin_can", "recyclable", 0.6]]),
+      source,
+      latencyMs,
+      backend,
+    });
+    const rows = latencyBySource([
+      mk("1", "mobile", 900),
+      mk("2", "mobile", 1100),
+      mk("3", "mobile", 3000),
+      mk("4", "kiosk", 500),
+      mk("5", "mobile", null),
+    ]);
+    expect(rows[0]).toEqual({ source: "mobile", backend: "wasm", scans: 3, p50: 1100, p90: 3000 });
+    expect(rows[1]).toMatchObject({ source: "kiosk", scans: 1, p50: 500 });
   });
 });

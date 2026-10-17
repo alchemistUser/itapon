@@ -69,7 +69,7 @@ export async function fetchInstitutionScans(
     const { data, error } = await sb
       .from("scan_sessions")
       .select(
-        "id, created_at, device_id, source, model_version, scan_detections(class_key, category_key, confidence, is_primary)",
+        "id, created_at, device_id, source, model_version, latency_ms, inference_backend, scan_detections(class_key, category_key, confidence, is_primary)",
       )
       .not("institution_id", "is", null)
       .gte("created_at", from)
@@ -84,6 +84,8 @@ export async function fetchInstitutionScans(
         deviceId: r.device_id,
         source: r.source,
         modelVersion: r.model_version,
+        latencyMs: r.latency_ms,
+        backend: r.inference_backend,
         detections: (r.scan_detections ?? []).map((d) => ({
           classKey: d.class_key,
           category: d.category_key as Category,

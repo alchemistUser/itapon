@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+import pkg from "./package.json" with { type: "json" };
+
 // Cross-origin isolation lets onnxruntime-web use multi-threaded WASM (D12).
 // Site-wide (Phase 12): isolation is decided per document load, so a visit that starts on
 // "/" and client-navigates to /scan would otherwise stay single-threaded, and the model is
@@ -48,6 +50,7 @@ const nextConfig: NextConfig = {
   // Changes every deploy; the service worker re-caches the offline pages when it changes.
   env: {
     NEXT_PUBLIC_BUILD_ID: process.env.VERCEL_GIT_COMMIT_SHA ?? `local-${Date.now()}`,
+    NEXT_PUBLIC_APP_VERSION: pkg.version, // Phase 24: shown in the footer and /api/health
   },
   cacheComponents: true,
   partialPrefetching: true,

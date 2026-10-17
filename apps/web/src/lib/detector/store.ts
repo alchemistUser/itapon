@@ -3,6 +3,7 @@
 // useDetectorState(); the root layout preloads it on idle so /scan is often ready on arrival.
 "use client";
 
+import { reportError } from "@/lib/monitoring";
 import { useSyncExternalStore } from "react";
 
 import { BrowserDetector } from "./client";
@@ -44,7 +45,11 @@ export function ensureDetector(): void {
   set({ status: "loading", progress: null, info: null, error: null, startedAt: Date.now() });
   d.load((progress) => detector === d && set({ progress }))
     .then((info) => detector === d && set({ status: "ready", info }))
-    .catch((e: Error) => detector === d && set({ status: "error", error: e.message }));
+    .catch((e: Error) => {
+      if (detector !== d) return;
+      reportError("detector", e); // Phase 24: real-device load failures (e.g. old iOS, low memory)
+      set({ status: "error", error: e.message });
+    });
 }
 
 /** Throw away a failed/stuck detector and start again. */

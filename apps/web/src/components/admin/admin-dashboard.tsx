@@ -20,6 +20,7 @@ import {
   applyFilters,
   byDevice,
   byModelVersion,
+  latencyBySource,
   CATEGORIES,
   confidenceDaily,
   dailyByCategory,
@@ -171,6 +172,7 @@ export function AdminDashboard() {
   const wrong = wrongRateByItem(filteredFeedback);
   const wrongTotal = filteredFeedback.filter((f) => !f.isCorrect).length;
   const versions = byModelVersion(filtered, filteredFeedback);
+  const speed = latencyBySource(filtered);
   const reload = () => {
     setLoading(true);
     setReloadKey((n) => n + 1);
@@ -432,6 +434,43 @@ export function AdminDashboard() {
                     </td>
                   </tr>
                 ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="md:col-span-2">
+            <p className="mb-2 text-sm font-medium text-ink-2">
+              Time to result on real devices
+              <span className="ml-2 text-xs font-normal text-ink-3">
+                from scan start to locked result, measured on the device
+              </span>
+            </p>
+            <table className="w-full text-left text-sm">
+              <thead className="text-xs text-ink-3">
+                <tr>
+                  <th className="py-1 font-medium">Device type</th>
+                  <th className="py-1 font-medium">Engine</th>
+                  <th className="py-1 text-right font-medium">Scans</th>
+                  <th className="py-1 text-right font-medium">Median</th>
+                  <th className="py-1 text-right font-medium">Slowest 10%</th>
+                </tr>
+              </thead>
+              <tbody className="tabular-nums">
+                {speed.map((r) => (
+                  <tr key={`${r.source}-${r.backend}`} className="border-t border-line">
+                    <td className="py-1.5 capitalize">{r.source}</td>
+                    <td className="py-1.5 font-mono text-xs">{r.backend}</td>
+                    <td className="py-1.5 text-right">{r.scans}</td>
+                    <td className="py-1.5 text-right">{(r.p50 / 1000).toFixed(1)} s</td>
+                    <td className="py-1.5 text-right">{(r.p90 / 1000).toFixed(1)} s</td>
+                  </tr>
+                ))}
+                {!speed.length ? (
+                  <tr>
+                    <td colSpan={5} className="py-3 text-center text-ink-3">
+                      No timed scans in this period.
+                    </td>
+                  </tr>
+                ) : null}
               </tbody>
             </table>
           </div>

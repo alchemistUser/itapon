@@ -37,3 +37,7 @@ jobs:
       - name: Purge photos older than 12 months
         if: steps.secrets.outputs.ok == 'true'
         run: uv run python scripts/purge_feedback_photos.py --months 12
+      - name: Purge client error logs older than 90 days
+        if: steps.secrets.outputs.ok == 'true'
+        run: |
+          curl -sSf -X POST "$SUPABASE_URL/rest/v1/rpc/purge_client_errors"             -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"             -H "Content-Type: application/json" -d '{"p_days": 90}'

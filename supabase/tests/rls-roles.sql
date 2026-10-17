@@ -84,7 +84,10 @@ insert into rls_results values
   ('anon sees no devices', (select count(*) = 0 from public.devices)),
   ('anon sees no feedback', (select count(*) = 0 from public.feedback)),
   ('anon cannot insert scans', pg_temp.refused($q$insert into public.scan_sessions (user_id, model_version) values ('00000000-0000-4000-8000-00000000a001', 'x')$q$)),
-  ('anon cannot edit items', pg_temp.refused($q$update public.waste_items set display_name = 'x' where class_key = 'battery'$q$));
+  ('anon cannot edit items', pg_temp.refused($q$update public.waste_items set display_name = 'x' where class_key = 'battery'$q$)),
+  ('anon can report a client error', not pg_temp.refused($q$insert into public.client_errors (build, path, kind, message) values ('rls', '/', 'error', 'rls-check')$q$)),
+  ('anon cannot read client errors', pg_temp.refused($q$select * from public.client_errors$q$)),
+  ('anon cannot backdate client errors', pg_temp.refused($q$insert into public.client_errors (created_at, build, path, kind, message) values (now() - interval '1 day', 'rls', '/', 'error', 'x')$q$));
 reset role;
 
 -- ---------------------------------------------------------------- user 2 (stranger)
@@ -104,7 +107,9 @@ insert into rls_results values
   ('user cannot join an institution', pg_temp.refused($q$update public.profiles set institution_id = '00000000-0000-4000-8000-0000000000b1' where id = '00000000-0000-4000-8000-00000000a002'$q$)),
   ('user cannot edit content', pg_temp.refused($q$update public.waste_items set display_name = 'x' where class_key = 'battery'$q$)),
   ('user cannot create a device', pg_temp.refused($q$insert into public.devices (institution_id, label) values ('00000000-0000-4000-8000-0000000000b1', 'x')$q$)),
-  ('user cannot call admin RPCs', pg_temp.refused($q$select public.admin_register_kiosk('rls-user1@test.invalid', 'x')$q$));
+  ('user cannot call admin RPCs', pg_temp.refused($q$select public.admin_register_kiosk('rls-user1@test.invalid', 'x')$q$)),
+  ('user cannot read client errors', pg_temp.refused($q$select * from public.client_errors$q$)),
+  ('user cannot purge client errors', pg_temp.refused($q$select public.purge_client_errors(7)$q$));
 reset role;
 
 -- ---------------------------------------------------------------- user 1 (owner)

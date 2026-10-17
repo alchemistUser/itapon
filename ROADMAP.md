@@ -990,6 +990,13 @@ itapon/
 
 ## Phase 24: CI/CD, production release & monitoring
 
+> **Status (2026-10-18): Everything in the repo is done and verified (v1.0.0-rc.1). Going live needs the team's accounts:** the `itapon-prod` Supabase project, custom SMTP, GitHub environment secrets, Vercel per-environment variables and analytics, and an uptime monitor. These are listed one by one in [`docs/release.md`](docs/release.md#one-time-setup-team). v1.0.0 is tagged after that and the one-week uptime check.
+> 1. **Workflows:** `ci.yml` (lint, typecheck, unit, Playwright E2E + axe, API, dependency audit, gitleaks, RLS matrix on dev); Vercel deploys previews and promotes `main`. **`db.yml`** (new): on merge, it dry-runs and then applies migrations + seed to prod and runs the RLS matrix there. **`model-regression.yml`** (new): when the pin changes, it downloads the pinned files, verifies SHA-256 (`scripts/verify-model-pins.mjs`, ✓ for all 3 v0.1 files) and runs the regression set. `model-export.yml` runs the regression after a build. `retention.yml` also purges error logs after 90 days. Jobs without their secrets skip with a warning instead of failing.
+> 2. **Environments:** dev / preview (Supabase dev) / production (Supabase prod, pinned + hashed model), documented in `docs/release.md`.
+> 3. **Monitoring:** a first-party **error log** (`client_errors`: insert-only, no user id, URLs stripped of query strings/JWTs, ≤ 5 per page, 90-day purge) fed by window errors, detector load failures and new `error.tsx`/`global-error.tsx` boundaries. Verified: a thrown error arrived as `Chrome 152 / Windows`, path `/`, token removed. **Vercel Analytics + Speed Insights** (cookieless; the privacy notice was updated) for real-user LCP/INP/CLS. **Real-device speed** table on `/admin` (median/p90 time to result by device type and engine). **`/api/health`** returns version, build and model tag for the uptime monitor. Supabase usage alerts are documented. Role matrix: 65/65 (client_errors: anyone can report, nobody can read or backdate).
+> 4. **Release process:** semver (`1.0.0-rc.1`, shown in the footer), `CHANGELOG.md`, and a release checklist. **Rollback:** Vercel Instant Rollback, which also reverts the model pin; the DB rolls forward only.
+> 5. **Custom domain:** optional and documented; not set up.
+
 > **Added in Phase 16:** configure **custom SMTP** for Supabase Auth (e.g. Resend/Brevo free tier) before public launch. The built-in mailer only sends to team members and is heavily rate-limited.
 
 **Goal:** A repeatable, low-risk path from merged PR to production, plus visibility into production health.
