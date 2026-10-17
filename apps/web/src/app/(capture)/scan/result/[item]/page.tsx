@@ -5,7 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BinTile, Instruction } from "@/components/bins/bins";
-import { CameraMock, ResultPanel, speechFor } from "@/components/scan/scan-views";
+import { CameraMock, ResultPanel } from "@/components/scan/scan-views";
 import { ButtonLink } from "@/components/ui/button";
 import { ReadAloudButton } from "@/components/ui/read-aloud-button";
 import { BINS } from "@/lib/bins";
@@ -58,7 +58,7 @@ export default async function ResultPage(props: PageProps<"/scan/result/[item]">
             <Instruction text={item.instruction} category={item.category} className="text-sm" />
           </div>
           <div className="mt-5 flex items-center justify-between gap-3">
-            <ReadAloudButton text={speechFor(item)} variant="outline" />
+            <ReadAloudButton item={item} variant="outline" />
             <ButtonLink href="/scan" variant="dark" className="px-6">
               Next Scan
             </ButtonLink>

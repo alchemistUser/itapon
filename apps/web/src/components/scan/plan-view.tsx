@@ -7,7 +7,6 @@ import { ArrowRight, CheckCheck, ChevronLeft, ChevronRight, Repeat2, Scan } from
 import Link from "next/link";
 
 import { BinTile, CategoryChip, Instruction, ItemIcon } from "@/components/bins/bins";
-import { speechFor } from "@/components/scan/scan-views";
 import { ButtonLink } from "@/components/ui/button";
 import {
   Card,
@@ -28,6 +27,7 @@ import { orderPlan, type PlanEntry } from "@/lib/scan/plan";
 interface MockItem {
   classKey: string;
   name: string;
+  nameFil?: string;
   category: PlanEntry["category"];
   confidence: number;
   instruction: string;
@@ -43,6 +43,7 @@ function toPlanItem(e: PlanEntry, thumbs: Record<string, string>): MockItem | nu
   return {
     classKey: e.classKey,
     name: c.name,
+    nameFil: c.nameFil,
     category: c.category,
     confidence: e.confidence,
     instruction: c.instruction,
@@ -177,7 +178,7 @@ function DetailPane({ item }: { item: MockItem }) {
         <StepList steps={item.steps} />
       </div>
       {item.why ? <InfoCallout title="Why this recommendation?">{item.why}</InfoCallout> : null}
-      <ReadAloudButton text={speechFor(item)} />
+      <ReadAloudButton item={item} />
     </Card>
   );
 }
@@ -239,7 +240,7 @@ export function PlanView({
               <Headline item={primary} />
               <hr className="border-line" />
               <div className="flex items-center justify-between">
-                <ReadAloudButton text={speechFor(primary)} />
+                <ReadAloudButton item={primary} />
                 <Link
                   href={`/scan/plan/${primary.classKey}`}
                   className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-brand-strong"
@@ -270,7 +271,7 @@ export function PlanView({
               {current.why ? (
                 <InfoCallout title="Why this recommendation?">{current.why}</InfoCallout>
               ) : null}
-              <ReadAloudButton text={speechFor(current)} />
+              <ReadAloudButton item={current} />
             </Card>
             <Link
               href="/scan/plan"

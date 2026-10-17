@@ -49,6 +49,12 @@ html {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Text size preference (Phase 17): everything is rem-based, so this scales the whole UI.
+   Respects the browser/OS font size too (percentage of the user's default). */
+html[data-text="large"] {
+  font-size: 118.75%;
+}
+
 body {
   background: var(--color-surface);
   color: var(--color-ink-2);

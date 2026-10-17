@@ -5,47 +5,46 @@ import { Square, Volume2 } from "lucide-react";
 import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { cn } from "@/lib/cn";
+import { usePrefs } from "@/lib/prefs";
+import { partsFor, speak, speechSupported, stopSpeaking, type SpeechItem } from "@/lib/speech";
 
 const noopSubscribe = () => () => {};
 
 /**
- * Speaks `text` with the Web Speech API. Phase 17 adds voice/language choice and
- * auto-play; this is the basic, working version used by every result screen.
+ * Read aloud (Phase 17): speaks a result in the user's language preference (English, or
+ * Filipino + English), with a visible playing state and a stop button.
+ * Pass `item` for a result, or `text` for anything else.
  */
 export function ReadAloudButton({
+  item,
   text,
   variant = "plain",
   className,
 }: {
-  text: string;
+  item?: SpeechItem;
+  text?: string;
   variant?: "plain" | "outline";
   className?: string;
 }) {
   const [speaking, setSpeaking] = useState(false);
+  const prefs = usePrefs();
   // Browser-only capability: false during SSR, real value after hydration (no mismatch).
-  const supported = useSyncExternalStore(
-    noopSubscribe,
-    () => "speechSynthesis" in window,
-    () => false,
-  );
+  const supported = useSyncExternalStore(noopSubscribe, speechSupported, () => false);
 
-  useEffect(() => () => window.speechSynthesis?.cancel(), []);
+  useEffect(() => () => stopSpeaking(), []);
 
   function toggle() {
     if (!supported) return;
-    const synth = window.speechSynthesis;
     if (speaking) {
-      synth.cancel();
+      stopSpeaking();
       setSpeaking(false);
       return;
     }
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "en-US";
-    u.rate = 0.95;
-    u.onend = u.onerror = () => setSpeaking(false);
-    synth.cancel();
-    synth.speak(u);
+    const parts = item
+      ? partsFor(item, prefs.language)
+      : [{ text: text ?? "", lang: "en" as const }];
     setSpeaking(true);
+    speak(parts, () => setSpeaking(false));
   }
 
   const Icon = speaking ? Square : Volume2;

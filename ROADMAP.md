@@ -755,6 +755,17 @@ itapon/
 
 ## Phase 17: Accessibility & PWD features
 
+> **Status (2026-10-17): Done for everything testable here. VoiceOver/TalkBack passes and PWD testers need real devices and people (Phase 25).**
+> 1. **Read aloud** (`lib/speech.ts`): the script is item + bin colour + category + instruction. **Filipino preference:** a short Filipino phrase with a Filipino voice ("Balat ng saging. Ilagay sa berde na basurahan."), then the English instruction; it falls back to all-English when the device has no Filipino voice. Voice picks `en-PH` → `en-US` → any `en`. **Auto read-aloud on lock** when the preference is on. Playing state + stop button; speech stops on Next Scan. Unit-tested.
+> 2. **Colour is never the only signal:** every bin indication has a text label + icon, and the bin row adds an arrow + bold label. Checked in **full greyscale**: the correct bin stays obvious.
+> 3. **Screen readers:** landmarks and labels (axe clean), `aria-live` result announcement, and **focus moves to the result heading on lock** (verified).
+> 4. **Motor:** controls ≥ 44 px (`h-11`/`min-h-11`); the kiosk's no-touch flow is Phase 18.
+> 5. **Vision:** a **Text size** preference (root 16 → 19 px; everything is rem-based); AA contrast from Phase 11. **Reflow checked at 320 CSS px (≈ 400% zoom) with large text on 9 pages.** Fixed one overflow (home bin row). High-contrast toggle not done (optional; contrast already AA).
+> 6–7. Plain-language copy; `prefers-reduced-motion` honoured globally (Phase 11).
+> 8. **Filipino:** Filipino item names (Bin Guide, search) and Filipino speech are in. **Full UI translation (`next-intl`) is not done** (optional); it would need reviewed translations of all instructions.
+> **Preferences** (`lib/prefs.ts`) apply instantly from localStorage (guests, offline) and sync to `profiles.prefs` when signed in, so they follow the account.
+> **Audit:** axe-core 4.x (WCAG 2.0/2.1/2.2 A+AA + best practices) on home, guide (results open and no-match), category page, scanner (loading/camera-blocked and locked result), plan, history (expanded), account and result pages → **0 violations**. Lighthouse Accessibility 100 (Phases 11 and 15).
+
 **Goal:** Make the app genuinely usable by PWD users, as the proposal requires ("accessible to all users, especially for PWD personnel").
 
 **Why now:** All main screens exist by now. An audit at this point catches issues before kiosk and pilot work hardens the UI. Accessibility basics (semantic HTML, contrast) should still be followed from Phase 11 onward.

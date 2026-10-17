@@ -38,7 +38,7 @@ export default function Home() {
             Open Bin Guide
           </ButtonLink>
         </div>
-        <ul className="flex gap-3" aria-label="The four bins">
+        <ul className="flex flex-wrap gap-3" aria-label="The four bins">
           {BIN_ORDER.map((k) => (
             <li key={k} className="flex flex-col items-center gap-1">
               <BinTile category={k} size="md" />

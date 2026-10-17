@@ -7,6 +7,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, PageTitle } from "@/components/ui/primitives";
 import { deleteMyData } from "@/lib/history";
+import { setPrefs, usePrefs, type Prefs } from "@/lib/prefs";
 import {
   continueWithGoogle,
   saveHistoryWithEmail,
@@ -14,13 +15,7 @@ import {
   signOut,
   useAuth,
 } from "@/lib/supabase/auth";
-import { ensureUserId, getSupabase } from "@/lib/supabase/client";
-
-interface Prefs {
-  tts_auto?: boolean;
-  language?: "en" | "fil";
-  text_size?: "normal" | "large";
-}
+import { getSupabase } from "@/lib/supabase/client";
 
 const GOOGLE_ENABLED = process.env.NEXT_PUBLIC_AUTH_GOOGLE === "1";
 const inputCls =
@@ -81,7 +76,7 @@ export function AccountView() {
   const [mode, setMode] = useState<"save" | "signin">("save");
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [justSaved, setJustSaved] = useState(false);
-  const [prefs, setPrefs] = useState<Prefs>({});
+  const prefs = usePrefs();
   const [displayName, setDisplayName] = useState("");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -103,12 +98,11 @@ export function AccountView() {
     if (!sb || !userId) return;
     let cancelled = false;
     sb.from("profiles")
-      .select("display_name, prefs")
+      .select("display_name")
       .eq("id", userId)
       .maybeSingle()
       .then(({ data }) => {
         if (cancelled || !data) return;
-        setPrefs((data.prefs as Prefs) ?? {});
         setDisplayName(data.display_name ?? "");
       });
     return () => {
@@ -116,16 +110,19 @@ export function AccountView() {
     };
   }, [userId]);
 
-  async function saveProfile(next: Prefs, name = displayName) {
-    setPrefs(next);
+  async function savePrefs(patch: Prefs) {
     setSaveState("saving");
+    setSaveState((await setPrefs(patch)) ? "saved" : "error");
+  }
+
+  async function saveName() {
     const sb = getSupabase();
-    const id = await ensureUserId();
-    if (!sb || !id) return setSaveState("error");
+    if (!sb || !userId) return;
+    setSaveState("saving");
     const { error } = await sb
       .from("profiles")
-      .update({ prefs: { ...next }, display_name: name.trim() || null })
-      .eq("id", id);
+      .update({ display_name: displayName.trim() || null })
+      .eq("id", userId);
     setSaveState(error ? "error" : "saved");
   }
 
@@ -231,7 +228,7 @@ export function AccountView() {
               value={displayName}
               maxLength={60}
               onChange={(e) => setDisplayName(e.target.value)}
-              onBlur={() => void saveProfile(prefs)}
+              onBlur={() => void saveName()}
               className={inputCls}
             />
           </label>
@@ -257,16 +254,14 @@ export function AccountView() {
             type="checkbox"
             className="size-5 accent-brand-button"
             checked={Boolean(prefs.tts_auto)}
-            onChange={(e) => void saveProfile({ ...prefs, tts_auto: e.target.checked })}
+            onChange={(e) => void savePrefs({ tts_auto: e.target.checked })}
           />
         </label>
         <label className="flex min-h-11 items-center justify-between gap-3 text-sm">
           <span className="font-medium text-ink">Language</span>
           <select
             value={prefs.language ?? "en"}
-            onChange={(e) =>
-              void saveProfile({ ...prefs, language: e.target.value as Prefs["language"] })
-            }
+            onChange={(e) => void savePrefs({ language: e.target.value as Prefs["language"] })}
             className="h-11 rounded-control border border-line bg-white px-3"
           >
             <option value="en">English</option>
@@ -277,9 +272,7 @@ export function AccountView() {
           <span className="font-medium text-ink">Text size</span>
           <select
             value={prefs.text_size ?? "normal"}
-            onChange={(e) =>
-              void saveProfile({ ...prefs, text_size: e.target.value as Prefs["text_size"] })
-            }
+            onChange={(e) => void savePrefs({ text_size: e.target.value as Prefs["text_size"] })}
             className="h-11 rounded-control border border-line bg-white px-3"
           >
             <option value="normal">Normal</option>
@@ -290,7 +283,7 @@ export function AccountView() {
           {saveState === "saving"
             ? "Saving…"
             : saveState === "saved"
-              ? "Saved. Read-aloud, language and text size take effect in a later update."
+              ? "Saved."
               : saveState === "error"
                 ? "Couldn't save. Check your connection."
                 : ""}

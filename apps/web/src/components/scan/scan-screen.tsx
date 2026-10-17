@@ -23,6 +23,8 @@ import { cn } from "@/lib/cn";
 import { getItemLive as getItem, useContentSource } from "@/lib/content-store";
 import { saveLastScan } from "@/lib/scan/last-scan";
 import { logScan } from "@/lib/scan/log-scan";
+import { getPrefs } from "@/lib/prefs";
+import { partsFor, speak, stopSpeaking } from "@/lib/speech";
 import { aggregateDetections } from "@/lib/scan/plan";
 import { CONFIDENT_THRESHOLD, POSSIBLE_THRESHOLD } from "@/lib/detector/models";
 import { detect, ensureDetector, retryDetector, useDetectorState } from "@/lib/detector/store";
@@ -54,6 +56,7 @@ function toView(classKey: string, confidence?: number): ResultView | null {
     ? {
         classKey,
         name: item.name,
+        nameFil: item.nameFil,
         category: item.category,
         instruction: item.instruction,
         confidence,
@@ -239,6 +242,9 @@ export function ScanScreen() {
       if (navigator.userActivation?.hasBeenActive) navigator.vibrate?.(40);
       setLocked({ view, frame });
       setLoggedScanId(null);
+      // Auto read-aloud preference (Phase 17; also what the kiosk will use in Phase 18).
+      const prefs = getPrefs();
+      if (prefs.tts_auto) speak(partsFor(view, prefs.language));
       void logScan({
         modelVersion: infoRef.current?.modelVersion ?? "unknown",
         backend: infoRef.current?.backend ?? "wasm",
@@ -249,6 +255,21 @@ export function ScanScreen() {
     },
     [],
   );
+
+  // Screen readers: move focus to the visible result heading when a result locks.
+  useEffect(() => {
+    if (!locked) return;
+    const t = window.setTimeout(() => {
+      const heading = ["sheet-heading", "result-heading"]
+        .map((id) => document.getElementById(id))
+        .find((el) => el && el.offsetParent !== null);
+      if (heading) {
+        heading.tabIndex = -1;
+        heading.focus();
+      }
+    }, 50);
+    return () => window.clearTimeout(t);
+  }, [locked]);
 
   const onLock = useCallback(
     (s: { classKey: string; confidence: number }, frame: ScanFrame) =>
@@ -262,6 +283,7 @@ export function ScanScreen() {
   });
 
   function next() {
+    stopSpeaking();
     setLocked(null);
     setUnknown(false);
     setPhotoError(null);

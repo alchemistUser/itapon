@@ -18,6 +18,7 @@ import type { Category } from "@/lib/detector/types";
 export interface ResultView {
   classKey: string;
   name: string;
+  nameFil?: string;
   category: Category;
   instruction: string;
   confidence?: number;
@@ -68,11 +69,6 @@ function UnsureNote({ item }: { item: ResultView }) {
       </Link>
     </div>
   );
-}
-
-export function speechFor(item: Pick<ResultView, "name" | "category" | "instruction">) {
-  const bin = BINS[item.category];
-  return `${item.name}. Put it in the ${bin.colorWord} bin, ${bin.name}. ${item.instruction}`;
 }
 
 /** Top bar (back + title + optional actions), corner guide frame and hint, over the camera. */
@@ -184,7 +180,7 @@ export function ResultPanel({
       <PlanLink item={item} className="self-start" />
       <BinRow active={item.category} className="mt-auto pt-4" />
       <div className="flex items-center justify-between gap-3">
-        <ReadAloudButton text={speechFor(item)} variant="outline" />
+        <ReadAloudButton item={item} variant="outline" />
         <NextScan onNext={onNext} />
       </div>
     </section>

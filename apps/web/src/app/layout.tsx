@@ -3,6 +3,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { DetectorPreloader } from "@/components/shell/detector-preloader";
+import { PrefsApplier } from "@/components/shell/prefs-applier";
 
 import "./globals.css";
 
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col">
         {children}
         <DetectorPreloader />
+        <PrefsApplier />
       </body>
     </html>
   );
