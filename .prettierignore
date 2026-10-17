@@ -1,0 +1,8 @@
+_private/
+node_modules/
+.next/
+pnpm-lock.yaml
+services/
+ml/
+supabase/migrations/
+*.md

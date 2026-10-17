@@ -1,0 +1,29 @@
+[project]
+name = "itapon-ml-api"
+version = "0.1.0"
+description = "iTapon waste detection inference API (FastAPI + Ultralytics YOLO)"
+license = "AGPL-3.0-or-later"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    # Added in Phase 8: ultralytics, torch (CPU), pillow, huggingface_hub
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "httpx>=0.27",
+    "ruff>=0.6",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

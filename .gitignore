@@ -1,0 +1,53 @@
+# --- Private coursework (team names, drafts, raw Figma exports) ---
+_private/
+
+# --- Secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Node / Next.js ---
+node_modules/
+.next/
+out/
+.vercel/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+pnpm-debug.log*
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+
+# --- ML artifacts (live on Roboflow / HF Hub, not in git) ---
+ml/data/raw/
+ml/data/images/
+ml/data/labels/
+ml/data/datasets/
+runs/
+ml/runs/
+wandb/
+*.pt
+*.onnx
+*.engine
+.ipynb_checkpoints/
+
+# --- Supabase local ---
+supabase/.branches/
+supabase/.temp/
+
+# --- OS / editors ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json

@@ -1,0 +1,35 @@
+name: Dataset task
+description: Image collection, annotation or QA batch
+labels: ["ml", "data"]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Task type
+      options: [collection, annotation, QA review, public dataset import]
+    validations:
+      required: true
+  - type: input
+    id: classes
+    attributes:
+      label: Classes (class_key from docs/spec.md §3)
+      placeholder: battery, light_bulb
+    validations:
+      required: true
+  - type: input
+    id: target
+    attributes:
+      label: Target count
+      placeholder: 150 instances
+  - type: textarea
+    id: conditions
+    attributes:
+      label: Capture conditions
+      description: Lighting, location, device, backgrounds (see the capture protocol)
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy
+      options:
+        - label: No faces, ID cards or personal info in the images
+          required: true
