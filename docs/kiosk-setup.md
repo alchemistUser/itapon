@@ -34,30 +34,24 @@ After that it runs hands-free:
 Registration links a **kiosk account** to a row in `devices`. A database trigger then tags every scan from that account with the device, its institution and `source = 'kiosk'`. The kiosk account can only read its own device row (RLS).
 
 1. **On the kiosk:** open `/account` → "Already have an account? Sign in" → enter a dedicated kiosk email (e.g. `itapon-kiosk-canteen@yourschool.edu`) → open the emailed link **on the kiosk**.
-2. **In Supabase** (Dashboard → SQL editor, or `pnpm exec supabase db query --linked`), run, replacing the values:
+2. **On the dashboard:** an institution admin opens `/admin` → **Kiosks** → **Register a kiosk**, enters that email, a name, an optional location and the left-to-right order of the physical bins. This calls `admin_register_kiosk`, which only works for admins and only for their own institution.
+3. Reload `/kiosk`. The top-left badge shows `iTapon · Canteen kiosk`, and the bin tiles follow `bin_order`.
+
+To change the bin order later, use the arrows under the kiosk on `/admin` and **Save bin order**; the kiosk picks it up on its next reload.
+
+### Making the first admin (project team, once per institution)
+
+Admins can't promote themselves (RLS). Run this in the Supabase SQL editor or with `pnpm exec supabase db query --linked`, after the admin has signed in once with email:
 
 ```sql
--- once per institution
 insert into public.institutions (name, location)
 values ('TIP Quezon City', 'Cubao, Quezon City')
 returning id;  -- copy this id
 
--- per kiosk
-with k as (select id from auth.users where email = 'itapon-kiosk-canteen@yourschool.edu')
 update public.profiles
-   set role = 'kiosk', institution_id = '<institution id>'
- where id = (select id from k);
-
-insert into public.devices (institution_id, kiosk_user_id, label, location_note, bin_order)
-select '<institution id>', id, 'Canteen kiosk', 'Ground floor, near the exit',
-       -- left-to-right order of the physical bins under the screen
-       array['biodegradable', 'recyclable', 'residual', 'hazardous']
-  from auth.users where email = 'itapon-kiosk-canteen@yourschool.edu';
+   set role = 'admin', institution_id = '<institution id>'
+ where id = (select id from auth.users where email = 'admin@yourschool.edu');
 ```
-
-3. Reload `/kiosk`. The top-left badge shows `iTapon · Canteen kiosk`, and the bin tiles follow `bin_order`.
-
-To change the bin order later, update `devices.bin_order`. Phase 19 adds an admin screen for all of this.
 
 ## 5. Daily check
 

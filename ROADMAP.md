@@ -795,13 +795,13 @@ itapon/
 
 > **Status (2026-10-17): Done and verified with a simulated camera. The 2-hour unattended run needs real hardware.** Setup guide: [`docs/kiosk-setup.md`](docs/kiosk-setup.md).
 > 1. `/kiosk` (`components/kiosk/kiosk-screen.tsx`): landscape split (camera | result), stacked in portrait, no navigation.
-> 2. **Registration:** a dedicated kiosk account (magic-link sign-in on the device) + a `devices` row (`kiosk_user_id`), SQL in the setup guide. The existing trigger tags its scans. **Verified:** a registered test device showed "iTapon · QA kiosk", used its `bin_order`, and its scan was stored with `source = kiosk`, device and institution (test rows removed afterwards). The admin UI for this is Phase 19.
+> 2. **Registration:** a dedicated kiosk account (magic-link sign-in on the device) + a `devices` row (`kiosk_user_id`), SQL in the setup guide. The existing trigger tags its scans. **Verified:** a registered test device showed "iTapon · QA kiosk", used its `bin_order`, and its scan was stored with `source = kiosk`, device and institution (test rows removed afterwards). The admin UI for this came in Phase 19.
 > 3. **Hands-free:** a one-time staff tap on **Start kiosk** (fullscreen + sound + wake lock, which browsers require a gesture for), then continuous scanning → lock → auto read-aloud → result for 6 s with a countdown bar → auto-reset. **Duplicate guard:** the same item must leave the frame before it can lock and log again (found during testing: a held item would otherwise log every ~7 s). `useScanLoop` can now refuse a lock.
 > 4. **Idle/attract:** after 40 s with nothing in view, "Hold your trash up to the camera", with **the detector paused** and a cheap 32×24 frame-difference motion check to wake. Verified: idle at 41 s, woke 0.25 s after motion.
 > 5. Fullscreen API + **Screen Wake Lock** (re-acquired on visibility). OS lock-down steps (Guided Access, App pinning, Chrome kiosk) are in the guide.
 > 6. **Resilience:** warming-up overlay, "Scanner offline. Please use the bin labels." + Retry, camera-unavailable screen, offline badge (scanning continues offline; logs are dropped until the Phase 21 queue).
 > 7. **External webcam:** a camera picker in ⚙ Kiosk settings (`deviceId: exact`, remembered per device). Verified with a simulated "USB webcam".
-> 8. **Bin layout:** tiles and the bin row follow `devices.bin_order`. Editing it in an admin UI is Phase 19.
+> 8. **Bin layout:** tiles and the bin row follow `devices.bin_order`. Editing it on `/admin` came in Phase 19.
 
 **Goal:** Deliver the institutional deployment from the proposal (*"a tablet or monitor connected to a webcam placed above standard waste bins"*) as a hands-free experience.
 
@@ -824,6 +824,14 @@ itapon/
 ---
 
 ## Phase 19: Institutional analytics dashboard
+
+> **Status (2026-10-17): Done and verified on demo data.** The content editor (task 6, optional) is deferred.
+> 1. **`/admin`** (`components/admin/admin-dashboard.tsx`, noindex). The page shows "Admins only" unless the profile has `role = 'admin'` and an institution; the data itself is protected by RLS (admins read only their own institution's scans and devices). With no server session (Phase 16 note 2), the gate is client-side and RLS is the real check.
+> 2. **Widgets:** KPI tiles (scans and items, today, active kiosks in 24 h, hazardous items, average confidence); stacked daily bars by bin with a table view; share by bin and top 10 items (labelled bars); weekday × hour heatmap (sequential blue); per-device table; **model health** as two single-axis lines (average confidence, low-confidence rate). The feedback "wrong" rate waits for Phase 20.
+> 3. **Charts:** Recharts, following the dataviz rules: fixed bin colours (residual drawn in slate #475569; it fails the chroma floor by design, so a legend, labels and the table view carry identity), 2 px gaps between stacked segments, no dual axes, hover tooltips. Aggregation is pure and tested (`lib/analytics.ts`, Asia/Manila days, 7 tests) and runs in the browser on up to 20,000 scans (a warning shows past that).
+> 4. **Filters** in one row: last 7/30/90 days, device, bin. **CSV export** of the filtered scans (one row per item).
+> 5. **Kiosks panel:** register a kiosk by email (`admin_register_kiosk`, SECURITY DEFINER, admin and own institution only; rejects admin or already-linked accounts) and reorder each kiosk's bins. Admin and kiosk setup is in `docs/kiosk-setup.md`.
+> 6. **Verified:** `supabase/demo/demo_institution.sql` loaded a labelled demo campus (3 kiosks, 30 days, 1,177 scans). Dashboard totals matched SQL: 1,177 scans, 9 today, 231 hazardous items, 56% average confidence. Device and bin filters worked, there was no horizontal scroll at 375 px, and after `demo_cleanup.sql` the same account got "Admins only". RLS isolation of other users' scans is covered by `supabase/tests/rls-check.mjs`.
 
 **Goal:** Fulfill proposal Expected Output #3: *"records the types and frequencies of waste disposed of, providing institutions with valuable analytics."*
 
