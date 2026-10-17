@@ -37,7 +37,14 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export function useScanLoop(
   videoRef: RefObject<HTMLVideoElement | null>,
-  { enabled, onLock }: { enabled: boolean; onLock?: (s: Stability, frame: ScanFrame) => void },
+  {
+    enabled,
+    onLock,
+  }: {
+    enabled: boolean;
+    /** Return false to refuse the lock and keep scanning (e.g. kiosk duplicate guard). */
+    onLock?: (s: Stability, frame: ScanFrame) => boolean | void;
+  },
 ) {
   const [state, setState] = useState<ScanLoopState>(INITIAL);
   const onLockRef = useRef(onLock);
@@ -77,8 +84,10 @@ export function useScanLoop(
             times.length > 1 ? ((times.length - 1) * 1000) / (times.at(-1)! - times[0]) : 0;
           setState({ frame, stability, fps: Math.round(fps * 10) / 10, error: null });
           if (stability.status === "locked") {
-            onLockRef.current?.(stability, frame);
-            return; // parent shows the result; it re-enables the loop for the next scan
+            if (onLockRef.current?.(stability, frame) !== false) {
+              return; // parent shows the result; it re-enables the loop for the next scan
+            }
+            history.length = 0; // refused: start counting afresh
           }
         } catch (e) {
           if (cancelled) return;

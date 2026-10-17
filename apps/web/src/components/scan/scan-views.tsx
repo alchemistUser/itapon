@@ -152,10 +152,14 @@ function NextScan({ onNext }: { onNext?: () => void }) {
 export function ResultPanel({
   item,
   onNext,
+  binOrder,
+  hidePlanLink = false,
   className,
 }: {
   item: ResultView;
   onNext?: () => void;
+  binOrder?: Category[];
+  hidePlanLink?: boolean;
   className?: string;
 }) {
   const bin = BINS[item.category];
@@ -177,8 +181,8 @@ export function ResultPanel({
       </div>
       <Instruction text={item.instruction} category={item.category} className="text-xl text-ink" />
       {isUnsure(item) ? <UnsureNote item={item} /> : null}
-      <PlanLink item={item} className="self-start" />
-      <BinRow active={item.category} className="mt-auto pt-4" />
+      {hidePlanLink ? null : <PlanLink item={item} className="self-start" />}
+      <BinRow active={item.category} order={binOrder} className="mt-auto pt-4" />
       <div className="flex items-center justify-between gap-3">
         <ReadAloudButton item={item} variant="outline" />
         <NextScan onNext={onNext} />

@@ -793,6 +793,16 @@ itapon/
 
 ## Phase 18: Kiosk mode (tablet / monitor above bins)
 
+> **Status (2026-10-17): Done and verified with a simulated camera. The 2-hour unattended run needs real hardware.** Setup guide: [`docs/kiosk-setup.md`](docs/kiosk-setup.md).
+> 1. `/kiosk` (`components/kiosk/kiosk-screen.tsx`): landscape split (camera | result), stacked in portrait, no navigation.
+> 2. **Registration:** a dedicated kiosk account (magic-link sign-in on the device) + a `devices` row (`kiosk_user_id`), SQL in the setup guide. The existing trigger tags its scans. **Verified:** a registered test device showed "iTapon · QA kiosk", used its `bin_order`, and its scan was stored with `source = kiosk`, device and institution (test rows removed afterwards). The admin UI for this is Phase 19.
+> 3. **Hands-free:** a one-time staff tap on **Start kiosk** (fullscreen + sound + wake lock, which browsers require a gesture for), then continuous scanning → lock → auto read-aloud → result for 6 s with a countdown bar → auto-reset. **Duplicate guard:** the same item must leave the frame before it can lock and log again (found during testing: a held item would otherwise log every ~7 s). `useScanLoop` can now refuse a lock.
+> 4. **Idle/attract:** after 40 s with nothing in view, "Hold your trash up to the camera", with **the detector paused** and a cheap 32×24 frame-difference motion check to wake. Verified: idle at 41 s, woke 0.25 s after motion.
+> 5. Fullscreen API + **Screen Wake Lock** (re-acquired on visibility). OS lock-down steps (Guided Access, App pinning, Chrome kiosk) are in the guide.
+> 6. **Resilience:** warming-up overlay, "Scanner offline. Please use the bin labels." + Retry, camera-unavailable screen, offline badge (scanning continues offline; logs are dropped until the Phase 21 queue).
+> 7. **External webcam:** a camera picker in ⚙ Kiosk settings (`deviceId: exact`, remembered per device). Verified with a simulated "USB webcam".
+> 8. **Bin layout:** tiles and the bin row follow `devices.bin_order`. Editing it in an admin UI is Phase 19.
+
 **Goal:** Deliver the institutional deployment from the proposal (*"a tablet or monitor connected to a webcam placed above standard waste bins"*) as a hands-free experience.
 
 **Why now:** It reuses the scanner, result and TTS from Phases 12, 13 and 17, and adds only kiosk behavior.

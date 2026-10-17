@@ -106,12 +106,21 @@ export function Instruction({
  * The four bin tiles with the correct one solid and arrowed (tablet/desktop result).
  * Colour is never the only signal: the active bin also gets the arrow and bold label.
  */
-export function BinRow({ active, className }: { active: Category; className?: string }) {
+export function BinRow({
+  active,
+  order = BIN_ORDER,
+  className,
+}: {
+  active: Category;
+  /** Physical bin order under a kiosk (devices.bin_order); defaults to the Figma order. */
+  order?: Category[];
+  className?: string;
+}) {
   return (
     <div className={cn("w-full", className)}>
       <p className="sr-only">Correct bin: {BINS[active].name}</p>
       <ul className="grid grid-cols-4 gap-2 sm:gap-3" aria-hidden>
-        {BIN_ORDER.map((key) => {
+        {order.map((key) => {
           const on = key === active;
           return (
             <li key={key} className="flex flex-col items-center gap-1.5">

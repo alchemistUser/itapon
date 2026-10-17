@@ -19,13 +19,27 @@ interface TorchCapabilities extends MediaTrackCapabilities {
   torch?: boolean;
 }
 
-export function useCamera(videoRef: RefObject<HTMLVideoElement | null>) {
+export interface CameraDevice {
+  deviceId: string;
+  label: string;
+}
+
+/**
+ * @param opts.deviceId use this exact camera (kiosks with an external webcam, Phase 18);
+ *   otherwise the back camera (facingMode) is preferred.
+ */
+export function useCamera(
+  videoRef: RefObject<HTMLVideoElement | null>,
+  opts: { deviceId?: string | null; enabled?: boolean } = {},
+) {
+  const { deviceId = null, enabled = true } = opts;
   const [status, setStatus] = useState<CameraStatus>("starting");
   const [error, setError] = useState<string | null>(null);
   const [facing, setFacing] = useState<Facing>("environment");
   const [canSwitch, setCanSwitch] = useState(false);
   const [torchSupported, setTorchSupported] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
+  const [devices, setDevices] = useState<CameraDevice[]>([]);
   const trackRef = useRef<MediaStreamTrack | null>(null);
 
   useEffect(() => {
@@ -34,6 +48,7 @@ export function useCamera(videoRef: RefObject<HTMLVideoElement | null>) {
     const video = videoRef.current; // the element this effect run attaches the stream to
 
     async function start() {
+      if (!enabled) return;
       if (!window.isSecureContext) return setStatus("insecure");
       if (!navigator.mediaDevices?.getUserMedia) return setStatus("unavailable");
       setStatus("starting");
@@ -41,7 +56,7 @@ export function useCamera(videoRef: RefObject<HTMLVideoElement | null>) {
         stream = await navigator.mediaDevices.getUserMedia({
           audio: false,
           video: {
-            facingMode: { ideal: facing },
+            ...(deviceId ? { deviceId: { exact: deviceId } } : { facingMode: { ideal: facing } }),
             width: { ideal: 1280 },
             height: { ideal: 720 },
           },
@@ -57,7 +72,13 @@ export function useCamera(videoRef: RefObject<HTMLVideoElement | null>) {
         setTorchSupported(Boolean(caps.torch));
         setTorchOn(false);
         const devices = await navigator.mediaDevices.enumerateDevices();
-        if (!cancelled) setCanSwitch(devices.filter((d) => d.kind === "videoinput").length > 1);
+        const inputs = devices.filter((d) => d.kind === "videoinput");
+        if (!cancelled) {
+          setCanSwitch(inputs.length > 1);
+          setDevices(
+            inputs.map((d, i) => ({ deviceId: d.deviceId, label: d.label || `Camera ${i + 1}` })),
+          );
+        }
         setError(null);
         setStatus("live");
       } catch (e) {
@@ -84,7 +105,7 @@ export function useCamera(videoRef: RefObject<HTMLVideoElement | null>) {
       trackRef.current = null;
       if (video) video.srcObject = null;
     };
-  }, [facing, videoRef]);
+  }, [facing, videoRef, deviceId, enabled]);
 
   const switchCamera = useCallback(
     () => setFacing((f) => (f === "environment" ? "user" : "environment")),
@@ -103,5 +124,15 @@ export function useCamera(videoRef: RefObject<HTMLVideoElement | null>) {
     }
   }, [torchOn]);
 
-  return { status, error, facing, canSwitch, switchCamera, torchSupported, torchOn, toggleTorch };
+  return {
+    status,
+    error,
+    facing,
+    canSwitch,
+    switchCamera,
+    torchSupported,
+    torchOn,
+    toggleTorch,
+    devices,
+  };
 }
