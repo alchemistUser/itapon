@@ -11,7 +11,7 @@ import { ITEMS, type ItemContent } from "@/lib/content";
 import type { Category } from "@/lib/detector/types";
 import { getSupabase } from "@/lib/supabase/client";
 
-const STORAGE_KEY = "itapon-items-v1";
+const CACHE_SLOT = "itapon-items-v1";
 const CATEGORIES = new Set<Category>(["biodegradable", "recyclable", "residual", "hazardous"]);
 
 let items = new Map(ITEMS.map((i) => [i.classKey, i]));
@@ -27,7 +27,7 @@ function publish(next: ItemContent[], from: typeof source) {
 
 function loadCached() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(CACHE_SLOT);
     if (raw) publish(JSON.parse(raw) as ItemContent[], "cached");
   } catch {
     /* private mode / bad JSON: keep bundled */
@@ -62,7 +62,7 @@ async function refresh() {
     }));
   publish(next, "supabase");
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    localStorage.setItem(CACHE_SLOT, JSON.stringify(next));
   } catch {
     /* quota / private mode */
   }
