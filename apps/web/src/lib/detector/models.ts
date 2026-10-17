@@ -2,14 +2,18 @@
 import type { ModelSpec } from "./types";
 
 /**
- * Model files live in the Hugging Face model repo `itapon-yolo`, pinned to a revision
- * (D12). Until it is published, NEXT_PUBLIC_MODEL_BASE_URL defaults to /models, which
- * scripts/copy-models.mjs fills from services/ml-api/weights in dev.
+ * Model files live in the Hugging Face model repo `itapon-yolo`, pinned to a tag (D12),
+ * so a model update is a deliberate code change. Dev uses /models, which
+ * scripts/copy-models.mjs fills from services/ml-api/weights. NEXT_PUBLIC_MODEL_BASE_URL
+ * overrides both (e.g. to test a new tag on a preview deployment).
  */
-export const MODEL_BASE_URL = (process.env.NEXT_PUBLIC_MODEL_BASE_URL ?? "/models").replace(
-  /\/$/,
-  "",
-);
+export const PINNED_MODEL_BASE_URL =
+  "https://huggingface.co/alchemistUserhf/itapon-yolo/resolve/v0.1";
+
+export const MODEL_BASE_URL = (
+  process.env.NEXT_PUBLIC_MODEL_BASE_URL ||
+  (process.env.NODE_ENV === "development" ? "/models" : PINNED_MODEL_BASE_URL)
+).replace(/\/$/, "");
 
 export const LABELS_FILE = "itapon-world-v0.labels.json";
 
