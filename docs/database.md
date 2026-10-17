@@ -89,11 +89,11 @@ erDiagram
 
 | Table | Not signed in | Signed-in user (incl. anonymous guest) | Admin (same institution) |
 |---|---|---|---|
-| `waste_categories`, `waste_items` | read | read | read + write |
+| `waste_categories`, `waste_items` | read | read | read (writes: project team via migrations, S1) |
 | `profiles` | none | read own; update **only** `display_name`, `prefs` | read institution profiles |
 | `institutions` | none | read own | read own |
-| `devices` | none | kiosk reads own device | manage institution devices |
-| `scan_sessions`, `scan_detections` | none | insert / read / delete **own**; no updates | read institution scans |
+| `devices` | none | kiosk reads own device | read; update label/location/bin order; delete. Create only via `admin_register_kiosk` (S2) |
+| `scan_sessions`, `scan_detections` | none | insert / read / delete **own**; no updates. Kiosks: insert only (S3) | read institution scans |
 | `feedback` | none | insert (own detections, pending only) / read / delete own; no updates | read own institution's; review via `admin_review_feedback` |
 | storage `training-images` | none | upload/read/delete under `<user_id>/…` | read photos of own institution's feedback |
 
@@ -127,4 +127,5 @@ New schema changes always go in a **new** migration file (`supabase migration ne
 
 - `supabase db push`: 4 migrations + seed applied with no errors.
 - `supabase db lint`: no schema errors.
+- `supabase/tests/rls-roles.sql` (`pnpm db:rls-roles`): **59/59** role-matrix checks (anon, users, kiosk, two admins × every table), rolled back. See `docs/security.md`.
 - `supabase/tests/rls-check.mjs`: **32/32 checks passed** (2026-10-17). Public read-only content; two anonymous users can't see, add to or delete each other's scans; server-side bin; no self-promotion to admin; prefs editable; RPCs scoped by RLS; `delete_my_data` works; feedback only on your own detections, never pre-approved, photo needs consent, no review by non-admins, no uploads into another user's folder (Phase 20).

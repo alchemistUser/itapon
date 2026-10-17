@@ -69,6 +69,9 @@ export type ToWorker =
       type: "load";
       modelUrl: string;
       labelsUrl: string;
+      /** null = don't verify (dev / preview tags); "missing" = pinned file without a hash. */
+      modelSha256: string | null;
+      labelsSha256: string | null;
       model: ModelSpec;
       wasmPath: string;
       minConfidence: number;

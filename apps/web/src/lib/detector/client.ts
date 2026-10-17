@@ -3,7 +3,16 @@
 //   const d = new BrowserDetector();
 //   await d.load(progress => …);
 //   const { detections } = await d.detect(videoOrImage);
-import { DEFAULT_MODEL_ID, MIN_CONFIDENCE, MODELS, WASM_PATH, labelsUrl, modelUrl } from "./models";
+import {
+  DEFAULT_MODEL_ID,
+  LABELS_FILE,
+  MIN_CONFIDENCE,
+  MODELS,
+  WASM_PATH,
+  expectedSha256,
+  labelsUrl,
+  modelUrl,
+} from "./models";
 import type { DetectResult, FromWorker, LoadProgress, ReadyInfo, ToWorker } from "./types";
 
 type Pending = { resolve: (r: DetectResult) => void; reject: (e: Error) => void };
@@ -33,6 +42,8 @@ export class BrowserDetector {
         model,
         modelUrl: modelUrl(model),
         labelsUrl: labelsUrl(),
+        modelSha256: expectedSha256(model.file),
+        labelsSha256: expectedSha256(LABELS_FILE),
         wasmPath: WASM_PATH,
         minConfidence: MIN_CONFIDENCE,
       });

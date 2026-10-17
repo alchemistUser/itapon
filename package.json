@@ -16,7 +16,8 @@
     "format:check": "prettier --check .",
     "db:seed:build": "python supabase/scripts/build_seed.py",
     "db:push": "supabase db push --include-seed",
-    "db:rls-check": "node --experimental-websocket supabase/tests/rls-check.mjs"
+    "db:rls-check": "node --experimental-websocket supabase/tests/rls-check.mjs",
+    "db:rls-roles": "node supabase/tests/run-rls-roles.mjs"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.118.0",

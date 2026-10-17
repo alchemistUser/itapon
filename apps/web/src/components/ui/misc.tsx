@@ -49,7 +49,10 @@ export function SourceFooter({ className }: { className?: string }) {
       <a href={url} className="font-medium text-brand-strong underline" rel="noreferrer">
         View the source code
       </a>
-      .
+      {" · "}
+      <Link href="/privacy" className="font-medium text-brand-strong underline">
+        Privacy
+      </Link>
     </footer>
   );
 }

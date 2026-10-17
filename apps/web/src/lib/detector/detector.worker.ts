@@ -53,24 +53,43 @@ async function fetchWithCache(url: string, onProgress?: (loaded: number, total?:
   return { buffer: bytes.buffer, fromCache: false };
 }
 
+async function sha256Hex(data: ArrayBuffer): Promise<string> {
+  const d = new Uint8Array(await crypto.subtle.digest("SHA-256", data));
+  return Array.from(d, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/** Phase 22: refuse files that don't match the hash pinned in the app (and drop the cache copy). */
+async function verify(url: string, data: ArrayBuffer, expected: string | null) {
+  if (expected === null) return; // dev / preview tag: not pinned
+  if ((await sha256Hex(data)) === expected) return;
+  try {
+    await (await caches.open(MODEL_CACHE)).delete(url);
+  } catch {
+    /* no cache */
+  }
+  throw new Error("The scanner model failed its integrity check. Reload to download it again.");
+}
+
 /** Labels: network first (small), cached copy when offline (Phase 21). */
-async function fetchLabels(url: string): Promise<LabelsFile> {
+async function fetchLabels(url: string, sha256: string | null): Promise<LabelsFile> {
   let cache: Cache | null = null;
   try {
     cache = await caches.open(MODEL_CACHE);
   } catch {
     cache = null;
   }
+  let res: Response | undefined;
   try {
-    const res = await fetch(url);
+    res = await fetch(url);
     if (!res.ok) throw new Error(`Labels download failed (${res.status})`);
     await cache?.put(url, res.clone()).catch(() => {});
-    return (await res.json()) as LabelsFile;
   } catch (e) {
-    const hit = await cache?.match(url);
-    if (hit) return (await hit.json()) as LabelsFile;
-    throw e;
+    res = await cache?.match(url);
+    if (!res) throw e;
   }
+  const bytes = await res.arrayBuffer();
+  await verify(url, bytes, sha256);
+  return JSON.parse(new TextDecoder().decode(bytes)) as LabelsFile;
 }
 
 /** Drop cached files of other model versions/sizes once the pinned one is loaded (D12). */
@@ -95,7 +114,7 @@ async function load(msg: Extract<ToWorker, { type: "load" }>) {
   const threads = self.crossOriginIsolated ? Math.min(4, navigator.hardwareConcurrency || 1) : 1;
   ort.env.wasm.numThreads = threads;
 
-  const labelsFile = await fetchLabels(msg.labelsUrl);
+  const labelsFile = await fetchLabels(msg.labelsUrl, msg.labelsSha256);
   labels = labelsFile.labels;
 
   const { buffer, fromCache } = await fetchWithCache(msg.modelUrl, (loaded, total) =>
@@ -105,6 +124,7 @@ async function load(msg: Extract<ToWorker, { type: "load" }>) {
     }),
   );
 
+  await verify(msg.modelUrl, buffer, msg.modelSha256);
   const tFetched = performance.now();
   post({ type: "progress", progress: { phase: "init" } });
   session = await ort.InferenceSession.create(new Uint8Array(buffer), {

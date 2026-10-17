@@ -28,6 +28,10 @@ from app.schemas import (
 log = logging.getLogger("itapon.api")
 
 ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
+# Phase 22: a few KB of PNG can declare a gigapixel image ("decompression bomb"). Phone
+# photos are ≤ ~50 MP; refuse anything bigger before decoding a single pixel.
+MAX_PIXELS = 50_000_000
+Image.MAX_IMAGE_PIXELS = MAX_PIXELS
 
 
 def create_app(
@@ -104,9 +108,13 @@ def create_app(
             raise HTTPException(413, f"Image larger than {cfg.max_upload_bytes // 1024} KB.")
 
         try:
-            img = Image.open(io.BytesIO(data))
+            img = Image.open(io.BytesIO(data))  # lazy: reads the header only
+            if img.width * img.height > MAX_PIXELS:
+                raise HTTPException(413, "Image dimensions are too large.")
             img = ImageOps.exif_transpose(img).convert("RGB")  # phone photos carry rotation
-        except (UnidentifiedImageError, OSError) as exc:
+        except Image.DecompressionBombError as exc:
+            raise HTTPException(413, "Image dimensions are too large.") from exc
+        except (UnidentifiedImageError, OSError, SyntaxError) as exc:
             raise HTTPException(400, "File is not a readable image.") from exc
         img.thumbnail((cfg.image_size, cfg.image_size))  # cap work for oversized uploads
 

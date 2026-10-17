@@ -921,6 +921,17 @@ itapon/
 
 ## Phase 22: Security, privacy & compliance hardening
 
+> **Status (2026-10-18): Done. 7 findings were fixed and verified, with 0 high/critical left open. Sign-off and three repo secrets need the team.** Checklist and findings: [`docs/security.md`](docs/security.md).
+> 1. **RLS audit:** a new role matrix, `supabase/tests/rls-roles.sql` (`pnpm db:rls-roles`). It covers anon, two users, a kiosk and two admins of different institutions against every table in one rolled-back transaction: **59/59**. A mutation test (reverting S1/S2) makes it fail, as it should. **Fixed:** S1 institution admins could edit the global Bin Guide; S2 admins could relink a kiosk to any user and read that person's scans; S3 a stolen kiosk session could read/delete its history (kiosks are now insert-only). Migration `20261018120000_security_hardening.sql`. The anon-key suite (`rls-check.mjs`) is still 32/32.
+> 2. **Secrets:** gitleaks over full history is clean. Only the `anon` key is in the client bundle. The service-role key is used only by maintainer scripts and GitHub secrets.
+> 3. **Model integrity:** SHA-256 of each pinned v0.1 file is committed (`PINNED_SHA256`, equal to HF's X-Linked-ETag). The worker verifies cached and downloaded bytes before use and deletes a bad copy. Verified: one flipped byte → "failed its integrity check"; a clean reload re-downloads. Finding S4 came up during this test: the service worker served the previous build's worker bootstrap (Turbopack keeps its name and puts the chunk list in the URL fragment). Static assets are now network-first, cache offline.
+> 4. **Headers (production):** CSP (`'self'` plus Supabase and the HF CDN; `'wasm-unsafe-eval'`; `'unsafe-inline'` scripts accepted because RSC uses inline scripts and pages are prerendered), HSTS, nosniff, `X-Frame-Options: DENY`, Referrer-Policy, Permissions-Policy (`camera=(self)`). No CSP violations on Home, Scan, Guide or Privacy. A fresh model download passes `connect-src`.
+> 5. **RA 10173:** `/privacy` notice (what/why/who/retention/rights/NPC), linked from the footer, the photo-consent box and Delete my data. Photo consent stays separate and unticked per photo. No images by default. **Retention:** shared photos are deleted after 12 months (`scripts/purge_feedback_photos.py`, monthly `Retention` workflow once secrets exist).
+> 6. **Dependencies:** Dependabot (npm, uv, actions). The CI `Dependency audit` job runs `pnpm audit --prod --audit-level high` and `pip-audit`, both 0 advisories. Five dev-only advisories (Vitest 3/tinypool, braces) are accepted; the fix is Node 22 LTS (Node 20 is EOL), tracked in open items.
+> 7. **Abuse:** reference API decompression-bomb guard (50 MP, checked before decoding → 413) and `tests/test_abuse.py` (malformed, truncated, random, oversized, wrong type, 40 random mutations: never a 500). Kiosk tokens are scoped to insert-only (S3).
+> 8. **Also fixed:** S7 RPC "today" used the UTC date (00:00–08:00 Manila missed new scans).
+> 9. **Needs the team:** the `SUPABASE_ACCESS_TOKEN` secret + `SUPABASE_PROJECT_REF` variable (CI RLS matrix, currently skipped with a warning); `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` secrets (retention job); a privacy contact email; sign-off.
+
 **Goal:** Protect users, institutions and the infrastructure before real people use the app.
 
 **Why now:** Auth, storage, admin and feedback image features now exist, and each one adds attack surface.

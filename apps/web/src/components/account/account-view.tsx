@@ -304,7 +304,11 @@ export function AccountView() {
         ) : confirmDelete ? (
           <div className="flex flex-col gap-2 rounded-tile bg-bin-red-tint p-3">
             <p className="text-sm text-ink">
-              Delete all your scans, feedback and shared photos? This can&apos;t be undone.
+              Delete all your scans, feedback and shared photos? This can&apos;t be undone. See the{" "}
+              <a href="/privacy" className="underline">
+                privacy notice
+              </a>{" "}
+              for what is kept.
             </p>
             <div className="flex gap-2">
               <Button className="bg-[#c4282d] hover:bg-[#a51f24]" onClick={() => void onDelete()}>

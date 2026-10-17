@@ -17,6 +17,24 @@ export const MODEL_BASE_URL = (
 
 export const LABELS_FILE = "itapon-world-v0.labels.json";
 
+/**
+ * SHA-256 of every file published under PINNED_MODEL_BASE_URL (Phase 22, D12 integrity).
+ * The worker refuses a model or labels file whose bytes don't match, cached or downloaded.
+ * Update together with the tag: `sha256sum` the files (HF's X-Linked-ETag is the same value).
+ */
+export const PINNED_SHA256: Record<string, string> = {
+  "itapon-world-v0-480-int8.onnx":
+    "0b89da2d8a5d39d40d1f5e766de78fc00b24bc03e2a802fb55c5e663bc4dba82",
+  "itapon-world-v0-640-int8.onnx":
+    "293b9de1ff86e5cce9a06bbd79dd7831005cd4c6c1811b96498b1cab2e65c6d4",
+  [LABELS_FILE]: "c34762c48a51802aed474de726447b38d9368f4362ba918c6605add16d468283",
+};
+
+/** Expected hash for a file, or null when not loading from the pinned tag (dev, previews). */
+export function expectedSha256(file: string): string | null {
+  return MODEL_BASE_URL === PINNED_MODEL_BASE_URL ? (PINNED_SHA256[file] ?? "missing") : null;
+}
+
 export const MODELS: Record<string, ModelSpec> = {
   "int8-640": { id: "int8-640", file: "itapon-world-v0-640-int8.onnx", imgsz: 640, approxMB: 13 },
   "int8-480": { id: "int8-480", file: "itapon-world-v0-480-int8.onnx", imgsz: 480, approxMB: 13 },

@@ -184,7 +184,11 @@ export function FeedbackPrompt({
           <span>
             Share this photo anonymously to help improve iTapon.{" "}
             <span className="text-xs text-ink-3">
-              Only the photo and your answer are sent. Delete them any time in Account.
+              Only the photo and your answer are sent, and the photo is deleted after 12 months.
+              Delete them any time in Account.{" "}
+              <a href="/privacy" target="_blank" className="underline">
+                Privacy
+              </a>
             </span>
           </span>
         </label>

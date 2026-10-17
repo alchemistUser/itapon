@@ -13,6 +13,7 @@ import { flushScanLogs } from "@/lib/scan/log-scan";
 const OFFLINE_PAGES = [
   "/",
   "/offline",
+  "/privacy",
   "/guide",
   ...BIN_ORDER.map((c) => `/guide/${c}`),
   "/scan",

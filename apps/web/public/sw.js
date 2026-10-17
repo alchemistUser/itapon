@@ -2,8 +2,11 @@
 // iTapon service worker (Phase 21). Hand-written (no build plugin) so it stays small and
 // explicit:
 //   - pages:        network first (fresh when online), cached copy offline, else /offline
-//   - /_next/static: cache first (content-hashed, immutable)
-//   - /ort/*:        cache first (ONNX Runtime WASM, needed to scan offline)
+//   - /_next/static, /ort/*: network first, cached copy offline. Not cache first: Turbopack's
+//     worker bootstrap keeps its name across builds and reads its chunk list from the URL
+//     fragment, and a worker's location comes from the response URL, so a cached copy
+//     would start the previous build's worker (found in Phase 22). Online this is still
+//     cheap: these files are "immutable" in the browser's HTTP cache.
 //   - other same-origin GETs: stale-while-revalidate
 // The model itself is cached by the detector worker (itapon-models-v1, D12), not here.
 // Cross-origin requests (Supabase, Hugging Face) pass straight through.
@@ -11,8 +14,8 @@
 // (Bin Guide, scanner, item pages) plus the scripts and styles they reference.
 
 const PAGES = "itapon-pages-v1";
-const STATIC = "itapon-static-v1";
-const RUNTIME = "itapon-runtime-v1";
+const STATIC = "itapon-static-v2"; // v2: drops v1's stale worker bootstrap entries
+const RUNTIME = "itapon-runtime-v2";
 const KEEP = [PAGES, STATIC, RUNTIME, "itapon-models-v1"];
 const MAX_STATIC = 800; // old deploys' chunks are trimmed oldest-first beyond this
 
@@ -55,13 +58,17 @@ async function networkFirstPage(req) {
   }
 }
 
-async function cacheFirst(req, cacheName) {
+async function networkFirst(req, cacheName) {
   const cache = await caches.open(cacheName);
-  const hit = await cache.match(req);
-  if (hit) return hit;
-  const res = await fetch(req);
-  if (res.ok && res.type === "basic") await cache.put(req, res.clone());
-  return res;
+  try {
+    const res = await fetch(req);
+    if (res.ok && res.type === "basic") await cache.put(req, res.clone());
+    return res;
+  } catch (e) {
+    const hit = await cache.match(req);
+    if (hit) return hit;
+    throw e;
+  }
 }
 
 async function staleWhileRevalidate(req) {
@@ -86,10 +93,8 @@ self.addEventListener("fetch", (event) => {
   // a full navigation, which the page handler below serves from the cache.
   if (req.headers.get("RSC") || url.searchParams.has("_rsc")) return;
 
-  if (url.pathname.startsWith("/_next/static/")) {
-    event.respondWith(cacheFirst(req, STATIC));
-  } else if (url.pathname.startsWith("/ort/")) {
-    event.respondWith(cacheFirst(req, STATIC));
+  if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/ort/")) {
+    event.respondWith(networkFirst(req, STATIC));
   } else if (isPage(req)) {
     event.respondWith(networkFirstPage(req));
   } else if (!url.pathname.startsWith("/models/")) {
