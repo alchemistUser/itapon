@@ -57,7 +57,7 @@ jobs:
         working-directory: services/ml-api
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.12"
       - run: uv sync --locked
@@ -93,7 +93,7 @@ jobs:
           node-version: 20
       # Gate on what ships to users; dev-tool advisories are reviewed in docs/security.md.
       - run: pnpm audit --prod --audit-level high
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.12"
       - name: pip-audit (ML API runtime deps)
