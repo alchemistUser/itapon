@@ -15,12 +15,14 @@ const CACHE_SLOT = "itapon-items-v1";
 const CATEGORIES = new Set<Category>(["biodegradable", "recyclable", "residual", "hazardous"]);
 
 let items = new Map(ITEMS.map((i) => [i.classKey, i]));
+let itemList: ItemContent[] = ITEMS; // stable snapshot for useItems()
 let source: "bundled" | "cached" | "supabase" = "bundled";
 let started = false;
 const listeners = new Set<() => void>();
 
 function publish(next: ItemContent[], from: typeof source) {
   items = new Map([...items, ...next.map((i) => [i.classKey, i] as const)]);
+  itemList = [...items.values()];
   source = from;
   for (const l of listeners) l();
 }
@@ -92,5 +94,14 @@ export function useContentSource() {
     subscribe,
     () => source,
     () => "bundled" as const,
+  );
+}
+
+/** All items (bundled first, then refreshed from Supabase). */
+export function useItems(): ItemContent[] {
+  return useSyncExternalStore(
+    subscribe,
+    () => itemList,
+    () => ITEMS,
   );
 }

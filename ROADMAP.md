@@ -699,6 +699,13 @@ itapon/
 
 ## Phase 15: Bin Guide
 
+> **Status (2026-10-17): Done.**
+> 1. `/guide`: the four bin cards now link to their pages with item counts. The Phase 11 static page and its CTA stay.
+> 2. **Search** (`lib/search.ts`, Fuse.js, threshold 0.3) over English names, Filipino names and aliases, using the live content store (bundled → Supabase). Results show the item, bin and instruction and link to `/guide/<bin>#<item>`, with a "No match" state. **Unit-tested:** straw → Residual, battery → Hazardous, saging / balat ng saging → Banana peel (Biodegradable), upos → Cigarette butt, typo "batery" → Battery, milktea → Plastic cup, styro → Styrofoam, and no near-miss padding.
+> 3. **Category pages** `/guide/[category]` (4, statically generated): every item in the bin (the scannable ones first, marked "iTapon can scan this", then Bin-Guide-only), with instruction (bin highlighted), reuse tip, contamination note, Filipino name, and a per-item anchor highlighted from the URL hash.
+> 4. Low-confidence results now link straight to the guessed item's entry.
+> 5. **Static:** `/guide` and all 4 category pages are prerendered at build time. **Lighthouse (mobile, production): SEO 100, Accessibility 100, Best Practices 100, Performance 95–97.**
+
 **Goal:** A searchable, educational reference that is the "ground truth" behind the model's decisions (Lab 5.1 Figure 2).
 
 **Why now:** It depends only on the seeded content (Phase 10) and the components (Phase 11), so it is a good parallel task for a second frontend dev.

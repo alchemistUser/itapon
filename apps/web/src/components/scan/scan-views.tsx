@@ -60,7 +60,10 @@ function UnsureNote({ item }: { item: ResultView }) {
           .
         </p>
       ) : null}
-      <Link href="/guide" className="mt-1 inline-block font-medium text-brand-strong underline">
+      <Link
+        href={`/guide/${item.category}#${item.classKey}`}
+        className="mt-1 inline-block font-medium text-brand-strong underline"
+      >
         Check the Bin Guide
       </Link>
     </div>
