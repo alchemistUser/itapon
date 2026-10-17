@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from "react";
 
-import type { AnalyticsScan } from "@/lib/analytics";
+import type { AnalyticsScan, FeedbackRow } from "@/lib/analytics";
 import type { Category } from "@/lib/detector/types";
 import { getSupabase } from "@/lib/supabase/client";
 
@@ -69,7 +69,7 @@ export async function fetchInstitutionScans(
     const { data, error } = await sb
       .from("scan_sessions")
       .select(
-        "id, created_at, device_id, source, scan_detections(class_key, category_key, confidence, is_primary)",
+        "id, created_at, device_id, source, model_version, scan_detections(class_key, category_key, confidence, is_primary)",
       )
       .not("institution_id", "is", null)
       .gte("created_at", from)
@@ -83,6 +83,7 @@ export async function fetchInstitutionScans(
         createdAt: r.created_at,
         deviceId: r.device_id,
         source: r.source,
+        modelVersion: r.model_version,
         detections: (r.scan_detections ?? []).map((d) => ({
           classKey: d.class_key,
           category: d.category_key as Category,
@@ -145,5 +146,73 @@ export async function updateDevice(
   const sb = getSupabase();
   if (!sb) return { error: "Not available" };
   const { error } = await sb.from("devices").update(patch).eq("id", id);
+  return error ? { error: error.message } : {};
+}
+
+/** Feedback on the institution's scans (RLS: admins see only their own institution's). */
+export async function fetchInstitutionFeedback(
+  fromDay: string,
+  toDay: string,
+): Promise<FeedbackRow[]> {
+  const sb = getSupabase();
+  if (!sb) return [];
+  const from = new Date(`${fromDay}T00:00:00+08:00`).toISOString();
+  const to = new Date(`${toDay}T23:59:59.999+08:00`).toISOString();
+  const out: FeedbackRow[] = [];
+  for (let offset = 0; offset < MAX_ROWS; offset += PAGE) {
+    const { data, error } = await sb
+      .from("feedback")
+      .select(
+        "id, created_at, is_correct, corrected_class_key, model_version, image_path, review_status, reviewed_class_key, scan_detections!inner(class_key, category_key, scan_sessions!inner(device_id, institution_id))",
+      )
+      .not("scan_detections.scan_sessions.institution_id", "is", null)
+      .gte("created_at", from)
+      .lte("created_at", to)
+      .order("created_at", { ascending: false })
+      .range(offset, offset + PAGE - 1);
+    if (error) throw error;
+    for (const r of data ?? []) {
+      const det = r.scan_detections;
+      out.push({
+        id: r.id,
+        createdAt: r.created_at,
+        deviceId: det.scan_sessions.device_id,
+        predictedClassKey: det.class_key,
+        predictedCategory: det.category_key as Category,
+        isCorrect: r.is_correct,
+        correctedClassKey: r.corrected_class_key,
+        modelVersion: r.model_version,
+        imagePath: r.image_path,
+        reviewStatus: r.review_status as FeedbackRow["reviewStatus"],
+        reviewedClassKey: r.reviewed_class_key,
+      });
+    }
+    if ((data ?? []).length < PAGE) break;
+  }
+  return out;
+}
+
+/** Short-lived links to shared feedback photos (private bucket). */
+export async function signedPhotoUrls(paths: string[]): Promise<Record<string, string>> {
+  const sb = getSupabase();
+  if (!sb || !paths.length) return {};
+  const { data } = await sb.storage.from("training-images").createSignedUrls(paths, 600);
+  const out: Record<string, string> = {};
+  for (const d of data ?? []) if (d.path && d.signedUrl) out[d.path] = d.signedUrl;
+  return out;
+}
+
+export async function reviewFeedback(
+  id: string,
+  status: FeedbackRow["reviewStatus"],
+  classKey: string | null,
+): Promise<{ error?: string }> {
+  const sb = getSupabase();
+  if (!sb) return { error: "Not available" };
+  const { error } = await sb.rpc("admin_review_feedback", {
+    p_id: id,
+    p_status: status,
+    p_class_key: classKey ?? undefined,
+  });
   return error ? { error: error.message } : {};
 }

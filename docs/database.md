@@ -78,6 +78,8 @@ erDiagram
     text corrected_class_key FK
     text image_path "only with consent"
     bool consent
+    text review_status "pending|approved|rejected"
+    text reviewed_class_key FK
   }
 ```
 
@@ -92,8 +94,8 @@ erDiagram
 | `institutions` | none | read own | read own |
 | `devices` | none | kiosk reads own device | manage institution devices |
 | `scan_sessions`, `scan_detections` | none | insert / read / delete **own**; no updates | read institution scans |
-| `feedback` | none | insert / read / delete own; no updates | read all |
-| storage `training-images` | none | upload/read/delete under `<user_id>/…` | read |
+| `feedback` | none | insert (own detections, pending only) / read / delete own; no updates | read own institution's; review via `admin_review_feedback` |
+| storage `training-images` | none | upload/read/delete under `<user_id>/…` | read photos of own institution's feedback |
 
 Server-side rules that clients can't bypass:
 - **Bins come from the database.** A trigger sets `scan_detections.category_key` from `waste_items`, whatever the client sends. An unknown `class_key` is rejected.
@@ -125,4 +127,4 @@ New schema changes always go in a **new** migration file (`supabase migration ne
 
 - `supabase db push`: 4 migrations + seed applied with no errors.
 - `supabase db lint`: no schema errors.
-- `supabase/tests/rls-check.mjs`: **23/23 checks passed**. Public read-only content; two anonymous users can't see, add to or delete each other's scans; server-side bin; no self-promotion to admin; prefs editable; RPCs scoped by RLS; `delete_my_data` works.
+- `supabase/tests/rls-check.mjs`: **32/32 checks passed** (2026-10-17). Public read-only content; two anonymous users can't see, add to or delete each other's scans; server-side bin; no self-promotion to admin; prefs editable; RPCs scoped by RLS; `delete_my_data` works; feedback only on your own detections, never pre-approved, photo needs consent, no review by non-admins, no uploads into another user's folder (Phase 20).

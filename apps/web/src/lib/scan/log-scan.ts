@@ -18,8 +18,13 @@ export interface ScanLogInput {
   detections: Detection[];
 }
 
-/** Returns the new scan id, or null if logging is unavailable. Never throws. */
-export async function logScan(input: ScanLogInput): Promise<string | null> {
+export interface LoggedScan {
+  scanId: string;
+  primaryDetectionId: string | null; // what "Was this right?" (Phase 20) attaches to
+}
+
+/** Returns the new scan, or null if logging is unavailable. Never throws. */
+export async function logScan(input: ScanLogInput): Promise<LoggedScan | null> {
   const sb = getSupabase();
   if (!sb) return null;
   try {
@@ -59,11 +64,16 @@ export async function logScan(input: ScanLogInput): Promise<string | null> {
         bbox: { ...d.bbox },
         is_primary: d.class_key === input.primaryClassKey,
       }));
+    let primaryDetectionId: string | null = null;
     if (rows.length) {
-      const { error: detError } = await sb.from("scan_detections").insert(rows);
+      const { data: inserted, error: detError } = await sb
+        .from("scan_detections")
+        .insert(rows)
+        .select("id, is_primary");
       if (detError) throw detError;
+      primaryDetectionId = inserted?.find((d) => d.is_primary)?.id ?? null;
     }
-    return session.id;
+    return { scanId: session.id, primaryDetectionId };
   } catch (e) {
     console.warn("[itapon] Could not log scan (it still works offline).", e);
     return null;

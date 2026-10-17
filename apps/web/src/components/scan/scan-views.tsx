@@ -154,12 +154,15 @@ export function ResultPanel({
   onNext,
   binOrder,
   hidePlanLink = false,
+  feedback,
   className,
 }: {
   item: ResultView;
   onNext?: () => void;
   binOrder?: Category[];
   hidePlanLink?: boolean;
+  /** "Was this right?" slot (Phase 20). */
+  feedback?: ReactNode;
   className?: string;
 }) {
   const bin = BINS[item.category];
@@ -182,6 +185,7 @@ export function ResultPanel({
       <Instruction text={item.instruction} category={item.category} className="text-xl text-ink" />
       {isUnsure(item) ? <UnsureNote item={item} /> : null}
       {hidePlanLink ? null : <PlanLink item={item} className="self-start" />}
+      {feedback}
       <BinRow active={item.category} order={binOrder} className="mt-auto pt-4" />
       <div className="flex items-center justify-between gap-3">
         <ReadAloudButton item={item} variant="outline" />
@@ -192,7 +196,15 @@ export function ResultPanel({
 }
 
 /** Phone bottom sheet under the camera (Figma "Home Screen"), for a locked result. */
-export function ResultSheet({ item, onNext }: { item: ResultView; onNext?: () => void }) {
+export function ResultSheet({
+  item,
+  onNext,
+  feedback,
+}: {
+  item: ResultView;
+  onNext?: () => void;
+  feedback?: ReactNode;
+}) {
   const bin = BINS[item.category];
   return (
     <SheetShell labelledBy="sheet-heading">
@@ -217,6 +229,7 @@ export function ResultSheet({ item, onNext }: { item: ResultView; onNext?: () =>
         </div>
       ) : null}
       <PlanLink item={item} className="mt-4 w-full" />
+      {feedback ? <div className="mt-4">{feedback}</div> : null}
       <div className="mt-4 mb-3 grid grid-cols-[auto_1fr] gap-3">
         {onNext ? (
           <Button variant="outline" onClick={onNext}>

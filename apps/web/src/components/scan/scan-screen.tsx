@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { BinTile } from "@/components/bins/bins";
+import { FeedbackPrompt } from "@/components/scan/feedback-prompt";
 import {
   CameraChrome,
   ResultPanel,
@@ -22,7 +23,8 @@ import { BINS } from "@/lib/bins";
 import { cn } from "@/lib/cn";
 import { getItemLive as getItem, useContentSource } from "@/lib/content-store";
 import { saveLastScan } from "@/lib/scan/last-scan";
-import { logScan } from "@/lib/scan/log-scan";
+import { logScan, type LoggedScan } from "@/lib/scan/log-scan";
+import { captureFrame } from "@/lib/feedback";
 import { getPrefs } from "@/lib/prefs";
 import { partsFor, speak, stopSpeaking } from "@/lib/speech";
 import { aggregateDetections } from "@/lib/scan/plan";
@@ -200,7 +202,10 @@ export function ScanScreen() {
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [photoBusy, setPhotoBusy] = useState(false);
   const [unknown, setUnknown] = useState(false);
-  const [loggedScanId, setLoggedScanId] = useState<string | null>(null);
+  const [logged, setLogged] = useState<LoggedScan | null>(null);
+  // Locked frame for an opt-in feedback photo (Phase 20); stays on the device unless shared.
+  const [frameBlob, setFrameBlob] = useState<Blob | null>(null);
+  const lockSeq = useRef(0); // ignores late results from a previous lock
   useContentSource(); // re-render when fresher item copy arrives from Supabase
 
   useEffect(() => ensureDetector(), []);
@@ -241,7 +246,12 @@ export function ScanScreen() {
       // Browsers ignore (and log) vibrate() before the user has interacted with the page.
       if (navigator.userActivation?.hasBeenActive) navigator.vibrate?.(40);
       setLocked({ view, frame });
-      setLoggedScanId(null);
+      setLogged(null);
+      setFrameBlob(null);
+      const seq = ++lockSeq.current;
+      void captureFrame(source, frame.width, frame.height).then(
+        (b) => seq === lockSeq.current && setFrameBlob(b),
+      );
       // Auto read-aloud preference (Phase 17; also what the kiosk will use in Phase 18).
       const prefs = getPrefs();
       if (prefs.tts_auto) speak(partsFor(view, prefs.language));
@@ -251,7 +261,7 @@ export function ScanScreen() {
         latencyMs: performance.now() - scanStartRef.current,
         primaryClassKey: classKey,
         detections: frame.detections,
-      }).then(setLoggedScanId);
+      }).then((r) => seq === lockSeq.current && setLogged(r));
     },
     [],
   );
@@ -285,6 +295,9 @@ export function ScanScreen() {
   function next() {
     stopSpeaking();
     setLocked(null);
+    lockSeq.current++;
+    setLogged(null);
+    setFrameBlob(null); // an unshared photo is simply dropped
     setUnknown(false);
     setPhotoError(null);
     if (photo) URL.revokeObjectURL(photo.url);
@@ -525,10 +538,21 @@ export function ScanScreen() {
     </button>
   );
 
+  const feedback =
+    locked && logged?.primaryDetectionId ? (
+      <FeedbackPrompt
+        key={logged.primaryDetectionId}
+        classKey={locked.view.classKey}
+        detectionId={logged.primaryDetectionId}
+        modelVersion={det.info?.modelVersion ?? "unknown"}
+        photo={frameBlob}
+      />
+    ) : null;
+
   return (
     <>
       {photoInput}
-      <span hidden data-testid="scan-log" data-scan-id={loggedScanId ?? ""} />
+      <span hidden data-testid="scan-log" data-scan-id={logged?.scanId ?? ""} />
       <p className="sr-only" role="status" aria-live="polite">
         {locked ? `${locked.view.name}. ${BINS[locked.view.category].binLabel}.` : ""}
       </p>
@@ -540,7 +564,7 @@ export function ScanScreen() {
 
         <div className="md:hidden">
           {locked ? (
-            <ResultSheet item={locked.view} onNext={next} />
+            <ResultSheet item={locked.view} onNext={next} feedback={feedback} />
           ) : (
             <SheetShell label="Scanner status">
               {statusContent}
@@ -551,7 +575,12 @@ export function ScanScreen() {
 
         <div className="hidden md:flex md:flex-col">
           {locked ? (
-            <ResultPanel item={locked.view} onNext={next} className="flex-1 py-4" />
+            <ResultPanel
+              item={locked.view}
+              onNext={next}
+              feedback={feedback}
+              className="flex-1 py-4"
+            />
           ) : (
             <section
               aria-label="Scanner status"

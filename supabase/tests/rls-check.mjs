@@ -110,8 +110,38 @@ check("A gets own daily counts", counts.data?.some((r) => r.category_key === "re
 const bCounts = await B.c.rpc("daily_counts_by_category");
 check("B's counts exclude A's scans", (bCounts.data ?? []).length === 0, bCounts.error?.message);
 
+// --- feedback (Phase 20) -------------------------------------------------------------
+const fb = await A.c
+  .from("feedback")
+  .insert({ user_id: A.id, detection_id: det.data?.id, is_correct: false, corrected_class_key: "battery" })
+  .select()
+  .single();
+check("A sends feedback on own detection", !!fb.data, fb.error?.message);
+check("feedback starts pending", fb.data?.review_status === "pending", fb.data?.review_status);
+const preApproved = await A.c
+  .from("feedback")
+  .insert({ user_id: A.id, detection_id: det.data?.id, is_correct: true, review_status: "approved" });
+check("A cannot self-approve feedback", !!preApproved.error);
+const bFb = await B.c
+  .from("feedback")
+  .insert({ user_id: B.id, detection_id: det.data?.id, is_correct: true });
+check("B cannot give feedback on A's detection", !!bFb.error);
+const bReads = await B.c.from("feedback").select("id");
+check("B cannot read A's feedback", (bReads.data ?? []).length === 0);
+const review = await A.c.rpc("admin_review_feedback", { p_id: fb.data?.id, p_status: "approved" });
+check("non-admin cannot review feedback", !!review.error);
+const noImg = await A.c
+  .from("feedback")
+  .insert({ user_id: A.id, detection_id: det.data?.id, is_correct: true, image_path: `${A.id}/x.jpg` });
+check("photo needs consent", !!noImg.error);
+const bUp = await B.c.storage
+  .from("training-images")
+  .upload(`${A.id}/rls-check.jpg`, new Blob(["x"], { type: "image/jpeg" }));
+check("B cannot upload into A's photo folder", !!bUp.error);
+
 const del = await A.c.rpc("delete_my_data");
 check("delete_my_data removes A's scans", del.data?.[0]?.scans_deleted === 1, del.error?.message);
+check("delete_my_data removes A's feedback", del.data?.[0]?.feedback_deleted === 1, del.error?.message);
 const gone = await A.c.from("scan_sessions").select("id");
 check("A has no scans after delete", (gone.data ?? []).length === 0);
 

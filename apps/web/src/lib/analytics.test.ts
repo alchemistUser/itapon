@@ -3,6 +3,10 @@ import { describe, expect, it } from "vitest";
 
 import {
   applyFilters,
+  byModelVersion,
+  filterFeedback,
+  wrongRateByItem,
+  type FeedbackRow,
   byDevice,
   confidenceDaily,
   dailyByCategory,
@@ -113,5 +117,63 @@ describe("analytics", () => {
     expect(csv.split("\n")[1]).toBe(
       'a,2026-10-17,00:30,"Canteen, ground floor",kiosk,paper_bag,recyclable,0.6,true',
     );
+  });
+});
+
+const fb = (
+  id: string,
+  predicted: string,
+  isCorrect: boolean,
+  extra: Partial<FeedbackRow> = {},
+): FeedbackRow => ({
+  id,
+  createdAt: "2026-10-10T02:00:00Z",
+  deviceId: null,
+  predictedClassKey: predicted,
+  predictedCategory: predicted === "battery" ? "hazardous" : "recyclable",
+  isCorrect,
+  correctedClassKey: null,
+  modelVersion: "itapon-world-v0.1",
+  imagePath: null,
+  reviewStatus: "pending",
+  reviewedClassKey: null,
+  ...extra,
+});
+
+describe("feedback", () => {
+  const rows = [
+    fb("1", "plastic_bottle", false),
+    fb("2", "plastic_bottle", true),
+    fb("3", "battery", false, { deviceId: "k1" }),
+    fb("4", "tin_can", true),
+  ];
+
+  it("ranks items by wrong rate and skips items never marked wrong", () => {
+    expect(wrongRateByItem(rows)).toEqual([
+      { classKey: "battery", category: "hazardous", answers: 1, wrong: 1, pct: 100 },
+      { classKey: "plastic_bottle", category: "recyclable", answers: 2, wrong: 1, pct: 50 },
+    ]);
+  });
+
+  it("filters feedback by device and predicted bin", () => {
+    expect(filterFeedback(rows, { deviceId: "k1" }).map((r) => r.id)).toEqual(["3"]);
+    expect(filterFeedback(rows, { category: "hazardous" }).map((r) => r.id)).toEqual(["3"]);
+  });
+
+  it("compares model versions in the field", () => {
+    const v = (s: AnalyticsScan, modelVersion: string) => ({ ...s, modelVersion });
+    const scans = [
+      v(scan("a", "2026-10-10T02:00:00Z", null, [["tin_can", "recyclable", 0.6]]), "v0.1"),
+      v(scan("b", "2026-10-10T03:00:00Z", null, [["tin_can", "recyclable", 0.8]]), "v0.2"),
+      v(scan("c", "2026-10-10T04:00:00Z", null, [["tin_can", "recyclable", 0.4]]), "v0.2"),
+    ];
+    const res = byModelVersion(scans, [
+      fb("x", "tin_can", false, { modelVersion: "v0.2" }),
+      fb("y", "tin_can", true, { modelVersion: "v0.2" }),
+    ]);
+    expect(res.map((r) => r.version)).toEqual(["v0.2", "v0.1"]);
+    expect(res[0]).toMatchObject({ scans: 2, answers: 2, wrongPct: 50 });
+    expect(res[0].avgConfidence).toBeCloseTo(0.6);
+    expect(res[1]).toMatchObject({ scans: 1, answers: 0, wrongPct: null });
   });
 });

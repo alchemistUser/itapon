@@ -120,3 +120,10 @@ uv run ruff check . && uv run ruff format --check .
 | Docker image | Not built (Docker Desktop not set up). Kept for an optional paid host; not used in production under D12. |
 
 These are smoke tests on 3 photos, not an accuracy evaluation. Real accuracy is measured in Phase 7 or 23.
+
+## Feedback loop (Phase 20)
+
+- `scripts/export_feedback.py`: approved, consented feedback photos → `field-set/<name>/` (`images/` + `labels.csv`). Needs `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in your shell.
+- `scripts/evaluate_field.py`: current vs candidate ONNX on a field set, with the D13 promotion rule.
+
+Full runbook: [`docs/retraining.md`](../../docs/retraining.md).

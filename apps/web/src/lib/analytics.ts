@@ -29,7 +29,23 @@ export interface AnalyticsScan {
   createdAt: string; // ISO
   deviceId: string | null;
   source: string;
+  modelVersion?: string;
   detections: AnalyticsDetection[];
+}
+
+/** One "Was this right?" answer (Phase 20), with what the model had said. */
+export interface FeedbackRow {
+  id: string;
+  createdAt: string;
+  deviceId: string | null;
+  predictedClassKey: string;
+  predictedCategory: Category;
+  isCorrect: boolean;
+  correctedClassKey: string | null;
+  modelVersion: string | null;
+  imagePath: string | null;
+  reviewStatus: "pending" | "approved" | "rejected";
+  reviewedClassKey: string | null;
 }
 
 export interface Filters {
@@ -251,4 +267,84 @@ export function toCSV(scans: AnalyticsScan[], deviceLabel: (id: string | null) =
       );
     }
   return lines.join("\n") + "\n";
+}
+
+// ---------------------------------------------------------------------------
+// Feedback (Phase 20)
+// ---------------------------------------------------------------------------
+
+export function filterFeedback(rows: FeedbackRow[], f: Filters): FeedbackRow[] {
+  return rows.filter(
+    (r) =>
+      (!f.deviceId || r.deviceId === f.deviceId) &&
+      (!f.category || r.predictedCategory === f.category),
+  );
+}
+
+/** "Wrong" share per predicted item, most-wrong first (ties: more answers first). */
+export function wrongRateByItem(rows: FeedbackRow[], n = 8) {
+  const m = new Map<
+    string,
+    { classKey: string; category: Category; answers: number; wrong: number }
+  >();
+  for (const r of rows) {
+    const e = m.get(r.predictedClassKey) ?? {
+      classKey: r.predictedClassKey,
+      category: r.predictedCategory,
+      answers: 0,
+      wrong: 0,
+    };
+    e.answers++;
+    if (!r.isCorrect) e.wrong++;
+    m.set(r.predictedClassKey, e);
+  }
+  return [...m.values()]
+    .filter((e) => e.wrong > 0)
+    .map((e) => ({ ...e, pct: Math.round((e.wrong / e.answers) * 100) }))
+    .sort((a, b) => b.pct - a.pct || b.answers - a.answers || a.classKey.localeCompare(b.classKey))
+    .slice(0, n);
+}
+
+/** Field comparison of model versions (task 7): scans, confidence, feedback wrong rate. */
+export function byModelVersion(scans: AnalyticsScan[], feedback: FeedbackRow[]) {
+  type Acc = {
+    version: string;
+    scans: number;
+    confSum: number;
+    confN: number;
+    answers: number;
+    wrong: number;
+  };
+  const m = new Map<string, Acc>();
+  const get = (v: string) => {
+    let e = m.get(v);
+    if (!e) {
+      e = { version: v, scans: 0, confSum: 0, confN: 0, answers: 0, wrong: 0 };
+      m.set(v, e);
+    }
+    return e;
+  };
+  for (const s of scans) {
+    const e = get(s.modelVersion ?? "unknown");
+    e.scans++;
+    const p = s.detections.find((d) => d.isPrimary);
+    if (p) {
+      e.confSum += p.confidence;
+      e.confN++;
+    }
+  }
+  for (const f of feedback) {
+    const e = get(f.modelVersion ?? "unknown");
+    e.answers++;
+    if (!f.isCorrect) e.wrong++;
+  }
+  return [...m.values()]
+    .map((e) => ({
+      version: e.version,
+      scans: e.scans,
+      avgConfidence: e.confN ? e.confSum / e.confN : null,
+      answers: e.answers,
+      wrongPct: e.answers ? Math.round((e.wrong / e.answers) * 100) : null,
+    }))
+    .sort((a, b) => b.version.localeCompare(a.version));
 }

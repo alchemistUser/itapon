@@ -5,11 +5,13 @@ import { Download, LockKeyhole, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { DevicesPanel } from "@/components/admin/devices-panel";
+import { ReviewQueue } from "@/components/admin/review-queue";
 import { DailyChart, Heatmap, HBarList, TrendLine } from "@/components/admin/charts";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, PageTitle, Skeleton } from "@/components/ui/primitives";
 import {
   fetchDevices,
+  fetchInstitutionFeedback,
   fetchInstitutionScans,
   useAdminContext,
   type AdminDevice,
@@ -17,17 +19,21 @@ import {
 import {
   applyFilters,
   byDevice,
+  byModelVersion,
   CATEGORIES,
   confidenceDaily,
   dailyByCategory,
   dayRange,
+  filterFeedback,
   kpis,
   manilaDay,
   shareByCategory,
   toCSV,
   topItems,
   weekdayHourHeatmap,
+  wrongRateByItem,
   type AnalyticsScan,
+  type FeedbackRow,
 } from "@/lib/analytics";
 import { BINS } from "@/lib/bins";
 import { getItemLive } from "@/lib/content-store";
@@ -80,6 +86,7 @@ export function AdminDashboard() {
   const [category, setCategory] = useState<Category | "">("");
   const [scans, setScans] = useState<AnalyticsScan[]>([]);
   const [devices, setDevices] = useState<AdminDevice[]>([]);
+  const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
   const [truncated, setTruncated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -96,10 +103,15 @@ export function AdminDashboard() {
   useEffect(() => {
     if (!admin.isAdmin || !range) return;
     let cancelled = false;
-    Promise.all([fetchInstitutionScans(range.from, range.to), fetchDevices()])
-      .then(([res, devs]) => {
+    Promise.all([
+      fetchInstitutionScans(range.from, range.to),
+      fetchDevices(),
+      fetchInstitutionFeedback(range.from, range.to),
+    ])
+      .then(([res, devs, fb]) => {
         if (cancelled) return;
         setScans(res.scans);
+        setFeedback(fb);
         setTruncated(res.truncated);
         setDevices(devs);
         setError(null);
@@ -114,6 +126,10 @@ export function AdminDashboard() {
   const filtered = useMemo(
     () => applyFilters(scans, { deviceId: deviceId || null, category: category || null }),
     [scans, deviceId, category],
+  );
+  const filteredFeedback = useMemo(
+    () => filterFeedback(feedback, { deviceId: deviceId || null, category: category || null }),
+    [feedback, deviceId, category],
   );
   const dayList = useMemo(() => (range ? dayRange(range.from, range.to) : []), [range]);
   const deviceLabel = (id: string | null) =>
@@ -152,6 +168,13 @@ export function AdminDashboard() {
   const share = shareByCategory(filtered);
   const top = topItems(filtered, 10);
   const conf = confidenceDaily(filtered, dayList);
+  const wrong = wrongRateByItem(filteredFeedback);
+  const wrongTotal = filteredFeedback.filter((f) => !f.isCorrect).length;
+  const versions = byModelVersion(filtered, filteredFeedback);
+  const reload = () => {
+    setLoading(true);
+    setReloadKey((n) => n + 1);
+  };
 
   function exportCsv() {
     const blob = new Blob([toCSV(filtered, deviceLabel)], { type: "text/csv;charset=utf-8" });
@@ -362,19 +385,62 @@ export function AdminDashboard() {
             />
           </div>
         </div>
-        <p className="text-xs text-ink-3">
-          User feedback (“Was this right?”) arrives in Phase 20 and will add a per-item error rate
-          here.
-        </p>
+        <div className="grid gap-6 md:grid-cols-2">
+          <div>
+            <p className="mb-2 text-sm font-medium text-ink-2">
+              Marked wrong by users
+              <span className="ml-2 text-xs font-normal text-ink-3">
+                {filteredFeedback.length
+                  ? `${wrongTotal} of ${filteredFeedback.length} answers (${Math.round(
+                      (wrongTotal / filteredFeedback.length) * 100,
+                    )}%)`
+                  : "no answers yet"}
+              </span>
+            </p>
+            <HBarList
+              items={wrong.map((w) => ({
+                key: w.classKey,
+                label: getItemLive(w.classKey)?.name ?? w.classKey,
+                value: w.pct,
+                display: `${w.pct}% · ${w.wrong}/${w.answers}`,
+                category: w.category,
+              }))}
+              empty="No items marked wrong."
+            />
+          </div>
+          <div>
+            <p className="mb-2 text-sm font-medium text-ink-2">By model version</p>
+            <table className="w-full text-left text-sm">
+              <thead className="text-xs text-ink-3">
+                <tr>
+                  <th className="py-1 font-medium">Model</th>
+                  <th className="py-1 text-right font-medium">Scans</th>
+                  <th className="py-1 text-right font-medium">Avg conf.</th>
+                  <th className="py-1 text-right font-medium">Wrong</th>
+                </tr>
+              </thead>
+              <tbody className="tabular-nums">
+                {versions.map((v) => (
+                  <tr key={v.version} className="border-t border-line">
+                    <td className="py-1.5 font-mono text-xs">{v.version}</td>
+                    <td className="py-1.5 text-right">{v.scans}</td>
+                    <td className="py-1.5 text-right">
+                      {v.avgConfidence === null ? "–" : `${Math.round(v.avgConfidence * 100)}%`}
+                    </td>
+                    <td className="py-1.5 text-right">
+                      {v.wrongPct === null ? "–" : `${v.wrongPct}% of ${v.answers}`}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </Panel>
 
-      <DevicesPanel
-        devices={devices}
-        onChange={() => {
-          setLoading(true);
-          setReloadKey((n) => n + 1);
-        }}
-      />
+      <ReviewQueue rows={filteredFeedback} onChange={reload} />
+
+      <DevicesPanel devices={devices} onChange={reload} />
     </div>
   );
 }

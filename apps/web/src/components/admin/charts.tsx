@@ -257,12 +257,13 @@ export function TrendLine({
 /** Horizontal bars with value labels at the tip (HTML: fully accessible, no axis). */
 export function HBarList({
   items,
+  empty = "No scans in this period.",
 }: {
   items: { key: string; label: string; value: number; display?: string; category: Category }[];
+  empty?: string;
 }) {
   const max = Math.max(1, ...items.map((i) => i.value));
-  if (!items.length)
-    return <p className="py-6 text-center text-sm text-ink-3">No scans in this period.</p>;
+  if (!items.length) return <p className="py-6 text-center text-sm text-ink-3">{empty}</p>;
   return (
     <ul className="flex flex-col gap-2">
       {items.map((i) => (

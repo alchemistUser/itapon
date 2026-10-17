@@ -62,6 +62,10 @@ export type Database = {
           image_path: string | null
           is_correct: boolean
           model_version: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewed_class_key: string | null
           user_id: string
         }
         Insert: {
@@ -73,6 +77,10 @@ export type Database = {
           image_path?: string | null
           is_correct: boolean
           model_version?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewed_class_key?: string | null
           user_id?: string
         }
         Update: {
@@ -84,6 +92,10 @@ export type Database = {
           image_path?: string | null
           is_correct?: boolean
           model_version?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewed_class_key?: string | null
           user_id?: string
         }
         Relationships: [
@@ -100,6 +112,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "scan_detections"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_reviewed_class_key_fkey"
+            columns: ["reviewed_class_key"]
+            isOneToOne: false
+            referencedRelation: "waste_items"
+            referencedColumns: ["class_key"]
           },
         ]
       }
@@ -393,6 +412,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      admin_review_feedback: {
+        Args: { p_class_key?: string; p_id: string; p_status: string }
+        Returns: undefined
       }
       daily_counts_by_category: {
         Args: { p_from?: string; p_to?: string }

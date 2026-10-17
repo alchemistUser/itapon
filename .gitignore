@@ -38,6 +38,8 @@ wandb/
 *.pt
 *.onnx
 *.engine
+# Field sets exported from user feedback (photos of real users; never commit)
+field-set/
 .ipynb_checkpoints/
 
 # --- Supabase local ---

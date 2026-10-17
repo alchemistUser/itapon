@@ -27,6 +27,7 @@ These decisions are settled. Reopen one only for a concrete reason, and add a da
 | D10 | Tool versions | Node 20 + pnpm 9, Next.js 16.4 (App Router) + Tailwind v4, Python 3.12 + uv. The repo is under the team member's personal GitHub account (no org). | 2026-10-17 |
 | D11 | Model for v0 | **Zero-shot YOLO-World** (Ultralytics), with the 23 spec classes as text prompts baked into custom-vocabulary weights. No training needed to build the app. Phases 3–7 are **deferred, not cancelled**: the course and proposal still expect a trained model for Chapter 4. Confirm the timing with the adviser. | 2026-10-17 |
 | D12 | Where inference runs | **In the browser** (ONNX + `onnxruntime-web`, in a Web Worker; WebGPU when available, WASM otherwise). **Why:** since July 2026, free Hugging Face accounts can only create Static Spaces (Docker/Gradio need PRO). Render's free tier (512 MB, 0.1 CPU) is too small for live scanning, and Cloud Run needs a card. **Model files** live in the free HF model repo `itapon-yolo` (CORS-enabled CDN). **FastAPI** stays as the reference/dev API: it's used for testing, batch evaluation and as a fallback if a paid host is ever added. The parity check passed: ONNX gives the same top detections as PyTorch. | 2026-10-17 |
+| D13 | Feedback review & promotion | Institution admins review only feedback from **their own institution** (RLS); the project team reviews the rest with the service role. A new model ships only if, on **≥ 30** approved field photos, item accuracy and every bin's accuracy are ≥ the current model's (plus locked-test-set mAP once a trained model exists). Runbook: `docs/retraining.md`. | 2026-10-17 |
 
 ---
 
@@ -858,6 +859,15 @@ itapon/
 ---
 
 ## Phase 20: Feedback loop & retraining pipeline
+
+> **Status (2026-10-17): Done. One full loop has run; the decision was to keep v0.1.** Runbook: [`docs/retraining.md`](docs/retraining.md). Decision D13.
+> 1. **"Was this right?"** under every locked result on `/scan` (`components/scan/feedback-prompt.tsx`). Yes is one tap. No opens a fuzzy item search (Bin Guide search, D7 aliases) plus "Something else, or not trash". Kiosks don't ask (hands-free).
+> 2. **Consent:** an unticked "Share this photo anonymously…" box. Only when ticked does a ≤ 640 px JPEG of the locked frame go to the private `training-images` bucket. Otherwise it's dropped on Scan again. Late results from an earlier scan are ignored, so an answer can't attach to the wrong scan.
+> 3. **Storage:** `logScan` now returns the primary detection id. Each `feedback` row has the detection, `model_version`, the answer, consent and image path. Migration `20261018090000_feedback_review.sql` adds `review_status`/`reviewed_class_key`/`reviewed_by`/`reviewed_at`. Insert is allowed only on your own detections and only as pending. **Admin access is now scoped to the admin's institution**, for photos too (it used to be every admin). `admin_review_feedback` RPC.
+> 4. **Review queue** on `/admin` (Pending/Approved/Rejected, photo, approve/relabel/reject). Model health adds **Marked wrong by users** (per item) and **By model version** (task 7). Photos load in CORS mode because Storage sends no CORP header under our COEP.
+> 5. **Scripts:** `export_feedback.py` (service role → `field-set/` with `labels.csv`, git-ignored) and `evaluate_field.py` (the browser's exact ONNX pipeline, promotion rule; exit 0 = promote). Pure parts are tested (3 pytest tests).
+> 6. **Verified:** three photo scans on the demo campus through the real UI (1 Yes, 2 No with a shared photo). Rows and objects were correct, and no photo was stored without consent. The admin approved all three and relabelled one. The export query and storage download worked with the admin session. Evaluation of v0.1 vs v0.2 on the 2 approved photos: tie (item 50%, bin 100%) → **keep v0.1** (< 30 images). The RLS check grew to 32/32, including 9 feedback checks. Test photos and demo data were removed.
+> 7. **Not done:** a v1.1 *trained* model (needs Phases 3–7, D11) and a real field set (needs the pilot, Phase 23).
 
 **Goal:** Let the model get better from real-world use without breaking privacy.
 
