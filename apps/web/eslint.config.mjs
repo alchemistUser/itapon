@@ -16,6 +16,9 @@ const eslintConfig = defineConfig([
     "public/ort/**",
     "public/models/**",
     "public/dev-samples/**",
+    "test-results/**",
+    "playwright-report/**",
+    "e2e/.cache/**",
   ]),
 ]);
 

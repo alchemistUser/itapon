@@ -59,3 +59,13 @@ def test_score_and_promotion_rule():
     assert decide(cur, cand, min_images=2) == (True, "promote candidate: no metric is worse")
     assert decide(cand, cur, min_images=2)[0] is False
     assert decide(cur, cand)[1].startswith("keep current: only 2 field images")
+
+
+def test_regression_gate_flags_any_drop():
+    from scripts.model_regression import regressions
+
+    base = {"item_acc": 0.8, "bin_acc": {"recyclable": 0.9, "none": 1.0}}
+    same = {"item_acc": 0.8, "bin_acc": {"recyclable": 0.9, "none": 1.0}}
+    worse = {"item_acc": 0.82, "bin_acc": {"recyclable": 0.85, "none": 1.0}}
+    assert regressions(same, base) == []
+    assert regressions(worse, base) == ["recyclable accuracy 85% < 90%"]

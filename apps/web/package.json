@@ -11,7 +11,8 @@
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "db:types": "supabase gen types typescript --linked --schema public > src/lib/database.types.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
@@ -26,13 +27,18 @@
     "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4",
+    "@playwright/test": "1.56",
     "@tailwindcss/turbopack": "^4",
+    "@testing-library/dom": "10",
+    "@testing-library/react": "16",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "axe-core": "^4.14.0",
     "eslint": "^9",
     "eslint-config-next": "16.4.2",
+    "jsdom": "26",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^3.2.7"

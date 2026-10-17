@@ -30,6 +30,11 @@ jobs:
             uv run --no-sync python scripts/export_onnx.py --imgsz "$s"
             uv run --no-sync python scripts/shrink_onnx.py "weights/itapon-world-v0-$s.onnx"
           done
+      - name: Regression test (Phase 23; fails if accuracy drops vs ml/regression-set/baseline.json)
+        run: |
+          for s in ${{ inputs.imgsz }}; do
+            uv run --no-sync python -m scripts.model_regression --set ../../ml/regression-set               --model "weights/itapon-world-v0-$s-int8.onnx"
+          done
       - name: Checksums
         run: |
           cd weights

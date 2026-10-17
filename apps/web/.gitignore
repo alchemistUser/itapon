@@ -46,3 +46,8 @@ next-env.d.ts
 /public/models/
 # Private test photos (derived from coursework Figma exports)
 /public/dev-samples/
+
+# Playwright (Phase 23)
+/e2e/.cache/
+/test-results/
+/playwright-report/

@@ -957,6 +957,16 @@ itapon/
 
 ## Phase 23: Testing & QA
 
+> **Status (2026-10-18): Automated testing done and green. Device, soak and field results need the team's phones and a campus session.** Plan and results: [`docs/qa/`](docs/qa/README.md).
+> 1. **Unit/component:** 57 web tests. New: Testing Library + jsdom for the result views, bin order and the "Was this right?" flow; content mapping. API: 32 pytest tests, including abuse/fuzz.
+> 2. **Integration:** OpenAPI **contract** (`services/ml-api/openapi.json` + `tests/test_contract.py`, regenerated with `python -m scripts.dump_openapi`). RLS: role matrix 59/59 and anon-key suite 32/32 (Phase 22). The web app doesn't call the API (D12), so there are no generated TS client types.
+> 3. **E2E (Playwright, phone + desktop, against the production build):** 31 tests. They cover guide search (Filipino), result pages, the privacy link, admin gating, history, security headers, **axe on 8 pages** (no serious/critical WCAG 2.1 AA issues), and a **real offline test**: the test starts its own server, warms the service worker and **kills the server**, because Playwright's `setOffline` doesn't cover service-worker fetches. The **fake-camera scan** (Y4M made from a sample photo with ffmpeg) locks a result end to end. It's skipped in CI until a committable photo exists. New CI job "Web E2E".
+> 4. **Model regression:** `scripts/model_regression.py` fails on any drop vs `ml/regression-set/baseline.json` and runs in the Model export workflow. The harness was checked on the 3 local samples. **The ~50-photo set must be collected by the team** (rules in `ml/regression-set/README.md`; the dev samples are private).
+> 5. **Device matrix:** checklist in `docs/qa/device-matrix.md`. Desktop Chrome done; phones and tablets pending.
+> 6. **On-device performance:** new `/dev/soak` page (continuous scanning; fps, inference p50, JS heap and battery every 10 s; CSV) plus an optional Playwright soak. Desktop 10-minute run: median 3.3 fps, 299 ms inference, JS heap flat (10 → 10 MB), no crash. Phones pending (`docs/qa/performance.md`).
+> 7. **Field test:** protocol + SQL in `docs/qa/field-test.md`, reusing the Phase 20 feedback loop with a field-test institution (bin and item accuracy per model version and per bin). The queries were checked against the schema. **Needs a campus session.**
+> 8. **Bugs:** none found in the app this phase (first-run failures were test assumptions). **Open P1: none.** Exit criterion still open: field bin accuracy.
+
 **Goal:** Confidence that the system works across devices, and evidence for the manuscript.
 
 **Why now:** Features are complete. Testing has also been happening along the way, and this phase makes it systematic and documented.
