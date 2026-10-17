@@ -6,13 +6,15 @@ Steps that have to be done by a person, in the browser or a terminal you control
 
 ## 1. GitHub: create the public repo
 
+Repo: https://github.com/alchemistUser/itapon (public, AGPL-3.0)
+
 GitHub CLI is installed at `C:\Program Files\GitHub CLI\gh.exe` (open a new terminal so `gh` is on your PATH).
 
-- [ ] Log in (opens the browser):
+- [x] Log in (opens the browser):
   ```bash
   gh auth login --hostname github.com --git-protocol https --web
   ```
-- [ ] From the repo root, create the **public** repo and push the first commit:
+- [x] From the repo root, create the **public** repo and push the first commit:
   ```bash
   gh repo create itapon --public --source . --remote origin --push --description "iTapon: AI-powered waste classification and segregation (CS 406, TIP QC)"
   ```
@@ -21,8 +23,8 @@ GitHub CLI is installed at `C:\Program Files\GitHub CLI\gh.exe` (open a new term
   gh api -X PUT repos/{owner}/itapon/branches/main/protection --input .github/branch-protection.json
   ```
   Turn this on **after** collaborators are added (otherwise a solo owner can't approve their own PRs).
-- [ ] Repo **Settings → General**: allow **squash merging** only and enable "Automatically delete head branches".
-- [ ] Create the labels used by the issue templates:
+- [x] Repo **Settings → General**: allow **squash merging** only and enable "Automatically delete head branches".
+- [x] Create the labels used by the issue templates:
   ```bash
   for l in web api ml db docs data bug feature; do gh label create "$l" --force; done
   ```
@@ -82,6 +84,6 @@ pre-commit install
 ## Done when (Phase 2 exit criteria)
 
 - [ ] Every member can clone the repo, run `pnpm dev` (web) and `uv run uvicorn app.main:app --port 7860` (API) locally.
-- [ ] A test PR passes all three CI jobs (web, api, secrets).
+- [x] CI passes all three jobs (web, api, secrets) on `main`.
 - [ ] Vercel production + preview deployments work.
 - [ ] HF Space, HF model repo and both Supabase projects exist.

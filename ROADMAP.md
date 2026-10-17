@@ -229,9 +229,9 @@ itapon/
 
 ## Phase 2: Project foundations & tooling
 
-> **Status (2026-10-17): Local setup done; platform setup pending.**
-> **Done:** monorepo skeleton, AGPL-3.0 `LICENSE`, README, CONTRIBUTING (branches, Conventional Commits, SPDX headers), PR and issue templates, `.gitignore` (coursework files go in git-ignored `_private/`), `.env.example` files, Prettier/EditorConfig, pre-commit config (gitleaks + ruff), CI workflow (web lint/typecheck/build, API ruff/pytest, gitleaks). Hello-world apps: `apps/web` (Next.js 16.4 + Tailwind v4; lint, typecheck and build pass) and `services/ml-api` (FastAPI `/health` + HF-ready Dockerfile; ruff and pytest pass). First commit is on `main`.
-> **Pending (follow [`docs/setup-accounts.md`](docs/setup-accounts.md)):** `gh auth login` and push to a public GitHub repo, branch protection, Vercel/HF/Supabase/Roboflow accounts, GPU choice. CODEOWNERS and collaborators are deferred.
+> **Status (2026-10-17): Repo done; platform accounts pending (they don't block Phase 3).**
+> **Done:** public repo [github.com/alchemistUser/itapon](https://github.com/alchemistUser/itapon) pushed, CI green on all 3 jobs, squash-only merges, auto-delete merged branches, labels and topics set. Monorepo skeleton, AGPL-3.0 `LICENSE`, README, CONTRIBUTING (branches, Conventional Commits, SPDX headers), PR and issue templates, `.gitignore` (coursework files go in git-ignored `_private/`), `.env.example` files, Prettier/EditorConfig, pre-commit config (gitleaks + ruff), CI workflow (web lint/typecheck/build, API ruff/pytest, gitleaks). Hello-world apps: `apps/web` (Next.js 16.4 + Tailwind v4; lint, typecheck and build pass) and `services/ml-api` (FastAPI `/health` + HF-ready Dockerfile; ruff and pytest pass). First commit is on `main`.
+> **Pending (follow [`docs/setup-accounts.md`](docs/setup-accounts.md)):** Roboflow workspace and GPU choice (needed by Phases 4–5), Vercel (Phase 11), Hugging Face (Phase 9), Supabase (Phase 10). Collaborators, CODEOWNERS and branch protection are deferred until teammates are added.
 
 **Goal:** Give everyone the same repo, accounts, conventions and environments before anyone writes feature code.
 
