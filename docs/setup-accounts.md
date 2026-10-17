@@ -40,10 +40,10 @@ GitHub CLI is installed at `C:\Program Files\GitHub CLI\gh.exe` (open a new term
 - [ ] Deploy. Confirm that `itapon.vercel.app` (or the assigned URL) shows the iTapon placeholder page.
 - [ ] Confirm that a PR gets a **preview deployment** comment.
 
-## 3. Hugging Face: model API & weights
+## 3. Hugging Face: model files (D12)
 
 - [ ] Sign up at huggingface.co (team account or organization).
-- [ ] **New Space** → name `itapon-api` → SDK **Docker** → Blank → **Public** → hardware **CPU basic (free)** (D3: no paid hardware).
+- ~~New Docker Space~~: **not needed**. Free accounts can only create Static Spaces since July 2026, so inference runs in the browser instead (D12).
 - [ ] **New Model** → name `itapon-yolo` → Public → license `agpl-3.0`.
 - [ ] *(Phase 9)* Create a write-scoped access token for CI and store it as GitHub secret `HF_TOKEN`.
 
@@ -86,4 +86,4 @@ pre-commit install
 - [ ] Every member can clone the repo, run `pnpm dev` (web) and `uv run uvicorn app.main:app --port 7860` (API) locally.
 - [x] CI passes all three jobs (web, api, secrets) on `main`.
 - [ ] Vercel production + preview deployments work.
-- [ ] HF Space, HF model repo and both Supabase projects exist.
+- [ ] HF model repo `itapon-yolo` and both Supabase projects exist.

@@ -17,15 +17,16 @@ These decisions are settled. Reopen one only for a concrete reason, and add a da
 |---|---|---|---|
 | D1 | Product name | **iTapon**, used everywhere: repo, domain, PWA manifest, UI copy, manuscript. The "HIWALAY" label in the Figma frames gets replaced with iTapon during Phase 1. | 2026-10-17 |
 | D2 | Source code license | **Open source under AGPL-3.0**, matching Ultralytics YOLO's license. Public GitHub repo, `LICENSE` file at the root, license noted in the README and model card. | 2026-10-17 |
-| D3 | Handling HF Space cold starts | **Warming-up / loading screen** in the app (Phase 12), plus a background `/health` ping on app load to start waking the Space early. No paid hardware upgrade. | 2026-10-17 |
+| D3 | Loading screen | **Warming-up / loading screen** in the app (Phase 12). *Updated by D12:* it now covers downloading and initializing the in-browser model (first visit) instead of waking a server. Free hosting only. | 2026-10-17 |
 | D4 | Frontend stack | Next.js (React, App Router) + Tailwind CSS, hosted on Vercel, mobile-first | 2026-10-17 |
-| D5 | ML / API stack | Python, FastAPI, PyTorch, Ultralytics YOLO, hosted on a Hugging Face Space (Docker) | 2026-10-17 |
+| D5 | ML / API stack | Python, FastAPI, PyTorch, Ultralytics YOLO. *Updated by D12:* Python builds, exports and evaluates the model; production inference runs in the browser. Hugging Face hosts the model files (free model repo), not a Docker Space. | 2026-10-17 |
 | D6 | Auth & database | Supabase (Auth, Postgres with RLS, Storage) | 2026-10-17 |
 | D7 | ML task type | Object detection with item-level classes; the item → bin mapping lives in the database | 2026-10-17 |
 | D8 | v1 class list | **23 classes** (7 recyclable, 4 biodegradable, 8 residual, 4 hazardous), frozen in [`docs/spec.md`](docs/spec.md) §3. Pending sign-off. | 2026-10-17 |
 | D9 | Dirty vs. clean items | The model detects the item type only. Contamination is shown as a UI caveat (`contamination_note`), not as separate classes. | 2026-10-17 |
 | D10 | Tool versions | Node 20 + pnpm 9, Next.js 16.4 (App Router) + Tailwind v4, Python 3.12 + uv. The repo is under the team member's personal GitHub account (no org). | 2026-10-17 |
 | D11 | Model for v0 | **Zero-shot YOLO-World** (Ultralytics), with the 23 spec classes as text prompts baked into custom-vocabulary weights. No training needed to build the app. Phases 3–7 are **deferred, not cancelled**: the course and proposal still expect a trained model for Chapter 4. Confirm the timing with the adviser. | 2026-10-17 |
+| D12 | Where inference runs | **In the browser** (ONNX + `onnxruntime-web`, in a Web Worker; WebGPU when available, WASM otherwise). **Why:** since July 2026, free Hugging Face accounts can only create Static Spaces (Docker/Gradio need PRO). Render's free tier (512 MB, 0.1 CPU) is too small for live scanning, and Cloud Run needs a card. **Model files** live in the free HF model repo `itapon-yolo` (CORS-enabled CDN). **FastAPI** stays as the reference/dev API: it's used for testing, batch evaluation and as a fallback if a paid host is ever added. The parity check passed: ONNX gives the same top detections as PyTorch. | 2026-10-17 |
 
 ---
 
@@ -87,12 +88,8 @@ flowchart LR
   subgraph Client["Browser / PWA (phone, tablet kiosk, desktop)"]
     UI["Next.js App Router + Tailwind<br/>(Vercel)"]
     CAM["Camera module<br/>getUserMedia + canvas"]
+    WORKER["Web Worker<br/>onnxruntime-web (WebGPU / WASM)<br/>YOLO-World ONNX"]
     TTS["Web Speech API<br/>(Read aloud)"]
-  end
-
-  subgraph HF["Hugging Face Space (Docker)"]
-    API["FastAPI<br/>/v1/detect"]
-    MODEL["Ultralytics YOLO<br/>(PyTorch / ONNX)"]
   end
 
   subgraph SB["Supabase"]
@@ -101,18 +98,21 @@ flowchart LR
     ST[("Storage<br/>consented images")]
   end
 
-  HUB[("HF Model Hub<br/>versioned weights")]
+  HUB[("HF model repo itapon-yolo<br/>ONNX + labels.json (free, CDN)")]
 
-  CAM --> UI
-  UI -- "JPEG frame (≤640px)" --> API
-  API --> MODEL
-  MODEL -- "detections" --> API
-  API -- "JSON: labels, bbox, conf" --> UI
+  subgraph DEV["Dev / build only (Python)"]
+    PY["Ultralytics + PyTorch<br/>build_world_model, export_onnx"]
+    API["FastAPI reference API<br/>tests, batch eval"]
+  end
+
+  CAM -- "frames (640px letterbox)" --> WORKER
+  WORKER -- "detections" --> UI
+  HUB -- "model download once, cached (PWA)" --> WORKER
   UI -- "item → bin lookup, history insert" --> DB
   UI --> AUTH
   UI -- "opt-in image upload" --> ST
-  HUB -- "weights pulled at startup" --> MODEL
   UI --> TTS
+  PY -- "publish versioned ONNX" --> HUB
 ```
 
 ### Key architectural decisions (set these early, revisit only with a reason)
@@ -122,9 +122,9 @@ flowchart LR
 | ML task type | **Object detection** (not plain classification) | Figma shows "4 items detected" and multi-item plans. Detection gives a label and box per item. |
 | Label granularity | **Item-level classes** (e.g. `paper_bag`, `banana_peel`), mapped to a bin through a DB lookup | The UI shows the item name ("Paper Bag") *and* its bin. Bin rules can change per LGU without retraining. |
 | Where the bin mapping lives | Supabase `waste_items` table, cached on the client | Rules are content, not model weights. Admins can edit them. |
-| ML API state | **Stateless**: image in, detections out. No DB writes. | Easy to scale and cache. HF Space restarts don't lose data. |
-| Who writes scan logs | Frontend, via the Supabase client under RLS | The user's JWT scopes the insert. The ML API never handles user identity. |
-| Real-time strategy | Throttled frame upload (~1–3 fps) with a stability gate, not video streaming | Works on free HF CPU hardware and over mobile data. |
+| Where inference runs (D12) | **On the user's device**: ONNX model in a Web Worker | Free (no inference server), no cold starts, works offline once cached, and camera frames never leave the device (privacy bonus). |
+| Who writes scan logs | Frontend, via the Supabase client under RLS | The user's JWT scopes the insert. No server code handles user identity. |
+| Real-time strategy | Run the model on frames back-to-back (one at a time, ~1–3 fps depending on the device) with a stability gate | Matches "hold steady" in Figma. Slower phones simply scan at a lower frame rate. |
 | Image retention | **Off by default**. Images are uploaded only with explicit opt-in, for retraining. | Data Privacy Act of 2012 (RA 10173). |
 | Recommendations | Rule/content-based, from DB fields (`reuse_tip`, `prep_steps`, `why`) | Deterministic and explainable. No hallucination risk. |
 
@@ -135,7 +135,7 @@ itapon/
 ├─ apps/
 │  └─ web/                 # Next.js + Tailwind (Vercel)
 ├─ services/
-│  └─ ml-api/              # FastAPI + Ultralytics (HF Space, Dockerfile)
+│  └─ ml-api/              # FastAPI reference API + model build/export scripts (Python)
 ├─ ml/
 │  ├─ data/                # dataset manifests (NOT raw images; those go to Roboflow/HF Datasets)
 │  ├─ configs/             # data.yaml, training hyperparams
@@ -162,7 +162,7 @@ itapon/
 | 6 | Model improvement & robustness (**deferred, D11**) | ML | 5 |
 | 7 | Model evaluation, thresholds & export (**deferred, D11**) | ML | 6 |
 | 8 | Inference API (FastAPI), local, on zero-shot YOLO-World | Backend | 1 (class list) |
-| 9 | Inference API deployment to Hugging Face | Backend | 8 |
+| 9 | Model export & hosting for in-browser inference (D12) | ML + Web | 8 |
 | 10 | Supabase schema, auth & content seed | Backend | 1, 2 |
 | 11 | Frontend foundation & design system | Web | 2 |
 | 12 | Camera & live scanning | Web | 11, 9 |
@@ -200,7 +200,7 @@ itapon/
 **Why now:** Every later phase depends on the class list. Changing classes after annotation is expensive, so this decision comes first.
 
 **Tasks**
-1. **Apply the name iTapon (D1):** reserve the GitHub org/repo, Vercel project (`itapon`), HF Space (`itapon-api`), and an optional domain. Update the Figma header text from HIWALAY to iTapon.
+1. **Apply the name iTapon (D1):** reserve the GitHub org/repo, Vercel project (`itapon`), HF model repo (`itapon-yolo`), and an optional domain. Update the Figma header text from HIWALAY to iTapon.
 2. **Define the item class list** (v1 target: 15–25 classes; fewer, well-represented classes beat many weak ones). Start from items visible in the docs and Figma, then add common campus waste:
    - Recyclable: `plastic_bottle`, `plastic_cup`, `aluminum_can`, `glass_bottle`, `paper_bag`, `cardboard`, `paper_sheet`, `tetra_pack`*
    - Biodegradable: `banana_peel`, `fruit_peel_other`, `food_scraps`, `leaves`, `used_tissue`
@@ -220,7 +220,7 @@ itapon/
    - *Must:* scan, result, bin guide, read aloud, history, scan logging.
    - *Should:* multi-item plan, kiosk mode, analytics dashboard.
    - *Could:* feedback/active learning, Filipino language, offline guide.
-   - *Won't (v1):* on-device inference, hardware actuation.
+   - *Won't (v1):* hardware actuation. (On-device inference moved into v1 by D12.)
 
 **Deliverables:** `docs/spec.md` (classes, mapping, metrics, personas, stories, MoSCoW), Figma updated to iTapon branding.
 
@@ -389,7 +389,7 @@ itapon/
 ## Phase 8: Inference API (FastAPI), local
 
 > **Status (2026-10-17): Done (local Docker build skipped).** FastAPI service in `services/ml-api` running **zero-shot YOLO-World** (`yolov8s-worldv2`, D11). The 23 classes (46 text prompts) are baked into `weights/itapon-world-v0.pt` by `scripts/build_world_model.py`, and the API runs without CLIP. Endpoints `/health`, `/v1/model`, `/v1/detect`. The model loads in the background (`/health` reports `model_loaded`, `/v1/detect` returns 503 + `Retry-After` while loading) for the D3 warming-up screen. Validation: JPEG/PNG/WebP, ≤ 2 MB, EXIF rotation, downscale to 640. 10 fast tests + 1 real-model test, ruff clean. Smoke test: Figma paper-bag photos detected as `paper_bag` (0.58–0.67), cup as `plastic_cup` (0.57); local CPU latency p50 157 ms / p95 165 ms. Details in [`services/ml-api/README.md`](services/ml-api/README.md).
-> **Deviations:** the model is zero-shot instead of trained weights (D11). Thresholds are provisional (confident 0.35, possible 0.15, min 0.10) until Phase 7. The two-stage Dockerfile (builder with CLIP → runtime without) was **not built locally** because Docker Desktop isn't set up. Its first build happens on Hugging Face in Phase 9. Rate limiting and an API key are deferred to Phase 22.
+> **Deviations:** the model is zero-shot instead of trained weights (D11). Thresholds are provisional (confident 0.35, possible 0.15, min 0.10) until Phase 7. The two-stage Dockerfile (builder with CLIP → runtime without) was **not built locally** because Docker Desktop isn't set up. *D12 update:* production inference moved to the browser, so the API is now a reference/dev service and the Dockerfile is kept for an optional paid host. Rate limiting and an API key apply only if it's ever deployed.
 
 **Goal:** A clean, documented, stateless HTTP API that wraps the model.
 
@@ -423,7 +423,7 @@ itapon/
 4. **Input validation:** max file size (e.g. 2 MB), accepted MIME types (jpeg/png/webp), and a server-side downscale to `imgsz`.
 5. **Performance:** run inference in a threadpool (`run_in_threadpool`) so the event loop doesn't block. Warm up the model at startup with a dummy image.
 6. **CORS:** allow only the Vercel production and preview domains plus localhost.
-7. **Optional abuse protection:** a simple per-IP rate limit (`slowapi`), and/or require a Supabase JWT or shared key header if the Space is public.
+7. **Optional abuse protection:** a simple per-IP rate limit (`slowapi`), and/or require a Supabase JWT or shared key header, if the API is ever deployed publicly.
 8. **Tests (pytest):** health, schema validation, a known image giving the expected class, oversized-file rejection, wrong-MIME rejection.
 9. Auto-generated OpenAPI docs at `/docs`. Export `openapi.json` to `docs/` for the frontend to generate types from.
 
@@ -433,31 +433,47 @@ itapon/
 
 ---
 
-## Phase 9: Inference API deployment to Hugging Face Spaces
+## Phase 9: Model export & hosting for in-browser inference (D12)
 
-**Goal:** A public, stable HTTPS endpoint for the model.
+> **Replaces** "Inference API deployment to Hugging Face Spaces". Free HF accounts can no longer host Docker Spaces (July 2026), so inference moves into the browser.
+> **Already proven (2026-10-17):** `scripts/export_onnx.py` exports the custom-vocabulary YOLO-World to ONNX with class-agnostic NMS built in (input `images [1,3,640,640]` RGB 0–1, output `[1,10,6]` = x1,y1,x2,y2,score,class). Raw `onnxruntime` gives the same top detections as PyTorch (paper bag 0.59/0.64, cup 0.37), at ~125–150 ms on a laptop CPU. **Open issue: the file is 50.5 MB.**
 
-> **Note from Phase 8:** the Dockerfile has never been built. Expect to fix build errors in the HF build logs on the first push. The image downloads `yolov8s-worldv2.pt` and the CLIP weights during the build, so the first build takes several minutes.
+**Goal:** A small, versioned ONNX model hosted for free, plus a browser inference module that the scanner (Phase 12) can call like a function.
 
-**Why now:** The frontend camera work (Phase 12) needs a real remote endpoint to measure true latency.
+**Why now:** Phase 12 needs a working `detect(frame)` in the browser, and model size decides whether the app is usable on mobile data.
 
 **Tasks**
-1. Create a **Docker SDK Space** (`itapon-api`). Add a Space `README.md` with YAML front-matter (`sdk: docker`, `app_port: 7860`).
-2. Set Dockerfile details for HF: run as a non-root user (UID 1000), listen on port 7860, install CPU-only PyTorch wheels to keep the image small, and set `HF_HOME` to a writable directory.
-3. Store secrets (`HF_TOKEN` if the model repo is private, allowed origins, API key) in **Space Secrets**.
-4. **Deploy from CI:** a GitHub Action pushes `services/ml-api` to the Space repo on tag `api-v*`, or use the HF GitHub sync.
-5. **Handle cold starts (D3):** free Spaces sleep after inactivity, and waking one can take tens of seconds.
-   - `/health` must respond fast and report `{ "status": "ok", "model_loaded": true|false }` so the frontend can tell "awake but loading the model" apart from "ready".
-   - The frontend pings `/health` in the background as soon as any page loads, not just `/scan`, so the Space is often awake by the time the user opens the camera.
-   - The user sees the **warming-up / loading screen** built in Phase 12 until `/health` reports ready.
-   - Measure and record the cold-start time (sleep → first successful `/v1/detect`) so the loading screen copy and timeout values are realistic.
-6. Measure latency from the Philippines: P50/P95 round-trip from phone on 4G and campus Wi-Fi. Record the results.
+1. **Shrink the model** (target ≤ 15–25 MB). Try these in order, re-running the `--check` parity test and the 3 smoke photos after each:
+   - FP16 conversion (`onnxconverter-common`, about half the size, no real accuracy loss; best with WebGPU)
+   - Dynamic INT8 quantization (`onnxruntime.quantization.quantize_dynamic`, about a quarter of the size; check that accuracy doesn't drop)
+   - Smaller input (`--imgsz 480` or `416`: faster on phones, slightly worse on small items)
+   - Record size / speed / top-1 agreement for each variant in `services/ml-api/README.md` and pick one.
+2. **Host the files for free** in the Hugging Face **model repo** `itapon-yolo` (public, AGPL-3.0):
+   - `itapon-world-v0-<imgsz>[-fp16|-int8].onnx` + `itapon-world-v0.labels.json` (index → `class_key`, `default_category`, `model_version`, `imgsz`)
+   - Load them from `https://huggingface.co/<user>/itapon-yolo/resolve/<revision>/<file>`. The HF CDN sends CORS headers.
+   - **Pin a revision/tag** (`v0.1`) in the web app so model updates are deliberate.
+   - Write a model card (README) covering intended use, the 23 classes, the zero-shot caveat and the license.
+   - Fallback host if needed: a free HF **Static Space**, or Vercel static files.
+3. **Browser inference module** in `apps/web/src/lib/detector/`:
+   - `onnxruntime-web` inside a **Web Worker** so the UI never freezes.
+   - Execution provider: **WebGPU** when available, **WASM** (multi-threaded with SIMD when cross-origin isolation allows) otherwise.
+   - Pre-processing that matches the export: letterbox to `imgsz` (gray 114 padding), RGB, scale to 0–1, CHW float32 (or float16 for an fp16 model).
+   - Post-processing: drop scores below `MIN_CONFIDENCE` (0.10), undo the letterbox, normalize the boxes to 0–1, map class index → `class_key` via `labels.json`.
+   - **Same output shape as the FastAPI contract** (`class_key`, `confidence`, normalized `bbox`, `default_category`), so Phases 13–14 don't care where inference runs.
+   - API: `loadModel(onProgress)`, `detect(ImageBitmap) → Detection[]`, `dispose()`.
+4. **Loading & caching (D3):** show download progress (MB / %), cache the model with the Cache API / service worker (Phase 21) so later visits load instantly, warm up with one dummy inference, then report ready.
+5. **Benchmark on real devices:** time to first ready (cold and cached) and per-frame inference (p50/p95) on the Phase 12 device matrix (iPhone Safari, mid-range Android Chrome, iPad, desktop). Record the results.
+6. **CI:** a `model-export` workflow (manual trigger) that runs the build + export + parity check and uploads the ONNX as an artifact. Publishing to HF stays a manual, reviewed step.
 
-**Deliverables:** Live Space URL, deploy workflow, latency report.
+**Deliverables:** Shrunk ONNX model + labels on HF (tagged), `lib/detector` module with a dev test page (`/dev/detector`: pick a photo → see boxes), and a device benchmark table.
 
-**Exit criteria:** `curl -F image=@sample.jpg https://<space>.hf.space/v1/detect` returns valid JSON. CORS works from a Vercel preview URL. Cold-start time measured and recorded.
+**Exit criteria:** The model downloads from HF in the browser with no CORS errors. The `/dev/detector` page detects the paper bag test photo as `paper_bag` on desktop Chrome and on at least one real phone. Per-frame inference p95 ≤ 1.5 s on a mid-range phone. Cached reload is ready in ≤ 3 s.
 
-**Risks / notes:** HF free CPU is shared and its performance varies. If the warm-state P95 is too high, fall back in this order: ONNX Runtime → smaller `imgsz` (480) → (v2) on-device inference with `onnxruntime-web`. The project stays on free hardware (D3).
+**Risks / notes:**
+- **Older or low-end phones may be slow** (no WebGPU, weak CPU). Mitigations: a smaller `imgsz`, a lower frame rate, and the "Take photo" mode in Phase 12.
+- **iOS Safari memory limits:** keep one session, reuse the input tensors, and test on a real iPhone early.
+- **First-visit download size** on mobile data is the main UX cost. Show size and progress, and cache aggressively.
+- **Multi-threaded WASM** needs cross-origin isolation (COOP/COEP headers). Set those in `next.config` only if they don't break Supabase or font loading; single-threaded is the fallback.
 
 ---
 
@@ -568,30 +584,29 @@ itapon/
    - HTTPS is required. Vercel previews are HTTPS; for local phone testing use `next dev --experimental-https` or a tunnel.
    - iOS Safari: `<video playsInline muted autoPlay>` is required. Handle `NotAllowedError` and `NotFoundError` with friendly screens and steps to re-enable the camera.
    - Camera switcher (front/back) and a torch toggle where `ImageCapture`/track constraints allow.
-2. **Frame capture pipeline:**
-   - Draw the video to an offscreen `<canvas>` and downscale so the long edge is 640 px.
-   - Encode as JPEG at quality ~0.7 (≈ 40–80 KB) and POST to `/v1/detect`.
-   - **Throttle:** one request in flight at a time. Next frame goes only after the response arrives (adaptive rate, ~1–3 fps).
-   - **Abort** stale requests with `AbortController` when the user leaves the page.
+2. **Frame pipeline (in-browser, D12):**
+   - Grab a frame with `createImageBitmap(video)` and transfer it to the detector Web Worker (Phase 9 `lib/detector`). No upload, so frames never leave the device.
+   - **Throttle:** one frame in the worker at a time. The next frame goes only after the result returns (adaptive rate; ~1–3 fps depending on the device).
+   - Pause inference when the tab is hidden or the user leaves `/scan` (`visibilitychange`), and `dispose()` on unmount.
 3. **Stability gate (matches "Hold the item steady in the frame"):** treat a result as **locked** only when the same top class appears in N of the last M frames (e.g. 3 of 4) above the threshold. This prevents flicker.
 4. **Scan UI (S1):** dark camera view, corner-bracket guide frame, back button, "Scanning" title, hint text, and a bottom sheet with live item name, category, confidence badge and short instruction (Figma mobile frame 1).
 5. **Overlay:** optional bounding-box overlay using normalized bbox values, drawn in the category colour.
-6. **Warming-up / loading screen (D3):** shown while the HF Space wakes up.
-   - Trigger: `/health` doesn't respond within ~1.5 s, or responds with `model_loaded: false`.
-   - Content: iTapon logo, a spinning recycle icon, "Warming up the scanner…", and a secondary line that changes after about 10 s ("This can take up to a minute the first time").
-   - The camera preview starts **behind** the overlay so it's ready the moment the API is.
-   - Poll `/health` with backoff (1 s, 2 s, 4 s, then every 5 s) and fade out automatically when ready.
-   - After about 90 s, show "Scanner is taking longer than usual" with **Retry** and **Browse the Bin Guide** buttons.
+6. **Warming-up / loading screen (D3, D12):** shown while the model downloads and initializes.
+   - Trigger: the model isn't ready yet (`loadModel` still running).
+   - Content: iTapon logo, a spinning recycle icon, "Warming up the scanner…" with a **download progress bar** (e.g. "Downloading scanner, 12 of 20 MB") on the first visit, then "Getting ready…" during initialization. On cached visits it should flash by in about 1–3 s.
+   - Start downloading the model in the background as soon as any page loads (not only `/scan`), when the user isn't in data-saver mode.
+   - The camera preview starts **behind** the overlay so it's ready the moment the model is.
+   - On a download failure or after about 90 s, show "Scanner is taking longer than usual" with **Retry**, **Take a photo instead**, and **Browse the Bin Guide** buttons.
    - Accessibility: `role="status"` with `aria-live="polite"`, and a reduced-motion version without the spin.
    - A short version of the same overlay is used in kiosk mode (Phase 18) and as the Next.js `loading.tsx` for route transitions.
 7. **Other states:** scanning, low confidence ("Hold steady / move closer / more light"), locked, error/offline, permission denied.
-7. **Manual fallback:** a "Take photo" / upload button (`<input type="file" accept="image/*" capture="environment">`) for devices where live video fails.
-8. **Haptics/sound on lock:** `navigator.vibrate` (Android) and a short tone (respect settings).
-9. **Device test matrix:** iPhone (Safari, iOS 17+), Android mid-range (Chrome), iPad (Safari), desktop Chrome/Edge with webcam.
+8. **Manual fallback:** a "Take photo" / upload button (`<input type="file" accept="image/*" capture="environment">`) for devices where live video fails.
+9. **Haptics/sound on lock:** `navigator.vibrate` (Android) and a short tone (respect settings).
+10. **Device test matrix:** iPhone (Safari, iOS 17+), Android mid-range (Chrome), iPad (Safari), desktop Chrome/Edge with webcam.
 
-**Deliverables:** Working `/scan` page connected to the live HF API.
+**Deliverables:** Working `/scan` page running the in-browser detector.
 
-**Exit criteria:** The warming-up screen appears on a cold Space and fades out automatically when it's ready (tested by letting the Space sleep). Item locked within ≤ 2 s of being held steady on 3 of the 4 test devices. No memory leak after 5 minutes of continuous scanning (check heap in DevTools). Permission-denied flow tested.
+**Exit criteria:** The warming-up screen shows download progress on the first visit (cache cleared) and fades out automatically when the model is ready. Item locked within ≤ 2 s of being held steady on 3 of the 4 test devices. No memory leak after 5 minutes of continuous scanning (check heap in DevTools). Permission-denied flow tested.
 
 ---
 
@@ -719,7 +734,7 @@ itapon/
 3. **Hands-free loop:** continuous scanning, auto-lock, auto-read aloud, show the result for N seconds (e.g. 6 s), then auto-reset to scanning. "Next Scan" is still available for touch.
 4. **Idle/attract screen:** after inactivity, show a "Hold your trash up to the camera" animation. Pause inference on idle to save API calls; resume when motion is detected (simple frame-difference check on the client).
 5. **Fullscreen and screen wake:** Fullscreen API plus **Screen Wake Lock API**. Document guided access (iPad) or kiosk mode (Android/ChromeOS) setup.
-6. **Resilience:** on boot and after any long idle, show the `WarmingUpOverlay` until `/health` reports ready (D3); auto-reconnect when the network drops, retry with backoff, and show a "Scanner offline, please use the bin labels" fallback screen.
+6. **Resilience:** on boot, show the `WarmingUpOverlay` until the in-browser model is ready (D3, D12). Once cached, the kiosk keeps scanning even when the network drops (only scan logging is queued); auto-reconnect for Supabase, retry with backoff, and show a "Scanner offline, please use the bin labels" fallback screen.
 7. **External webcam support:** pick the camera by `deviceId` and remember it in localStorage.
 8. **Admin-configurable bin layout:** order the 4 tiles to match the physical bin arrangement under the kiosk, saved per device.
 
@@ -767,7 +782,7 @@ itapon/
 3. Store the feedback row with `corrected_class_key`, `model_version` and the image path.
 4. **Review queue (admin):** list feedback images, approve or relabel them (or export them to Roboflow/CVAT for box correction).
 5. **Retraining script:** merge the approved feedback into dataset v1.x+1, retrain, and evaluate on the **same locked test set** plus a new "field" test set.
-6. **Promotion rule:** a new model ships only if test mAP and per-bin accuracy are ≥ the current model's. Bump `MODEL_REVISION` in the Space secrets; the API reports the new `model_version`.
+6. **Promotion rule:** a new model ships only if test mAP and per-bin accuracy are ≥ the current model's. Publish the new ONNX to the HF model repo under a new tag and bump the pinned revision in the web app; the new `model_version` from `labels.json` is logged with each scan.
 7. Track the model version per scan so the dashboard can compare v1.0 vs. v1.1 in the field.
 
 **Deliverables:** Feedback UI, consented image pipeline, retraining runbook, a v1.1 model if time permits.
@@ -786,9 +801,9 @@ itapon/
 1. **PWA:** `manifest.webmanifest` (name, icons, `display: standalone`, theme colour = bin-blue, portrait for mobile) and a service worker (Serwist / `@serwist/next`). "Add to Home Screen" prompt on Android, plus instructions for iOS.
 2. **Offline:** precache the app shell, the Bin Guide pages and the item/category JSON. The scanner shows "You're offline. Browse the Bin Guide instead." Queue scan logs in IndexedDB and sync when back online.
 3. **Performance budgets:** JS for `/scan` ≤ 200 KB gzipped. LCP ≤ 2.5 s and INP ≤ 200 ms on a mid-range Android over 4G (measure with Lighthouse and Vercel Speed Insights).
-4. **Optimizations:** `next/image` for all assets, dynamic import for heavy pieces (charts, Fuse.js), preconnect to the HF Space domain, keep the camera stream alive between scans, and resize frames to ≤ 640 px (already done).
+4. **Optimizations:** `next/image` for all assets, dynamic import for heavy pieces (charts, Fuse.js), preconnect to `huggingface.co` (model download), keep the camera stream alive between scans, and reuse the worker's input tensors between frames.
 5. **Network-aware behavior:** reduce frame rate or JPEG quality on slow connections (`navigator.connection.effectiveType` where supported).
-6. **Optional stretch, on-device inference:** run the ONNX model in the browser with `onnxruntime-web` (WebGPU/WASM) for zero-latency or offline scanning, with the HF API as a fallback. Treat this as a v2 experiment only if time allows.
+6. **Model caching (D12):** precache the pinned ONNX model + `labels.json` in the service worker so the scanner works **fully offline** after the first visit, and evict old model versions when the pinned revision changes.
 
 **Deliverables:** Installable PWA, offline guide, performance report.
 
@@ -805,8 +820,8 @@ itapon/
 **Tasks**
 1. **RLS audit:** test every table with the anon, user, kiosk and admin roles. Make sure no table has RLS disabled. Confirm the `service_role` key is never shipped to the client.
 2. **Secrets:** all secrets live only in the Vercel/HF/Supabase env settings. Rotate any key that was ever committed (gitleaks history scan).
-3. **API protection:** CORS allowlist, request size limits, rate limiting, and optionally require a Supabase JWT on `/v1/detect` (verify the JWT signature using the Supabase JWT secret/JWKS).
-4. **HTTP security headers** in Next.js: CSP (allow the HF Space and Supabase origins), `Permissions-Policy: camera=(self)`, HSTS, `X-Content-Type-Options`, `Referrer-Policy`.
+3. **Model integrity (D12):** load the model only from the pinned HF revision over HTTPS, and verify its SHA-256 against a hash committed in the web app before use. (If the FastAPI reference API is ever deployed: CORS allowlist, size limits, rate limiting, optional Supabase JWT.)
+4. **HTTP security headers** in Next.js: CSP (allow `huggingface.co` / its CDN for the model, the onnxruntime-web WASM files, and Supabase; `wasm-unsafe-eval` for WebAssembly), `Permissions-Policy: camera=(self)`, HSTS, `X-Content-Type-Options`, `Referrer-Policy`.
 5. **Data Privacy Act (RA 10173) alignment:**
    - Privacy notice page (what is collected, why, retention, rights).
    - Consent for image sharing (Phase 20), separate from general terms.
@@ -835,7 +850,7 @@ itapon/
 3. **E2E (Playwright):** guide search, history, auth upgrade, admin gating. Use a **fake camera stream** (`--use-fake-device-for-media-stream --use-file-for-fake-video-capture=sample.y4m`) to test the scan → result flow automatically.
 4. **Model regression test:** a fixed set of ~50 images with expected classes runs in CI on every model change and fails if accuracy drops.
 5. **Device/browser matrix (manual):** iPhone Safari, Android Chrome (low- and mid-range), iPad Safari, desktop Chrome/Edge/Firefox. Record results in a checklist table.
-6. **Load test:** k6 or Locust against the HF Space (e.g. 10 concurrent kiosks at 2 fps) to find the throughput ceiling.
+6. **On-device performance test:** run continuous scanning for 10 minutes on the device matrix and record fps, memory growth and battery/thermal behaviour (no server load test needed under D12).
 7. **Field test:** real items under real campus lighting, recording the true bin vs. predicted bin. This produces the "real-world accuracy" result.
 
 **Deliverables:** Test suites in CI, device matrix results, load test report, field accuracy report.
@@ -853,16 +868,16 @@ itapon/
 **Tasks**
 1. **GitHub Actions:**
    - `web.yml`: lint, typecheck, unit tests, Playwright on PR. Vercel auto-deploys previews and promotes `main` to production.
-   - `api.yml`: Ruff, pytest, Docker build; on tag `api-v*`, push to the HF Space.
+   - `api.yml`: Ruff + pytest for the reference API and scripts. `model-export.yml` (manual): build → export → parity check → artifact; publishing to the HF model repo is a reviewed manual step.
    - `db.yml`: on merge to `main`, `supabase db push` to prod (migrations only, never manual edits in prod).
    - `model-regression.yml`: runs when `MODEL_REVISION` changes.
-2. **Environments:** dev (local + Supabase dev), preview (Vercel preview + Supabase dev), production (Vercel prod + Supabase prod + HF Space). Use a separate staging Space if resources allow.
+2. **Environments:** dev (local + Supabase dev), preview (Vercel preview + Supabase dev), production (Vercel prod + Supabase prod + pinned HF model revision).
 3. **Monitoring:**
    - Frontend errors: Sentry (free tier) or Vercel logs; Vercel Analytics and Speed Insights.
-   - API: structured JSON logs (latency, model version, detection count, never images), and an uptime check on `/health` (UptimeRobot / Better Stack free).
+   - Model: log on-device inference time, execution provider (WebGPU/WASM) and `model_version` with each scan (never images), so the dashboard shows real device performance. Uptime check on the Vercel site (UptimeRobot / Better Stack free).
    - Supabase: dashboard usage alerts (DB size, egress, auth MAU).
 4. **Release process:** semantic versioning, a CHANGELOG, and a release checklist (migrations applied, env vars set, smoke test).
-5. **Rollback plan:** Vercel instant rollback, HF Space revert to the previous commit/tag, and roll-forward migrations only.
+5. **Rollback plan:** Vercel instant rollback (this also reverts the pinned model revision), and roll-forward migrations only.
 6. Custom domain (optional), e.g. `itapon.app` / `itapon.vercel.app`.
 
 **Deliverables:** CI/CD workflows, monitoring dashboards, release v1.0.0.
@@ -912,9 +927,9 @@ itapon/
 4. **Manuscript alignment:** map deliverables to the chapters (Introduction from the proposal; RRL; Methodology from Phases 3–8 and 10; Results from Phases 7, 23 and 25; Conclusions and Recommendations from the v2 backlog).
 5. **Defense demo prep:**
    - Scripted live demo (mobile scan → multi-item plan → kiosk → dashboard).
-   - A **backup demo video** in case Wi-Fi or a cold start fails.
-   - Open the app about 10 minutes before the demo so the HF Space is awake and the loading screen doesn't appear mid-demo. Keep a local Docker instance of the API as a fallback.
-6. **v2 backlog:** on-device inference, more classes, dirty/clean detection, smart-bin hardware integration, multi-LGU rule sets, gamification/eco-points.
+   - A **backup demo video** in case a device or Wi-Fi fails.
+   - Open the app on every demo device beforehand so the model is cached; it then works even without Wi-Fi (D12).
+6. **v2 backlog:** more classes, dirty/clean detection, smart-bin hardware integration, multi-LGU rule sets, gamification/eco-points.
 7. **Handover:** transfer ownership of accounts and repos to the adviser or the next cohort if needed. Archive the dataset and weights with licenses.
 
 **Deliverables:** Complete docs, manuscript-ready figures and tables, demo script and video, v2 backlog.
@@ -934,7 +949,7 @@ Assumes about 16–18 weeks of development. Bars show parallel tracks.
 | 3 | P3 → P4 annotation | P10 RLS + seed | P11 components + layouts | |
 | 4 | P4 annotation/QA | P8 API skeleton (mock model) | P11 static screens | |
 | 5 | **P5 baseline** | P8 with real weights | P12 camera | |
-| 6 | P6 error analysis | **P9 HF deploy** | P12 connected to live API | |
+| 6 | P6 error analysis | **P9 model export + hosting** | P12 connected to in-browser detector | |
 | 7 | P6 augmentation/data | P9 latency tuning | **P13 result** (MVP demo) | MVP review |
 | 8 | P6 tuning | P10 analytics RPCs | P14 multi-item | |
 | 9 | **P7 eval + export** | swap to v1.0 weights | P15 guide, P16 history | |
@@ -966,13 +981,15 @@ Assumes about 16–18 weeks of development. Bars show parallel tracks.
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
 | Not enough local training data for rare classes (battery, bulb) | High | High | Targeted collection early (P3); merge public datasets; reduce the v1 class list if needed |
-| HF free Space cold starts / slow CPU | High | Medium | Warming-up / loading screen (D3), background `/health` ping on page load, ONNX, 480 px input, open the app before demos so the Space is awake |
+| Slow in-browser inference on low-end phones (D12) | Medium | High | WebGPU when available, FP16/INT8 model, smaller `imgsz`, adaptive frame rate, "Take photo" fallback; benchmark early on real phones (P9) |
+| Large first-visit model download (D12) | High | Medium | Shrink to ≤ 15–25 MB (P9), progress bar on the warming-up screen (D3), service-worker cache (P21) |
+| Free hosting rules change again (as HF did in July 2026) | Medium | Medium | The model is a static file: it can move to Vercel, a Static Space or GitHub Pages in minutes |
 | iOS Safari camera quirks | Medium | High | Start P12 early; `playsInline`; photo-capture fallback; test on real iPhones weekly |
 | "Dirty vs clean" items misclassified by bin | High | Medium | Caveat copy in UI ("if greasy → residual"); per-bin metrics; v2 classes |
 | Poor model calibration ("95% sure" is misleading) | Medium | Medium | Reliability diagram in P7; show confidence bands instead of raw percentages if needed |
 | Supabase RLS misconfiguration leaks history | Low | High | RLS from day one; automated two-user RLS tests in CI (P10, P22) |
 | Ultralytics AGPL-3.0 obligations | Resolved | None | Project is open source under AGPL-3.0 (D2); public repo, LICENSE file, source link in the app footer |
-| Team bandwidth / exams | High | High | MVP by week 7; MoSCoW cuts "Could" features first (P20, i18n, on-device) |
+| Team bandwidth / exams | High | High | MVP by week 7; MoSCoW cuts "Could" features first (P20, i18n, offline guide) |
 | Bin rules differ across LGUs | Medium | Low | Mapping lives in the DB, editable by admin (P19); cite sources per rule |
 
 ---

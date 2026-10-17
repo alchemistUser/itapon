@@ -19,7 +19,6 @@ Once it is signed off, changes go through the change process in Section 10.
 | Tagline (working) | "Scan it. Sort it right." |
 | GitHub repo | `itapon` (public, AGPL-3.0) |
 | Vercel project | `itapon` → `itapon.vercel.app` |
-| Hugging Face Space | `itapon-api` |
 | Hugging Face model repo | `itapon-yolo` |
 | Supabase projects | `itapon-dev`, `itapon-prod` |
 | Figma | Replace every "HIWALAY" header/logo with "iTapon" |
@@ -181,10 +180,11 @@ This table is the **source of truth** for the `waste_items` seed in Phase 10. Co
 | Model (bin) | Bin-level accuracy (top detection's bin = true bin) | **≥ 90%** | Script mapping predictions → bins on the test set | 7 |
 | Model (bin) | Hazardous recall (bin level) | **≥ 95%** | Hazardous items must almost never be missed | 7 |
 | Field | Real-world bin accuracy | **≥ 85%** | ≥ 200 live scans at the pilot site, manually verified | 23, 25 |
-| Latency | P95 capture → result (warm, 4G) | **≤ 1.5 s** | Client timing logged in `scan_sessions.latency_ms` | 9, 12 |
-| Latency | P95 capture → result (warm, campus Wi-Fi) | **≤ 0.8 s** | Same | 9, 12 |
+| Latency | P95 on-device inference per frame (mid-range phone) | **≤ 1.5 s** | Client timing logged in `scan_sessions.latency_ms` (D12) | 9, 12 |
+| Latency | P95 on-device inference per frame (laptop / tablet kiosk) | **≤ 0.5 s** | Same | 9, 12 |
 | Latency | Time to lock a held item | **≤ 2 s** | Manual stopwatch on the device test matrix | 12 |
-| Cold start | Space sleep → ready | Measured and shown on the warming-up screen (no target, D3) | `/health` polling log | 9 |
+| Model load | First visit (download) / cached visit → scanner ready | **Cached ≤ 3 s**; first visit shown with a progress bar (D3) | Client timing | 9, 21 |
+| Model size | ONNX download size | **≤ 25 MB** | File size | 9 |
 | UX | SUS score | **≥ 75** ("good") | SUS questionnaire, ≥ 30 participants | 25 |
 | UX | Task success rate | **≥ 90%** | UAT task observation | 25 |
 | Accessibility | WCAG level | **2.2 AA** | axe + manual VoiceOver/TalkBack | 17 |
@@ -220,7 +220,7 @@ Why the hazardous recall target is higher: a battery or bulb in the wrong bin is
 - **US-03 (P1):** As a user with several items, I want one plan for all of them, so I can sort everything at once.
   - *AC:* a multi-item scan shows the "What to do next" plan; hazardous items are listed first; reuse tips are shown where available.
 - **US-04 (P1):** As a user, I want a clear message if the scanner is still starting, so I don't think the app is broken.
-  - *AC:* the warming-up screen appears on cold start, updates its message after 10 s, fades out when ready, and offers Retry/Bin Guide after 90 s.
+  - *AC:* the warming-up screen shows model download progress on the first visit, fades out when ready, and offers Retry / Take photo / Bin Guide on failure or after 90 s.
 
 **Accessibility**
 - **US-05 (P2):** As a low-vision user, I want the result read aloud, so I don't have to read the screen.
@@ -256,7 +256,7 @@ Why the hazardous recall target is higher: a battery or bulb in the wrong bin is
 
 | Priority | Feature | Stories | Roadmap phase |
 |---|---|---|---|
-| **Must** | Live camera scanning + warming-up screen | US-01, US-04 | 12 |
+| **Must** | Live camera scanning (in-browser model, D12) + warming-up screen | US-01, US-04 | 9, 12 |
 | **Must** | Single-item result with bin guidance + confidence | US-01, US-02 | 13 |
 | **Must** | Bin Guide with search | US-08 | 15 |
 | **Must** | Read aloud + core accessibility | US-05, US-06, US-07 | 17 |
@@ -269,11 +269,10 @@ Why the hazardous recall target is higher: a battery or bulb in the wrong bin is
 | **Could** | Filipino UI localization | none | 17 |
 | **Could** | Offline Bin Guide (PWA) | none | 21 |
 | **Could** | Admin content editor for items | none | 19 |
-| **Won't (v1)** | On-device (in-browser) inference | none | v2 |
 | **Won't (v1)** | Hardware actuation (auto-opening bins, robot sorting) | none | v2 |
 | **Won't (v1)** | Dirty/clean detection by the model | none | v2 |
 | **Won't (v1)** | Gamification / eco-points | none | v2 |
-| **Won't (v1)** | Paid hardware for the HF Space (D3) | none | none |
+| **Won't (v1)** | Paid inference hosting (D3, D12) | none | none |
 
 **Cut order if the schedule slips:** Could items first (bottom up), then the Should items in this order: dashboard → kiosk → multi-item. The Must items are the MVP (Milestone M3).
 
