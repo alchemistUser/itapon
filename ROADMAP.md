@@ -25,6 +25,7 @@ These decisions are settled. Reopen one only for a concrete reason, and add a da
 | D8 | v1 class list | **23 classes** (7 recyclable, 4 biodegradable, 8 residual, 4 hazardous), frozen in [`docs/spec.md`](docs/spec.md) §3. Pending sign-off. | 2026-10-17 |
 | D9 | Dirty vs. clean items | The model detects the item type only. Contamination is shown as a UI caveat (`contamination_note`), not as separate classes. | 2026-10-17 |
 | D10 | Tool versions | Node 20 + pnpm 9, Next.js 16.4 (App Router) + Tailwind v4, Python 3.12 + uv. The repo is under the team member's personal GitHub account (no org). | 2026-10-17 |
+| D11 | Model for v0 | **Zero-shot YOLO-World** (Ultralytics), with the 23 spec classes as text prompts baked into custom-vocabulary weights. No training needed to build the app. Phases 3–7 are **deferred, not cancelled**: the course and proposal still expect a trained model for Chapter 4. Confirm the timing with the adviser. | 2026-10-17 |
 
 ---
 
@@ -155,12 +156,12 @@ itapon/
 |---|---|---|---|
 | 1 | Scope lock, taxonomy & success metrics | Shared | none |
 | 2 | Project foundations & tooling | Shared | 1 |
-| 3 | Dataset design & collection | ML | 1 |
-| 4 | Annotation, QA & dataset versioning | ML | 3 |
-| 5 | Baseline model training | ML | 4 |
-| 6 | Model improvement & robustness | ML | 5 |
-| 7 | Model evaluation, thresholds & export | ML | 6 |
-| 8 | Inference API (FastAPI), local | Backend | 5 (baseline weights) |
+| 3 | Dataset design & collection (**deferred, D11**) | ML | 1 |
+| 4 | Annotation, QA & dataset versioning (**deferred, D11**) | ML | 3 |
+| 5 | Baseline model training (**deferred, D11**) | ML | 4 |
+| 6 | Model improvement & robustness (**deferred, D11**) | ML | 5 |
+| 7 | Model evaluation, thresholds & export (**deferred, D11**) | ML | 6 |
+| 8 | Inference API (FastAPI), local, on zero-shot YOLO-World | Backend | 1 (class list) |
 | 9 | Inference API deployment to Hugging Face | Backend | 8 |
 | 10 | Supabase schema, auth & content seed | Backend | 1, 2 |
 | 11 | Frontend foundation & design system | Web | 2 |
@@ -180,8 +181,10 @@ itapon/
 | 25 | Pilot deployment & user acceptance testing | Shared | 24 |
 | 26 | Documentation, manuscript & defense | Shared | 25 |
 
+**Current order (D11):** 1 → 2 → **8 → 9 → 10 → 11 → 12 …**, building the app on zero-shot YOLO-World. Phases 3–7 (dataset + training, using a mix of public Kaggle/TACO/Roboflow data and a small set of local photos) run later or in parallel. Their trained weights replace YOLO-World with no frontend change, because the API contract only returns `class_key`.
+
 **Parallel plan for 5 people (suggested):**
-- **ML lead + 1:** Phases 3 → 7, then 20.
+- **ML lead + 1:** Phases 3 → 7 (when resumed), then 20.
 - **Backend lead:** Phases 8 → 9 and 10, then 19 and 22.
 - **Frontend lead + 1:** Phases 11 → 18, then 21.
 - **Everyone:** Phases 1, 2, 23–26.
@@ -385,6 +388,9 @@ itapon/
 
 ## Phase 8: Inference API (FastAPI), local
 
+> **Status (2026-10-17): Done (local Docker build skipped).** FastAPI service in `services/ml-api` running **zero-shot YOLO-World** (`yolov8s-worldv2`, D11). The 23 classes (46 text prompts) are baked into `weights/itapon-world-v0.pt` by `scripts/build_world_model.py`, and the API runs without CLIP. Endpoints `/health`, `/v1/model`, `/v1/detect`. The model loads in the background (`/health` reports `model_loaded`, `/v1/detect` returns 503 + `Retry-After` while loading) for the D3 warming-up screen. Validation: JPEG/PNG/WebP, ≤ 2 MB, EXIF rotation, downscale to 640. 10 fast tests + 1 real-model test, ruff clean. Smoke test: Figma paper-bag photos detected as `paper_bag` (0.58–0.67), cup as `plastic_cup` (0.57); local CPU latency p50 157 ms / p95 165 ms. Details in [`services/ml-api/README.md`](services/ml-api/README.md).
+> **Deviations:** the model is zero-shot instead of trained weights (D11). Thresholds are provisional (confident 0.35, possible 0.15, min 0.10) until Phase 7. The two-stage Dockerfile (builder with CLIP → runtime without) was **not built locally** because Docker Desktop isn't set up. Its first build happens on Hugging Face in Phase 9. Rate limiting and an API key are deferred to Phase 22.
+
 **Goal:** A clean, documented, stateless HTTP API that wraps the model.
 
 **Why now:** It can start as soon as baseline weights exist (Phase 5), in parallel with Phases 6–7. Swapping in better weights later is just a config change.
@@ -430,6 +436,8 @@ itapon/
 ## Phase 9: Inference API deployment to Hugging Face Spaces
 
 **Goal:** A public, stable HTTPS endpoint for the model.
+
+> **Note from Phase 8:** the Dockerfile has never been built. Expect to fix build errors in the HF build logs on the first push. The image downloads `yolov8s-worldv2.pt` and the CLIP weights during the build, so the first build takes several minutes.
 
 **Why now:** The frontend camera work (Phase 12) needs a real remote endpoint to measure true latency.
 

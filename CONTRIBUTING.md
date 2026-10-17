@@ -24,8 +24,10 @@ pnpm install          # installs the web app
 pnpm dev              # http://localhost:3000
 
 cd services/ml-api
-uv sync               # creates .venv and installs Python deps
-uv run uvicorn app.main:app --reload --port 7860   # http://localhost:7860/docs
+uv sync --group build                                     # first time: deps + CLIP
+uv run --group build python scripts/build_world_model.py  # builds weights/itapon-world-v0.pt
+uv sync                                                   # runtime deps only
+uv run uvicorn app.main:app --reload --port 7860          # http://localhost:7860/docs
 ```
 
 Copy every `.env.example` to `.env.local` (web) or `.env` (API) and fill in the values. **Never commit real secrets.** Real values live only in the Vercel, Hugging Face and Supabase dashboards.
