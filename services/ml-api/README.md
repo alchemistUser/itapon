@@ -51,7 +51,7 @@ Browser numbers: `/dev/detector`, desktop Chrome, ONNX Runtime Web WASM × 4 thr
 - INT8 is *slower* than FP32 in native Python ONNX Runtime but *faster* in the browser.
 - int8-640 is more accurate (higher scores, catches both items), so it's a candidate for kiosks with strong hardware.
 - FP16 was tried and dropped: the converter produced graphs ONNX Runtime refuses to load (`Resize` type errors), and INT8 already meets the size target.
-- **Phone numbers are still to be measured** (Phase 9 task 5).
+- **Phone (Android, Brave, live site, int8-480):** p50 691 ms / p95 1575 ms, cached load 9.3 s. A ceramic mug was detected as `plastic_cup` 0.40, a zero-shot false positive on non-waste (follow-up F9-2: "not waste" distractor prompts in model v0.2).
 
 ## Endpoints (contract v1)
 
