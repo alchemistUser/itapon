@@ -47,7 +47,7 @@ export interface FeedbackInput {
 }
 
 export async function submitFeedback(input: FeedbackInput): Promise<{ error?: string }> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return { error: "Feedback isn't available right now." };
   const uid = await ensureUserId();
   if (!uid) return { error: "Feedback isn't available right now." };

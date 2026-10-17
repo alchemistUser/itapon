@@ -3,6 +3,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { DetectorPreloader } from "@/components/shell/detector-preloader";
+import { OfflineSupport } from "@/components/shell/offline-support";
 import { PrefsApplier } from "@/components/shell/prefs-applier";
 
 import "./globals.css";
@@ -13,6 +14,8 @@ export const metadata: Metadata = {
   title: { default: "iTapon", template: "%s · iTapon" },
   description: "Scan your waste and find out which bin it goes in.",
   applicationName: "iTapon",
+  appleWebApp: { capable: true, title: "iTapon", statusBarStyle: "default" },
+  icons: { apple: "/icons/apple-touch-icon.png" },
 };
 
 export const viewport: Viewport = {
@@ -25,10 +28,15 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${inter.variable} h-full`}>
+      <head>
+        {/* The model (13 MB) comes from the Hugging Face CDN (D12): open the connection early. */}
+        <link rel="preconnect" href="https://huggingface.co" crossOrigin="anonymous" />
+      </head>
       <body className="flex min-h-full flex-col">
         {children}
         <DetectorPreloader />
         <PrefsApplier />
+        <OfflineSupport />
       </body>
     </html>
   );

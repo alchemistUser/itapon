@@ -30,22 +30,27 @@ export function useAuth(): AuthState {
   });
 
   useEffect(() => {
-    const sb = getSupabase();
-    if (!sb) {
-      // Async on purpose: no synchronous setState inside an effect.
-      void Promise.resolve().then(() => setState((s) => ({ ...s, loading: false })));
-      return;
-    }
+    let cancelled = false;
+    let unsubscribe = () => {};
     const apply = (user: User | null) =>
+      !cancelled &&
       setState({
         loading: false,
         user,
         isAnonymous: user?.is_anonymous ?? true,
         pendingEmail: user?.new_email ?? null,
       });
-    sb.auth.getUser().then(({ data }) => apply(data.user));
-    const { data } = sb.auth.onAuthStateChange((_event, session) => apply(session?.user ?? null));
-    return () => data.subscription.unsubscribe();
+    void getSupabase().then((sb) => {
+      if (cancelled) return;
+      if (!sb) return setState((s) => ({ ...s, loading: false }));
+      sb.auth.getUser().then(({ data }) => apply(data.user));
+      const { data } = sb.auth.onAuthStateChange((_event, session) => apply(session?.user ?? null));
+      unsubscribe = () => data.subscription.unsubscribe();
+    });
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
   }, []);
 
   return state;
@@ -56,7 +61,7 @@ const redirectTo = (path: string) =>
 
 /** Keep this device's (anonymous) history by attaching an email to the same account. */
 export async function saveHistoryWithEmail(email: string): Promise<{ error?: string }> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return { error: "Accounts aren't available right now." };
   const userId = await ensureUserId(); // guest who hasn't scanned yet still gets an account
   if (!userId) return { error: "Couldn't start a session. Check your connection." };
@@ -78,7 +83,7 @@ export async function saveHistoryWithEmail(email: string): Promise<{ error?: str
 
 /** Magic-link sign-in for an existing account (e.g. on a new device). */
 export async function signInWithEmail(email: string): Promise<{ error?: string }> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return { error: "Accounts aren't available right now." };
   const { error } = await sb.auth.signInWithOtp({
     email: email.trim(),
@@ -89,7 +94,7 @@ export async function signInWithEmail(email: string): Promise<{ error?: string }
 
 /** Google sign-in (needs the Google provider + manual linking enabled in Supabase). */
 export async function continueWithGoogle(isAnonymous: boolean): Promise<{ error?: string }> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return { error: "Accounts aren't available right now." };
   // Redirect flow, not a popup: popups don't work with the site's COOP same-origin header.
   const opts = { provider: "google" as const, options: { redirectTo: redirectTo("/history") } };
@@ -100,5 +105,5 @@ export async function continueWithGoogle(isAnonymous: boolean): Promise<{ error?
 }
 
 export async function signOut(): Promise<void> {
-  await getSupabase()?.auth.signOut();
+  await (await getSupabase())?.auth.signOut();
 }

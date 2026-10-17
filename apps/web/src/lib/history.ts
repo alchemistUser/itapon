@@ -24,7 +24,7 @@ export interface HistoryScan {
 }
 
 export async function fetchHistory(page: number): Promise<{ scans: HistoryScan[]; more: boolean }> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return { scans: [], more: false };
   const { data: auth } = await sb.auth.getSession();
   if (!auth.session) return { scans: [], more: false }; // no account yet → no history
@@ -58,7 +58,7 @@ export async function fetchHistory(page: number): Promise<{ scans: HistoryScan[]
 
 /** "Delete my data": scans + feedback rows (RPC) and any shared training photos. */
 export async function deleteMyData(): Promise<{ scans: number; feedback: number; photos: number }> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) throw new Error("Not available");
   const { data: auth } = await sb.auth.getUser();
   const uid = auth.user?.id;

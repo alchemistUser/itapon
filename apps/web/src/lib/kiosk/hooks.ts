@@ -29,9 +29,9 @@ export function useKioskDevice(): { device: KioskDevice | null; loading: boolean
     loading: true,
   });
   useEffect(() => {
-    const sb = getSupabase();
     let cancelled = false;
     void (async () => {
+      const sb = await getSupabase();
       const uid = sb ? (await sb.auth.getSession()).data.session?.user.id : undefined;
       if (!sb || !uid) return !cancelled && setState({ device: null, loading: false });
       const { data } = await sb

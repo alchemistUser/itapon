@@ -5,11 +5,11 @@
 // Phone: full-screen camera + bottom sheet. Tablet/desktop: camera above (md) or beside (lg)
 // the result panel. Falls back to "take a photo" when the camera can't be used.
 import { Camera, Flashlight, FlashlightOff, RefreshCw, SwitchCamera } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { BinTile } from "@/components/bins/bins";
-import { FeedbackPrompt } from "@/components/scan/feedback-prompt";
 import {
   CameraChrome,
   ResultPanel,
@@ -34,6 +34,14 @@ import type { Detection } from "@/lib/detector/types";
 import { topOf } from "@/lib/scan/stability";
 import { useCamera, type CameraStatus } from "@/lib/scan/use-camera";
 import { useScanLoop, type ScanFrame } from "@/lib/scan/use-scan-loop";
+import { useOnline } from "@/lib/kiosk/hooks";
+
+// Loaded after a result locks (with Fuse.js for the item search): keeps /scan's first load
+// lighter (Phase 21 budget).
+const FeedbackPrompt = dynamic(
+  () => import("@/components/scan/feedback-prompt").then((m) => m.FeedbackPrompt),
+  { ssr: false },
+);
 
 const SLOW_AFTER_MS = 10_000;
 const GIVE_UP_AFTER_MS = 90_000;
@@ -195,6 +203,7 @@ export function ScanScreen() {
   const [camBoxRef, camSize] = useElementSize<HTMLDivElement>();
   const camera = useCamera(videoRef);
   const det = useDetectorState();
+  const online = useOnline();
   const loadingMs = useLoadingElapsed(det.startedAt, det.status === "loading");
 
   const [locked, setLocked] = useState<{ view: ResultView; frame: ScanFrame | null } | null>(null);
@@ -440,8 +449,19 @@ export function ScanScreen() {
           role="alert"
           className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-ink/90 px-6 text-center text-white"
         >
-          <p className="text-lg font-semibold">The scanner is taking longer than usual</p>
-          {det.error ? <p className="text-sm text-white/80">{det.error}</p> : null}
+          <p className="text-lg font-semibold">
+            {online ? "The scanner is taking longer than usual" : "You're offline"}
+          </p>
+          {online ? (
+            det.error ? (
+              <p className="text-sm text-white/80">{det.error}</p>
+            ) : null
+          ) : (
+            <p className="max-w-xs text-sm text-white/80">
+              The scanner needs to be online once to download (about 13 MB). Browse the Bin Guide
+              instead. It works offline.
+            </p>
+          )}
           <div className="flex flex-wrap justify-center gap-2">
             <Button onClick={retryDetector}>
               <RefreshCw aria-hidden className="size-4" /> Retry

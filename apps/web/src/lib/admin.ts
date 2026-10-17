@@ -24,7 +24,7 @@ export function useAdminContext(): AdminContext {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const sb = getSupabase();
+      const sb = await getSupabase();
       const uid = sb ? (await sb.auth.getSession()).data.session?.user.id : undefined;
       if (!sb || !uid)
         return !cancelled && setCtx({ loading: false, isAdmin: false, institution: null });
@@ -60,7 +60,7 @@ export async function fetchInstitutionScans(
   fromDay: string,
   toDay: string,
 ): Promise<{ scans: AnalyticsScan[]; truncated: boolean }> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return { scans: [], truncated: false };
   const from = new Date(`${fromDay}T00:00:00+08:00`).toISOString();
   const to = new Date(`${toDay}T23:59:59.999+08:00`).toISOString();
@@ -106,7 +106,7 @@ export interface AdminDevice {
 }
 
 export async function fetchDevices(): Promise<AdminDevice[]> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return [];
   const { data, error } = await sb
     .from("devices")
@@ -128,7 +128,7 @@ export async function registerKiosk(input: {
   location?: string;
   binOrder: Category[];
 }): Promise<{ error?: string }> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return { error: "Not available" };
   const { error } = await sb.rpc("admin_register_kiosk", {
     p_email: input.email,
@@ -143,7 +143,7 @@ export async function updateDevice(
   id: string,
   patch: { label?: string; location_note?: string | null; bin_order?: Category[] },
 ): Promise<{ error?: string }> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return { error: "Not available" };
   const { error } = await sb.from("devices").update(patch).eq("id", id);
   return error ? { error: error.message } : {};
@@ -154,7 +154,7 @@ export async function fetchInstitutionFeedback(
   fromDay: string,
   toDay: string,
 ): Promise<FeedbackRow[]> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return [];
   const from = new Date(`${fromDay}T00:00:00+08:00`).toISOString();
   const to = new Date(`${toDay}T23:59:59.999+08:00`).toISOString();
@@ -194,7 +194,7 @@ export async function fetchInstitutionFeedback(
 
 /** Short-lived links to shared feedback photos (private bucket). */
 export async function signedPhotoUrls(paths: string[]): Promise<Record<string, string>> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb || !paths.length) return {};
   const { data } = await sb.storage.from("training-images").createSignedUrls(paths, 600);
   const out: Record<string, string> = {};
@@ -207,7 +207,7 @@ export async function reviewFeedback(
   status: FeedbackRow["reviewStatus"],
   classKey: string | null,
 ): Promise<{ error?: string }> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return { error: "Not available" };
   const { error } = await sb.rpc("admin_review_feedback", {
     p_id: id,

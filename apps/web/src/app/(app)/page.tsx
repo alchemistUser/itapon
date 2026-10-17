@@ -2,6 +2,7 @@
 import { BookOpen, Camera, ListChecks } from "lucide-react";
 
 import { BinTile } from "@/components/bins/bins";
+import { InstallCard } from "@/components/shell/install-card";
 import { ButtonLink } from "@/components/ui/button";
 import { Logo } from "@/components/ui/misc";
 import { BIN_ORDER, BINS } from "@/lib/bins";
@@ -47,6 +48,8 @@ export default function Home() {
           ))}
         </ul>
       </section>
+
+      <InstallCard className="md:max-w-2xl" />
 
       <section id="how-it-works" aria-labelledby="how" className="scroll-mt-24">
         <h2 id="how" className="text-xl font-semibold text-ink">

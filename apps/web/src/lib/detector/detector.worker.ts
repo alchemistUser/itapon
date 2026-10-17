@@ -53,6 +53,38 @@ async function fetchWithCache(url: string, onProgress?: (loaded: number, total?:
   return { buffer: bytes.buffer, fromCache: false };
 }
 
+/** Labels: network first (small), cached copy when offline (Phase 21). */
+async function fetchLabels(url: string): Promise<LabelsFile> {
+  let cache: Cache | null = null;
+  try {
+    cache = await caches.open(MODEL_CACHE);
+  } catch {
+    cache = null;
+  }
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Labels download failed (${res.status})`);
+    await cache?.put(url, res.clone()).catch(() => {});
+    return (await res.json()) as LabelsFile;
+  } catch (e) {
+    const hit = await cache?.match(url);
+    if (hit) return (await hit.json()) as LabelsFile;
+    throw e;
+  }
+}
+
+/** Drop cached files of other model versions/sizes once the pinned one is loaded (D12). */
+async function evictOtherModels(keep: string[]) {
+  try {
+    const cache = await caches.open(MODEL_CACHE);
+    for (const req of await cache.keys()) {
+      if (!keep.includes(req.url)) await cache.delete(req);
+    }
+  } catch {
+    /* Cache API unavailable */
+  }
+}
+
 async function load(msg: Extract<ToWorker, { type: "load" }>) {
   const start = performance.now();
   spec = msg.model;
@@ -63,9 +95,7 @@ async function load(msg: Extract<ToWorker, { type: "load" }>) {
   const threads = self.crossOriginIsolated ? Math.min(4, navigator.hardwareConcurrency || 1) : 1;
   ort.env.wasm.numThreads = threads;
 
-  const labelsRes = await fetch(msg.labelsUrl);
-  if (!labelsRes.ok) throw new Error(`Labels download failed (${labelsRes.status})`);
-  const labelsFile = (await labelsRes.json()) as LabelsFile;
+  const labelsFile = await fetchLabels(msg.labelsUrl);
   labels = labelsFile.labels;
 
   const { buffer, fromCache } = await fetchWithCache(msg.modelUrl, (loaded, total) =>
@@ -91,6 +121,8 @@ async function load(msg: Extract<ToWorker, { type: "load" }>) {
   post({ type: "progress", progress: { phase: "warmup" } });
   await infer(new Float32Array(3 * size * size)); // first run builds kernels; do it before "ready"
   const tReady = performance.now();
+  const abs = (u: string) => new URL(u, self.location.href).href;
+  void evictOtherModels([abs(msg.modelUrl), abs(msg.labelsUrl)]);
 
   post({
     type: "ready",

@@ -15,7 +15,7 @@ import {
   signOut,
   useAuth,
 } from "@/lib/supabase/auth";
-import { getSupabase } from "@/lib/supabase/client";
+import { getSupabase, supabaseConfigured } from "@/lib/supabase/client";
 
 const GOOGLE_ENABLED = process.env.NEXT_PUBLIC_AUTH_GOOGLE === "1";
 const inputCls =
@@ -94,17 +94,18 @@ export function AccountView() {
 
   // Load profile (prefs + display name) for the current user.
   useEffect(() => {
-    const sb = getSupabase();
-    if (!sb || !userId) return;
+    if (!userId) return;
     let cancelled = false;
-    sb.from("profiles")
-      .select("display_name")
-      .eq("id", userId)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (cancelled || !data) return;
-        setDisplayName(data.display_name ?? "");
-      });
+    void getSupabase().then(async (sb) => {
+      if (!sb || cancelled) return;
+      const { data } = await sb
+        .from("profiles")
+        .select("display_name")
+        .eq("id", userId)
+        .maybeSingle();
+      if (cancelled || !data) return;
+      setDisplayName(data.display_name ?? "");
+    });
     return () => {
       cancelled = true;
     };
@@ -116,7 +117,7 @@ export function AccountView() {
   }
 
   async function saveName() {
-    const sb = getSupabase();
+    const sb = await getSupabase();
     if (!sb || !userId) return;
     setSaveState("saving");
     const { error } = await sb
@@ -147,7 +148,7 @@ export function AccountView() {
     }
   }
 
-  if (!getSupabase()) {
+  if (!supabaseConfigured) {
     return (
       <div className="flex flex-col gap-6 md:max-w-2xl">
         <PageTitle title="Account" />

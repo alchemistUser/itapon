@@ -13,6 +13,10 @@ const crossOriginIsolation = [
 ];
 
 const nextConfig: NextConfig = {
+  // Changes every deploy; the service worker re-caches the offline pages when it changes.
+  env: {
+    NEXT_PUBLIC_BUILD_ID: process.env.VERCEL_GIT_COMMIT_SHA ?? `local-${Date.now()}`,
+  },
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {
@@ -24,7 +28,17 @@ const nextConfig: NextConfig = {
     },
   },
   async headers() {
-    return [{ source: "/:path*", headers: crossOriginIsolation }];
+    return [
+      { source: "/:path*", headers: crossOriginIsolation },
+      {
+        // Phase 21: always revalidate the service worker so updates reach users quickly.
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+        ],
+      },
+    ];
   },
 };
 

@@ -37,7 +37,7 @@ function loadCached() {
 }
 
 async function refresh() {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return;
   const { data, error } = await sb
     .from("waste_items")

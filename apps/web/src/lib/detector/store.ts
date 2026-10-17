@@ -62,8 +62,12 @@ export async function detect(source: ImageBitmapSource): Promise<DetectResult> {
 
 /** Preload on idle from any page, unless the user asked to save data. */
 export function preloadDetectorWhenIdle(): () => void {
-  const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
-  if (conn?.saveData) return () => {};
+  // Network-aware (Phase 21): inference is on-device (D12), so the network only matters for
+  // the one-time 13 MB download. Don't start it unasked on Data Saver or 2G; /scan still loads it.
+  const conn = (
+    navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }
+  ).connection;
+  if (conn?.saveData || /(^|-)2g$/.test(conn?.effectiveType ?? "")) return () => {};
   const w = window as Window & {
     requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;
     cancelIdleCallback?: (id: number) => void;

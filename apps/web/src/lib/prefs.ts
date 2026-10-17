@@ -40,9 +40,9 @@ function load() {
   }
   applyToDocument(prefs);
   // Then prefer the account's copy (e.g. set on another device).
-  const sb = getSupabase();
-  if (!sb) return;
-  void sb.auth.getSession().then(async ({ data }) => {
+  void getSupabase().then(async (sb) => {
+    if (!sb) return;
+    const { data } = await sb.auth.getSession();
     const id = data.session?.user.id;
     if (!id) return;
     const { data: row } = await sb.from("profiles").select("prefs").eq("id", id).maybeSingle();
@@ -74,7 +74,7 @@ export async function setPrefs(patch: Prefs): Promise<boolean> {
   prefs = { ...prefs, ...patch };
   persistLocal();
   emit();
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return true;
   const id = await ensureUserId();
   if (!id) return false;
