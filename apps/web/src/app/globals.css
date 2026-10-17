@@ -1,26 +1,75 @@
 @import "tailwindcss";
 
+/* iTapon design tokens (ROADMAP Phase 11), taken from the Figma frames.
+   Bin colours match supabase/content/waste_content.json. */
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Bins: solid, pale (inactive tiles in the bin row), tint (chips, icon wells) */
+  --color-bin-green: #2ea043;
+  --color-bin-green-pale: #a8d8b5;
+  --color-bin-green-tint: #e7f6ec;
+  --color-bin-blue: #0a84ff;
+  --color-bin-blue-pale: #a9cff8;
+  --color-bin-blue-tint: #e3f0ff;
+  --color-bin-black: #111111;
+  --color-bin-black-pale: #a9abae;
+  --color-bin-black-tint: #eceef1;
+  --color-bin-red: #e5484d;
+  --color-bin-red-pale: #f2aaa7;
+  --color-bin-red-tint: #fdeceb;
+
+  /* Brand + surfaces */
+  --color-brand: #0a84ff;
+  --color-brand-strong: #0062cc; /* text-on-light where #0A84FF is too faint for AA */
+  --color-brand-tint: #e3f0ff;
+  --color-brand-button: #0070e0; /* white text on it ≈ 5:1 (Figma #0A84FF is 3.6:1, fails AA) */
+  --color-surface: #f2f4f7; /* page background */
+  --color-card: #ffffff;
+  --color-line: #e4e7ec;
+  --color-ink: #0f1115; /* headings */
+  --color-ink-2: #3c4250; /* body */
+  --color-ink-3: #565d69; /* secondary (≥4.5:1 on white and on surface) */
+  --color-ink-4: #646b77; /* captions (≥4.5:1 on white and surface; Figma #9AA1AD fails AA) */
+
+  --radius-card: 1rem;
+  --radius-tile: 0.875rem;
+  --radius-control: 0.625rem;
+
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.06);
+
+  --breakpoint-xs: 23.4375rem; /* 375px, iPhone frames */
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-surface);
+  color: var(--color-ink-2);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* iOS home indicator / notch */
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

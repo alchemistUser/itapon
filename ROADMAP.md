@@ -549,6 +549,11 @@ itapon/
 
 ## Phase 11: Frontend foundation & design system
 
+> **Status (2026-10-17): Done.** Design tokens in `apps/web/src/app/globals.css` (Tailwind v4 `@theme`: bin solid/pale/tint colours, surfaces, ink greys, radii, Inter font). Components in `src/components/` (Button/ButtonLink, Card, ConfidenceBadge, Eyebrow, StepList, InfoCallout, Note, PageTitle, SectionHeading, Skeleton, EmptyState, SearchInput, ReadAloudButton (working Web Speech), WarmingUpOverlay, Logo, SourceFooter (AGPL link), BinTile, ItemIcon, CategoryChip, Instruction, BinRow). Shell: mobile bottom tabs, iPad segmented nav at `md`, website text tabs at `lg`. Route groups `(app)` (tabs) and `(capture)` (full-screen on phones). **Static screens with mock data:** `/` home, `/scan` (S1), `/scan/result/[item]` (S2), `/guide` (S3), `/history` (S4), `/scan/plan` + `/scan/plan/[item]` (S5–S7 on phones, iPad master–detail on md+), `/kiosk` (S8), plus the `/dev/components` gallery (instead of Storybook).
+> **Checked:** visually at 375 / 768 / 1024 / 1440 px against the Figma frames (portrait tablets stack the camera above the result; the side-by-side split starts at `lg`). **Lighthouse (mobile, production build), 9 screens: Performance 96–97, Accessibility 100, Best Practices 100, SEO 100.**
+> **Deliberate deviations from Figma (accessibility):** button blue `#0070E0` instead of `#0A84FF` (white text 5:1 vs 3.6:1); coloured text uses darker shades; caption greys darkened to ≥ 4.5:1; "Read aloud" is a real button. The "HIWALAY" branding becomes iTapon.
+> **Deferred to the phase that first needs them:** TanStack Query / Zustand (Phases 12–13), Supabase `@supabase/ssr` client + Vercel env vars (Phases 15–16). Item photos in cards are replaced by category icons until real scan thumbnails exist (Phase 14).
+
 **Goal:** A Next.js app shell that matches Figma on phone, tablet and desktop, with reusable components, before any feature logic.
 
 **Why now:** A shared component library stops 2–3 frontend devs from building three different buttons.
