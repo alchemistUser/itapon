@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Scanner / result building blocks shared by the live scanner (Phase 12), the result
 // page and the kiosk mock. Phase 13 adds scan logging and Supabase content.
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ListChecks } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -23,6 +23,18 @@ export interface ResultView {
   confidence?: number;
   /** Other items seen in the same frame (low-confidence variant). */
   alternatives?: ResultView[];
+  /** Distinct items in the scan; ≥ 2 offers the "What to do next" plan (Phase 14). */
+  planCount?: number;
+}
+
+function PlanLink({ item, className }: { item: ResultView; className?: string }) {
+  if (!item.planCount || item.planCount < 2) return null;
+  return (
+    <ButtonLink href="/scan/plan" variant="outline" className={className}>
+      <ListChecks aria-hidden className="size-4" />
+      What to do next · {item.planCount} items
+    </ButtonLink>
+  );
 }
 
 const isUnsure = (item: ResultView) =>
@@ -166,6 +178,7 @@ export function ResultPanel({
       </div>
       <Instruction text={item.instruction} category={item.category} className="text-xl text-ink" />
       {isUnsure(item) ? <UnsureNote item={item} /> : null}
+      <PlanLink item={item} className="self-start" />
       <BinRow active={item.category} className="mt-auto pt-4" />
       <div className="flex items-center justify-between gap-3">
         <ReadAloudButton text={speechFor(item)} variant="outline" />
@@ -200,6 +213,7 @@ export function ResultSheet({ item, onNext }: { item: ResultView; onNext?: () =>
           <UnsureNote item={item} />
         </div>
       ) : null}
+      <PlanLink item={item} className="mt-4 w-full" />
       <div className="mt-4 mb-3 grid grid-cols-[auto_1fr] gap-3">
         {onNext ? (
           <Button variant="outline" onClick={onNext}>

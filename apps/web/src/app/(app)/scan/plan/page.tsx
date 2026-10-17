@@ -2,11 +2,10 @@
 import type { Metadata } from "next";
 
 import { PlanView } from "@/components/scan/plan-view";
-import { MOCK_PLAN } from "@/lib/mock";
 
 export const metadata: Metadata = { title: "What to do next" };
 
-// S5/S7 (phone) and iPad master–detail with the primary item selected. Static mock.
+// S5/S7 (phone) and iPad master–detail with the primary item selected, from the last scan.
 export default function PlanPage() {
-  return <PlanView selected={MOCK_PLAN[0]} mobile="summary" />;
+  return <PlanView mobile="summary" />;
 }

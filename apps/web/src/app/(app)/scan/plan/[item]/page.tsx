@@ -3,10 +3,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { PlanView } from "@/components/scan/plan-view";
-import { MOCK_ITEMS, MOCK_PLAN } from "@/lib/mock";
+import { DETECTABLE_KEYS } from "@/lib/content";
 
 export function generateStaticParams() {
-  return MOCK_PLAN.map((item) => ({ item }));
+  return DETECTABLE_KEYS.map((item) => ({ item }));
 }
 
 export const metadata: Metadata = { title: "Before you sort" };
@@ -14,6 +14,6 @@ export const metadata: Metadata = { title: "Before you sort" };
 // S6 "Before you sort" (phone) / iPad master–detail with this item selected.
 export default async function PlanItemPage(props: PageProps<"/scan/plan/[item]">) {
   const { item } = await props.params;
-  if (!MOCK_ITEMS[item]) notFound();
+  if (!DETECTABLE_KEYS.includes(item)) notFound();
   return <PlanView selected={item} mobile="detail" />;
 }

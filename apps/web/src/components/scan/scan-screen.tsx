@@ -21,7 +21,9 @@ import { WarmingUpOverlay } from "@/components/ui/warming-up-overlay";
 import { BINS } from "@/lib/bins";
 import { cn } from "@/lib/cn";
 import { getItemLive as getItem, useContentSource } from "@/lib/content-store";
+import { saveLastScan } from "@/lib/scan/last-scan";
 import { logScan } from "@/lib/scan/log-scan";
+import { aggregateDetections } from "@/lib/scan/plan";
 import { CONFIDENT_THRESHOLD, POSSIBLE_THRESHOLD } from "@/lib/detector/models";
 import { detect, ensureDetector, retryDetector, useDetectorState } from "@/lib/detector/store";
 import type { Detection } from "@/lib/detector/types";
@@ -213,29 +215,44 @@ export function ScanScreen() {
     infoRef.current = det.info;
   }, [det.info]);
 
-  const lockOn = useCallback((classKey: string, confidence: number, frame: ScanFrame) => {
-    const base = toView(classKey, confidence);
-    if (!base) {
-      setUnknown(true); // model class with no content: show "not sure" instead of freezing
-      return;
-    }
-    const view = { ...base, alternatives: alternativesFor(frame, classKey) };
-    // Browsers ignore (and log) vibrate() before the user has interacted with the page.
-    if (navigator.userActivation?.hasBeenActive) navigator.vibrate?.(40);
-    setLocked({ view, frame });
-    setLoggedScanId(null);
-    void logScan({
-      modelVersion: infoRef.current?.modelVersion ?? "unknown",
-      backend: infoRef.current?.backend ?? "wasm",
-      latencyMs: performance.now() - scanStartRef.current,
-      primaryClassKey: classKey,
-      detections: frame.detections,
-    }).then(setLoggedScanId);
-  }, []);
+  const lockOn = useCallback(
+    (classKey: string, confidence: number, frame: ScanFrame, source: CanvasImageSource | null) => {
+      const base = toView(classKey, confidence);
+      if (!base) {
+        setUnknown(true); // model class with no content: show "not sure" instead of freezing
+        return;
+      }
+      const view = {
+        ...base,
+        alternatives: alternativesFor(frame, classKey),
+        planCount: aggregateDetections(frame.detections).length,
+      };
+      // For "What to do next": item list + on-device thumbnails (Phase 14).
+      saveLastScan({
+        detections: frame.detections,
+        lockedKey: classKey,
+        source,
+        width: frame.width,
+        height: frame.height,
+      });
+      // Browsers ignore (and log) vibrate() before the user has interacted with the page.
+      if (navigator.userActivation?.hasBeenActive) navigator.vibrate?.(40);
+      setLocked({ view, frame });
+      setLoggedScanId(null);
+      void logScan({
+        modelVersion: infoRef.current?.modelVersion ?? "unknown",
+        backend: infoRef.current?.backend ?? "wasm",
+        latencyMs: performance.now() - scanStartRef.current,
+        primaryClassKey: classKey,
+        detections: frame.detections,
+      }).then(setLoggedScanId);
+    },
+    [],
+  );
 
   const onLock = useCallback(
     (s: { classKey: string; confidence: number }, frame: ScanFrame) =>
-      lockOn(s.classKey, s.confidence, frame),
+      lockOn(s.classKey, s.confidence, frame, videoRef.current),
     [lockOn],
   );
 
@@ -272,7 +289,7 @@ export function ScanScreen() {
       setPhoto({ url, frame });
       const top = topOf(result.detections);
       if (top && top.confidence >= POSSIBLE_THRESHOLD) {
-        lockOn(top.classKey, top.confidence, frame);
+        lockOn(top.classKey, top.confidence, frame, img);
       } else {
         setPhotoError(
           "We couldn't recognise an item in that photo. Try again closer, or check the Bin Guide.",

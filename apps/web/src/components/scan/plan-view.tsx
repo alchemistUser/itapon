@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-// "What to do next" (Figma iPhone 17 ×3 + iPad recommendations). Static mock data.
+"use client";
+
+// "What to do next" (Figma iPhone 17 ×3 + iPad recommendations), built from the last
+// locked scan (Phase 14): aggregated items, rule-based order, on-device thumbnails.
 import { ArrowRight, CheckCheck, ChevronLeft, ChevronRight, Repeat2, Scan } from "lucide-react";
 import Link from "next/link";
 
@@ -18,7 +21,45 @@ import {
 } from "@/components/ui/primitives";
 import { ReadAloudButton } from "@/components/ui/read-aloud-button";
 import { cn } from "@/lib/cn";
-import { MOCK_ITEMS, MOCK_PLAN, type MockItem } from "@/lib/mock";
+import { getItemLive, useContentSource } from "@/lib/content-store";
+import { useLastScan } from "@/lib/scan/last-scan";
+import { orderPlan, type PlanEntry } from "@/lib/scan/plan";
+
+interface MockItem {
+  classKey: string;
+  name: string;
+  category: PlanEntry["category"];
+  confidence: number;
+  instruction: string;
+  reuseTip?: string;
+  steps: { title: string; detail: string }[];
+  why: string;
+  thumb?: string;
+}
+
+function toPlanItem(e: PlanEntry, thumbs: Record<string, string>): MockItem | null {
+  const c = getItemLive(e.classKey);
+  if (!c) return null;
+  return {
+    classKey: e.classKey,
+    name: c.name,
+    category: c.category,
+    confidence: e.confidence,
+    instruction: c.instruction,
+    // The headline already says "Reuse it first."; don't repeat it when the tip starts with it.
+    reuseTip: c.reuseTip?.replace(/^reuse it first\.\s*/i, "") || undefined,
+    steps: c.steps.length ? c.steps : [{ title: "Sort it", detail: c.instruction }],
+    why: c.why ?? c.contaminationNote ?? "",
+    thumb: thumbs[e.classKey],
+  };
+}
+
+function timeLabel(at: number) {
+  const d = new Date(at);
+  const today = new Date().toDateString() === d.toDateString();
+  const t = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  return today ? `Today, ${t}` : `${d.toLocaleDateString()}, ${t}`;
+}
 
 const LOCAL_RULES_NOTE =
   "Bin colors follow your app's local guide. Check local collection rules if you are unsure.";
@@ -56,7 +97,16 @@ function Headline({ item }: { item: MockItem }) {
 function DetectedHeader({ item }: { item: MockItem }) {
   return (
     <div className="flex items-start gap-3">
-      <BinTile category={item.category} size="md" className="size-12" />
+      {item.thumb ? (
+        // eslint-disable-next-line @next/next/no-img-element -- on-device data URL thumbnail
+        <img
+          src={item.thumb}
+          alt={`Your ${item.name.toLowerCase()}`}
+          className="size-12 shrink-0 rounded-[10px] object-cover"
+        />
+      ) : (
+        <BinTile category={item.category} size="md" className="size-12" />
+      )}
       <div className="min-w-0 flex-1">
         <Eyebrow>Detected item</Eyebrow>
         <p className="text-xl font-bold text-ink">{item.name}</p>
@@ -92,7 +142,7 @@ function OtherItemCard({
       ) : (
         <>
           <p className="mt-2 text-sm text-ink-2">{item.instruction}</p>
-          <p className="mt-1 text-xs text-ink-3">Why: {item.why}</p>
+          {item.why ? <p className="mt-1 text-xs text-ink-3">Why: {item.why}</p> : null}
         </>
       )}
     </>
@@ -126,17 +176,43 @@ function DetailPane({ item }: { item: MockItem }) {
         <h3 className="text-base font-semibold text-ink">Before you sort</h3>
         <StepList steps={item.steps} />
       </div>
-      <InfoCallout title="Why this recommendation?">{item.why}</InfoCallout>
+      {item.why ? <InfoCallout title="Why this recommendation?">{item.why}</InfoCallout> : null}
       <ReadAloudButton text={speechFor(item)} />
     </Card>
   );
 }
 
-export function PlanView({ selected, mobile }: { selected: string; mobile: "summary" | "detail" }) {
-  const items = MOCK_PLAN.map((k) => MOCK_ITEMS[k]);
-  const primary = items[0];
-  const current = MOCK_ITEMS[selected] ?? primary;
-  const others = items.slice(1);
+export function PlanView({
+  selected,
+  mobile,
+}: {
+  selected?: string;
+  mobile: "summary" | "detail";
+}) {
+  const scan = useLastScan();
+  useContentSource(); // re-render when fresher copy arrives
+
+  if (!scan) {
+    return (
+      <div className="flex flex-col items-center gap-3 rounded-card bg-card px-6 py-12 text-center shadow-card">
+        <Scan aria-hidden className="size-8 text-ink-3" />
+        <p className="text-lg font-semibold text-ink">No scan yet</p>
+        <p className="max-w-sm text-sm text-ink-3">
+          Scan your items and iTapon will suggest what to do with each one.
+        </p>
+        <ButtonLink href="/scan">Start scanning</ButtonLink>
+      </div>
+    );
+  }
+
+  const ordered = orderPlan(scan.entries, (k) => Boolean(getItemLive(k)?.reuseTip), scan.lockedKey);
+  const toItem = (e: PlanEntry) => toPlanItem(e, scan.thumbs);
+  const primary = ordered.primary ? toItem(ordered.primary) : null;
+  const others = ordered.others.map(toItem).filter((i): i is MockItem => i !== null);
+  if (!primary) return null;
+  const items = [primary, ...others];
+  const current = items.find((i) => i.classKey === selected) ?? primary;
+  const when = timeLabel(scan.at);
 
   return (
     <>
@@ -151,11 +227,13 @@ export function PlanView({ selected, mobile }: { selected: string; mobile: "summ
                 <CheckCheck aria-hidden className="size-5" />
               </span>
               <div>
-                <p className="font-semibold">{items.length} items. A better next step.</p>
+                <p className="font-semibold">
+                  {items.length} {items.length === 1 ? "item" : "items"}. A better next step.
+                </p>
                 <p className="text-xs text-white">Reuse what you can. Separate the rest.</p>
               </div>
             </div>
-            <SectionHeading title="Your action plan" aside="Today, 9:41 AM" />
+            <SectionHeading title="Your action plan" aside={when} />
             <Card className="flex flex-col gap-3">
               <DetectedHeader item={primary} />
               <Headline item={primary} />
@@ -170,7 +248,7 @@ export function PlanView({ selected, mobile }: { selected: string; mobile: "summ
                 </Link>
               </div>
             </Card>
-            <SectionHeading title="Other scanned items" />
+            {others.length ? <SectionHeading title="Other scanned items" /> : null}
             {others.map((it) => (
               <OtherItemCard key={it.classKey} item={it} href={`/scan/plan/${it.classKey}`} />
             ))}
@@ -189,7 +267,9 @@ export function PlanView({ selected, mobile }: { selected: string; mobile: "summ
               <DetectedHeader item={current} />
               <h2 className="text-base font-semibold text-ink">Before you sort</h2>
               <StepList steps={current.steps} />
-              <InfoCallout title="Why this recommendation?">{current.why}</InfoCallout>
+              {current.why ? (
+                <InfoCallout title="Why this recommendation?">{current.why}</InfoCallout>
+              ) : null}
               <ReadAloudButton text={speechFor(current)} />
             </Card>
             <Link
@@ -214,7 +294,7 @@ export function PlanView({ selected, mobile }: { selected: string; mobile: "summ
             <ButtonLink href="/scan">
               <Scan aria-hidden className="size-4" /> Scan more items
             </ButtonLink>
-            <span className="text-xs text-ink-3">Today, 9:41 AM</span>
+            <span className="text-xs text-ink-3">{when}</span>
           </div>
         </div>
         <div className="grid grid-cols-[minmax(0,5fr)_minmax(0,9fr)] gap-6">

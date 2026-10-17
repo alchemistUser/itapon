@@ -665,6 +665,14 @@ itapon/
 
 ## Phase 14: Multi-item "What to do next" flow
 
+> **Status (2026-10-17): Done; the real 4-item photo test is still to do.**
+> 1. **Aggregation** (`lib/scan/plan.ts` `aggregateDetections`): one entry per item from the locked frame, best confidence kept, below 0.15 dropped. A cross-frame merge wasn't needed, because agnostic NMS already gives one box per object.
+> 2. **Rules** (`orderPlan`, unit-tested on the Figma scene): primary = the item the scanner locked on (what the user held), otherwise the largest confident box. The headline is "Reuse it first." when the item has a reuse tip, else the bin instruction. Others: **hazardous first**, then reuse candidates, then the rest. *This deliberately differs from the Figma frame, which lists the battery last; the roadmap's safety rule wins.*
+> 3–4. **Screens:** the Phase 11 mobile ×3 and iPad master–detail views now read the real last scan (`lib/scan/last-scan.ts`), live content, and the actual scan time. Empty state "No scan yet" when there's no scan. The result sheet and panel show **"What to do next · N items"** when a scan has ≥ 2 items.
+> 5. **Thumbnails:** cropped on the device from the frame at lock time (live video or photo), 160 px JPEG data URLs, kept only in this tab (memory + sessionStorage). Never uploaded.
+> 6. **Logging:** all detections (≤ 5) with `is_primary` on the locked item, from Phase 13.
+> **Verified in the browser:** a real bag + cup photo → "What to do next · 2 items" → plan with cropped thumbnails. The Figma 4-item scene (injected) gives paper bag (primary, "Reuse it first.") → battery → banana peel → snack wrapper on iPad and phone; selection, "Before you sort" and the empty state all work. Fixed a doubled "Reuse it first." (the DB tip starts with it).
+
 **Goal:** Implement the recommendation experience from the newer Figma frames: multiple items detected, a "best next step" (reuse first), preparation steps, and the reason for each.
 
 **Why now:** It builds directly on Phase 13's mapping and adds the project's educational value (proposal: *"actively teaches users how to segregate properly"*).
