@@ -26,7 +26,7 @@ First release candidate for the pilot (ROADMAP Phases 1–24).
   privacy notice (RA 10173), 12-month photo retention.
 - **QA**: unit/component tests, Playwright E2E with axe and a real offline test, API
   contract and fuzz tests, model regression harness, soak page, QA sheets.
-- **Monitoring**: first-party error log, Vercel Analytics/Speed Insights, `/api/health`.
+- **Monitoring**: first-party error log, real-device speed on `/admin`, `/api/health`.
 - **Release**: production DB workflow, model pin check workflow, release/rollback runbook.
 
 ### Known limitations

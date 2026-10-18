@@ -66,13 +66,13 @@ release adds a section to [CHANGELOG.md](../CHANGELOG.md).
 | What | Where | Setup |
 |---|---|---|
 | Browser errors | `public.client_errors` (first-party, insert-only, no user id, query strings stripped; 90-day purge) | built in. Query: `select date_trunc('day', created_at) d, kind, message, count(*) from client_errors group by 1,2,3 order by 1 desc, 4 desc limit 50;` |
-| Page views, Web Vitals (LCP, INP, CLS) from real users | Vercel → Analytics / Speed Insights | enable both in the Vercel project (free tier) |
+| Page views, Web Vitals (LCP, INP, CLS) from real users | Vercel Analytics / Speed Insights | **deferred** (not enabled; re-add `@vercel/analytics` + `@vercel/speed-insights` to `app/layout.tsx` if needed) |
 | Real-device model speed | `/admin` → Model health → *Time to result on real devices* (from scan logs: latency, engine, device type; never images) | built in |
-| Uptime | UptimeRobot / Better Stack, HTTPS monitor on `https://itapon.vercel.app/api/health`, every 5 min, keyword `"ok"` | create a free monitor, alert to the team email |
+| Uptime | UptimeRobot / Better Stack, HTTPS monitor on `https://itapon.vercel.app/api/health`, every 5 min, keyword `"ok"` | **deferred** (optional; `/api/health` is ready if a monitor is added later) |
 | Database usage | Supabase → Organization → Usage (DB size 500 MB, egress 5 GB, MAU) | turn on usage emails; check weekly during the pilot |
 | Server logs | Vercel → Logs | built in |
 
-**Exit criterion:** uptime monitor at 99%+ over one week. Record it in the table below.
+**Exit criterion:** uptime monitor at 99%+ over one week. *Deferred with the monitor.* If one is added later, record it below.
 
 | Week | Uptime | Incidents |
 |---|---|---|
@@ -95,9 +95,8 @@ sign-ins) are already done and tracked in `supabase/config.toml`.
    - secrets `SUPABASE_URL` = `https://svvbvkdkgduyphkkaiio.supabase.co` and `SUPABASE_SERVICE_ROLE_KEY` (Project Settings → API Keys → `service_role`/secret key) for the Retention workflow
    - variables `SUPABASE_URL` (same URL) and `SUPABASE_ANON_KEY` (the public anon key) for `keepalive.yml`
 4. **Vercel:** the Supabase variables already point to this project for all environments, so
-   nothing to change. Turn on **Analytics** and **Speed Insights** in the project.
-5. **Uptime monitor** (UptimeRobot or Better Stack, free): HTTPS keyword monitor on
-   `https://itapon.vercel.app/api/health`, keyword `"ok"`, every 5 min, alerts to the team email.
+   nothing to change. *(Analytics/Speed Insights: deferred.)*
+5. *(Uptime monitor: deferred, optional.)*
 6. **Check:** Actions → *Database (production)* → *Run workflow*. It should link the project,
    find no pending migrations, re-apply the content seed and pass the RLS matrix. Then run
    *Supabase keep-alive* and *Retention* once by hand.
