@@ -2,15 +2,28 @@
 
 ## Environments
 
+**One Supabase project for everything (D15).** `itapon-dev` (ref `svvbvkdkgduyphkkaiio`) is also
+production. That keeps the free tier simple, and a second project can be split off later
+without code changes.
+
 | | Web | Database | Model | Who deploys |
 |---|---|---|---|---|
-| **dev** | `pnpm dev` (localhost) | Supabase `itapon-dev` | local `/models` (unpinned, no hash check) | you |
-| **preview** | Vercel preview per PR/branch | Supabase `itapon-dev` | pinned HF tag + SHA-256 | Vercel (automatic) |
-| **production** | Vercel production (`main`) | Supabase `itapon-prod` | pinned HF tag + SHA-256 | Vercel (automatic) + `db.yml` |
+| **dev** | `pnpm dev` (localhost) | the one Supabase project | local `/models` (unpinned, no hash check) | you |
+| **preview** | Vercel preview per PR/branch | the one Supabase project | pinned HF tag + SHA-256 | Vercel (automatic) |
+| **production** | Vercel production (`main`) | the one Supabase project | pinned HF tag + SHA-256 | Vercel (automatic) + `db.yml` |
 
-The Vercel project needs the Supabase variables **per environment** (Settings → Environment
-Variables): `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` set to **prod** for
-*Production* and to **dev** for *Preview* and *Development*.
+What this means in practice:
+- **Real data lives where you develop.** Scans you make on localhost or in previews show up
+  in your own history and in an institution's dashboard only if your account belongs to one.
+  Test with an anonymous or test account, not an institution admin.
+- **Never run `supabase/demo/*.sql` after launch** (it adds a fake institution), and treat
+  `supabase db push` from your laptop as a production change (normally `db.yml` does it).
+- The test suites are safe on it: the RLS role matrix runs in a rolled-back transaction, and
+  `rls-check.mjs` only creates throwaway anonymous users and deletes their data.
+- Free projects pause after 7 days without traffic. `keepalive.yml` reads one row daily.
+- **Splitting later:** create a new project, point `SUPABASE_PROD_PROJECT_REF` (+ password) at it,
+  set the Vercel *Production* variables to it, merge anything to `main` (or run `db.yml` by hand).
+  The schema and content come entirely from the migrations and seed.
 
 ## How a change reaches production (no manual steps)
 
@@ -67,20 +80,24 @@ release adds a section to [CHANGELOG.md](../CHANGELOG.md).
 
 ## One-time setup (team)
 
-1. **Supabase prod:** create `itapon-prod` in the same region. Enable anonymous sign-ins.
-   Set Auth → URL configuration (site URL `https://itapon.vercel.app`, redirect
-   `https://itapon.vercel.app/**`).
-2. **Custom SMTP** (Supabase → Auth → SMTP; e.g. Resend or Brevo free tier) with a sender on
-   a domain you control. Needed before strangers sign in: the built-in mailer only sends to
-   team members.
-3. **GitHub → Settings → Environments → `production`:** secrets `SUPABASE_ACCESS_TOKEN`,
-   `SUPABASE_PROD_DB_PASSWORD`; variable `SUPABASE_PROD_PROJECT_REF`. Optionally require a
-   reviewer for the environment.
-4. **GitHub repository secrets/variables** (dev checks + retention): `SUPABASE_ACCESS_TOKEN`
-   + variable `SUPABASE_PROJECT_REF` (dev); `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`
-   (**prod**, for the Retention workflow).
-5. **Vercel:** per-environment Supabase variables (above). Enable Analytics and Speed Insights.
-   Optional custom domain (then update site URL/redirects in Supabase and the uptime monitor).
-6. **Uptime monitor** on `/api/health`.
-7. Merge to `main` → `db.yml` creates the prod schema and content. Then make the first admin
-   ([kiosk-setup.md](kiosk-setup.md#making-the-first-admin-project-team-once-per-institution)).
+Single-project version (D15). The Supabase auth settings (site URL, redirect URLs, anonymous
+sign-ins) are already done and tracked in `supabase/config.toml`.
+
+1. **Custom SMTP** (Supabase → Authentication → Emails → SMTP settings; e.g. Resend or Brevo
+   free tier) with a sender address you control. Needed before people outside the team sign in:
+   the built-in mailer only sends to team members and allows only a few emails per hour.
+2. **GitHub → Settings → Environments → New environment `production`:**
+   - secret `SUPABASE_ACCESS_TOKEN`: a personal access token from supabase.com/dashboard/account/tokens
+   - secret `SUPABASE_PROD_DB_PASSWORD`: the project's database password (Project Settings → Database; reset it there if unknown)
+   - variable `SUPABASE_PROD_PROJECT_REF` = `svvbvkdkgduyphkkaiio`
+3. **GitHub → Settings → Secrets and variables → Actions** (repository level):
+   - secret `SUPABASE_ACCESS_TOKEN` (same token) and variable `SUPABASE_PROJECT_REF` = `svvbvkdkgduyphkkaiio` (RLS matrix in CI)
+   - secrets `SUPABASE_URL` = `https://svvbvkdkgduyphkkaiio.supabase.co` and `SUPABASE_SERVICE_ROLE_KEY` (Project Settings → API Keys → `service_role`/secret key) for the Retention workflow
+   - variables `SUPABASE_URL` (same URL) and `SUPABASE_ANON_KEY` (the public anon key) for `keepalive.yml`
+4. **Vercel:** the Supabase variables already point to this project for all environments, so
+   nothing to change. Turn on **Analytics** and **Speed Insights** in the project.
+5. **Uptime monitor** (UptimeRobot or Better Stack, free): HTTPS keyword monitor on
+   `https://itapon.vercel.app/api/health`, keyword `"ok"`, every 5 min, alerts to the team email.
+6. **Check:** Actions → *Database (production)* → *Run workflow*. It should link the project,
+   find no pending migrations, re-apply the content seed and pass the RLS matrix. Then run
+   *Supabase keep-alive* and *Retention* once by hand.

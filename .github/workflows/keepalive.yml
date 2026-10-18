@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Free Supabase projects pause after 7 days without traffic. With one project serving dev and
+# production (D15), a quiet week would take the live site's accounts and logging down, so
+# this reads one public row a day. Uses only public values (repository *variables*):
+#   SUPABASE_URL       https://<ref>.supabase.co
+#   SUPABASE_ANON_KEY  the public anon key (the same one the website ships)
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: "17 3 * * *" # daily, 11:17 Philippine time
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+    steps:
+      - name: Read one Bin Guide row
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::warning::SUPABASE_URL / SUPABASE_ANON_KEY variables not set; skipped."
+            exit 0
+          fi
+          curl -sSf "$SUPABASE_URL/rest/v1/waste_categories?select=key&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $SUPABASE_ANON_KEY"

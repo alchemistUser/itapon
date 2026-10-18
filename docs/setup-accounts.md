@@ -51,7 +51,7 @@ GitHub CLI is installed at `C:\Program Files\GitHub CLI\gh.exe` (open a new term
 
 - [x] Sign up at supabase.com with GitHub.
 - [x] Create project **`itapon-dev`** (ref `svvbvkdkgduyphkkaiio`; created in Tokyo, ap-northeast-1). Save the DB password in a team password manager. Anonymous sign-ins enabled.
-- [ ] Create project **`itapon-prod`**, same region (the free tier allows 2 projects). Full go-live steps: [release.md](release.md#one-time-setup-team).
+- [x] ~~Create project `itapon-prod`~~: not needed, one project serves dev and production (D15). Go-live steps: [release.md](release.md#one-time-setup-team).
 - [ ] Note each project's URL and anon key for Phase 10. **Never** share the `service_role` key outside the dashboard and CI secrets.
 
 ## 5. Annotation tool (for Phase 4)
