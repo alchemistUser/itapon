@@ -69,7 +69,8 @@ begin
   execute sql;
   get diagnostics n = row_count;
   return n = 0;
-exception when insufficient_privilege or check_violation or invalid_parameter_value then
+exception when insufficient_privilege or check_violation or invalid_parameter_value
+  or no_data_found then
   return true;
 end $$;
 grant execute on function pg_temp.act_as(text), pg_temp.refused(text) to anon, authenticated;
@@ -163,6 +164,49 @@ insert into rls_results values
   ('admin B cannot read institution A', (select count(*) = 1 from public.institutions)),
   ('admin B cannot edit institution A kiosk', pg_temp.refused($q$update public.devices set label = 'x' where id = '00000000-0000-4000-8000-0000000000c1'$q$)),
   ('admin B cannot delete institution A kiosk', pg_temp.refused($q$delete from public.devices where id = '00000000-0000-4000-8000-0000000000c1'$q$));
+reset role;
+
+-- ---------------------------------------------------------------- pairing + heartbeat (Phase 25)
+create temp table pair_code (code text) on commit drop;
+grant all on pair_code to authenticated;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a002'); -- user 2 = a fresh kiosk browser
+insert into pair_code select code from public.kiosk_request_pairing();
+insert into rls_results values
+  ('a signed-in browser gets a 6-digit pairing code', (select count(*) = 1 and min(code) ~ '^[0-9]{6}$' from pair_code)),
+  ('nobody can read pairing codes', pg_temp.refused($q$select * from public.kiosk_pairings$q$)),
+  ('a non-admin cannot redeem a code', pg_temp.refused(format('select public.admin_register_kiosk_code(%L, %L)', (select code from pair_code), 'x')));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a004'); -- admin A
+insert into rls_results values
+  ('an unknown code is refused', pg_temp.refused($q$select public.admin_register_kiosk_code('000000x', 'x')$q$)),
+  ('admin A registers a kiosk by pairing code', not pg_temp.refused(format('select public.admin_register_kiosk_code(%L, %L)', (select code from pair_code), 'Lobby kiosk'))),
+  ('a used code cannot be redeemed again', pg_temp.refused(format('select public.admin_register_kiosk_code(%L, %L)', (select code from pair_code), 'again')));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a002'); -- now a kiosk
+insert into rls_results values
+  ('the paired kiosk sees its device', (select count(*) = 1 from public.devices where label = 'Lobby kiosk')),
+  ('the kiosk records a heartbeat', not pg_temp.refused($q$select public.kiosk_heartbeat()$q$)),
+  ('a kiosk cannot write heartbeats directly', pg_temp.refused($q$insert into public.kiosk_heartbeats (device_id, bucket) select id, now() from public.devices$q$)),
+  ('a kiosk cannot read heartbeats', (select count(*) = 0 from public.kiosk_heartbeats));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a004');
+insert into rls_results values
+  ('admin A reads its kiosk heartbeat', (select count(*) = 1 from public.kiosk_heartbeats)),
+  ('admin A sees uptime for its kiosk', (select count(*) = 1 from public.kiosk_uptime(current_date - 1, current_date + 1)));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a005');
+insert into rls_results values
+  ('admin B cannot read institution A heartbeats', (select count(*) = 0 from public.kiosk_heartbeats));
 reset role;
 
 select check_name, ok from rls_results order by ok, check_name;

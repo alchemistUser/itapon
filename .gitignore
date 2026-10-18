@@ -56,3 +56,6 @@ Thumbs.db
 
 # YOLO-World custom-vocabulary weights (built by scripts/build_world_model.py)
 services/ml-api/weights/
+
+# Pilot responses (participant data; keep out of git, share via the team drive)
+pilot/data/

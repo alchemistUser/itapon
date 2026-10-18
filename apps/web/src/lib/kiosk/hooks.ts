@@ -3,10 +3,17 @@
 // online status and local kiosk settings.
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type RefObject,
+} from "react";
 
 import type { Category } from "@/lib/detector/types";
-import { getSupabase } from "@/lib/supabase/client";
+import { ensureUserId, getSupabase } from "@/lib/supabase/client";
 
 // ---------------------------------------------------------------- registered device
 
@@ -23,11 +30,16 @@ const CATS = new Set<Category>(["biodegradable", "recyclable", "residual", "haza
  * The devices row linked to the signed-in kiosk account (RLS: "Kiosk reads own device").
  * null = this browser isn't a registered kiosk; scans are still logged, just not tagged.
  */
-export function useKioskDevice(): { device: KioskDevice | null; loading: boolean } {
+export function useKioskDevice(): {
+  device: KioskDevice | null;
+  loading: boolean;
+  refresh: () => void;
+} {
   const [state, setState] = useState<{ device: KioskDevice | null; loading: boolean }>({
     device: null,
     loading: true,
   });
+  const [version, setVersion] = useState(0);
   useEffect(() => {
     let cancelled = false;
     void (async () => {
@@ -59,8 +71,33 @@ export function useKioskDevice(): { device: KioskDevice | null; loading: boolean
     return () => {
       cancelled = true;
     };
-  }, []);
-  return state;
+  }, [version]);
+  const refresh = useCallback(() => setVersion((v) => v + 1), []);
+  return { ...state, refresh };
+}
+
+// ---------------------------------------------------------------- pairing + heartbeat (Phase 25)
+
+/** A 6-digit code an admin enters on /admin to register this browser as a kiosk. */
+export async function requestPairingCode(): Promise<
+  { code: string; expiresAt: number } | { error: string }
+> {
+  const uid = await ensureUserId(); // anonymous session if needed: no email involved
+  const sb = await getSupabase();
+  if (!sb || !uid) return { error: "Can't reach the server. Check the internet connection." };
+  const { data, error } = await sb.rpc("kiosk_request_pairing");
+  const row = data?.[0];
+  if (error || !row) return { error: error?.message ?? "Couldn't get a code." };
+  return { code: row.code, expiresAt: Date.parse(row.expires_at) };
+}
+
+/** Marks the current 5-minute window as "kiosk running" (for uptime on /admin). */
+export async function sendHeartbeat(): Promise<void> {
+  const sb = await getSupabase();
+  await sb?.rpc("kiosk_heartbeat").then(
+    () => undefined,
+    () => undefined,
+  );
 }
 
 // ---------------------------------------------------------------- wake lock

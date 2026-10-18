@@ -79,3 +79,16 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Phase 25: printable pilot poster (/print/poster) */
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+@media print {
+  html,
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

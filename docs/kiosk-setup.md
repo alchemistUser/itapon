@@ -33,9 +33,16 @@ After that it runs hands-free:
 
 Registration links a **kiosk account** to a row in `devices`. A database trigger then tags every scan from that account with the device, its institution and `source = 'kiosk'`. The kiosk account can only read its own device row (RLS).
 
-1. **On the kiosk:** open `/account` → "Already have an account? Sign in" → enter a dedicated kiosk email (e.g. `itapon-kiosk-canteen@yourschool.edu`) → open the emailed link **on the kiosk**.
-2. **On the dashboard:** an institution admin opens `/admin` → **Kiosks** → **Register a kiosk**, enters that email, a name, an optional location and the left-to-right order of the physical bins. This calls `admin_register_kiosk`, which only works for admins and only for their own institution.
-3. Reload `/kiosk`. The top-left badge shows `iTapon · Canteen kiosk`, and the bin tiles follow `bin_order`.
+**Pairing code (recommended, no email, Phase 25):**
+
+1. **On the kiosk:** open `/kiosk` in the browser profile the kiosk will keep using → **Get pairing code**. A 6-digit code shows for 15 minutes. The kiosk uses its own anonymous session; don't sign in with a personal or admin account on the kiosk.
+2. **On the dashboard (any device):** an institution admin opens `/admin` → **Kiosks** → **Register a kiosk** → *Pairing code*, types the code, a name, an optional location and the left-to-right order of the physical bins. This calls `admin_register_kiosk_code` (admins only, own institution only). The kiosk screen updates by itself within about 5 seconds.
+
+Don't clear the kiosk browser's data: the pairing lives in its session. If it's ever lost, pair again and delete the old kiosk on `/admin`.
+
+**Kiosk email (alternative):** on the kiosk, `/account` → "Already have an account? Sign in" with a dedicated kiosk email → open the link **on the kiosk**. Then on `/admin` choose *Kiosk account email* instead of the code. This needs working email (custom SMTP, or a team member's address).
+
+3. If you used the email method, reload `/kiosk`. The top-left badge shows `iTapon · Canteen kiosk`, and the bin tiles follow `bin_order`.
 
 To change the bin order later, use the arrows under the kiosk on `/admin` and **Save bin order**; the kiosk picks it up on its next reload.
 
@@ -54,6 +61,9 @@ update public.profiles
 ```
 
 ## 5. Daily check
+
+`/admin` → Kiosks shows each kiosk's online hours and "online now" (from a heartbeat every 5 minutes while the kiosk runs).
+
 
 - The camera view is live, and a test item (e.g. a bottle) locks and is read aloud.
 - No "Scanner offline" or "Camera not available" message.

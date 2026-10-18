@@ -5,6 +5,8 @@
 // (unlocks fullscreen, sound and wake lock); after that it runs hands-free:
 // scan → lock → read aloud → show the bin for 6 s → reset. Idle after 40 s with nothing in
 // front of it: attract screen, detector paused, woken by camera motion.
+import { KioskPairing } from "@/components/kiosk/kiosk-pairing";
+import { supabaseConfigured } from "@/lib/supabase/client";
 import { Hand, Maximize, Settings, Volume2, VolumeX, WifiOff, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -14,12 +16,12 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/misc";
 import { WarmingUpOverlay } from "@/components/ui/warming-up-overlay";
 import { BINS } from "@/lib/bins";
-import { cn } from "@/lib/cn";
 import { getItemLive, useContentSource } from "@/lib/content-store";
 import { ensureDetector, retryDetector, useDetectorState } from "@/lib/detector/store";
 import {
   loadKioskSettings,
   saveKioskSettings,
+  sendHeartbeat,
   useKioskDevice,
   useMotionWake,
   useOnline,
@@ -66,11 +68,19 @@ export function KioskScreen() {
   const scanStart = useRef(0);
 
   useContentSource();
-  const { device } = useKioskDevice();
+  const { device, refresh: refreshDevice } = useKioskDevice();
   const online = useOnline();
   const det = useDetectorState();
   const camera = useCamera(videoRef, { deviceId: settings.cameraId });
   useWakeLock(started);
+
+  // Phase 25: uptime heartbeat while a registered kiosk is running (one per 5-minute window).
+  useEffect(() => {
+    if (!started || !device) return;
+    void sendHeartbeat();
+    const id = window.setInterval(() => void sendHeartbeat(), 4 * 60_000);
+    return () => window.clearInterval(id);
+  }, [started, device]);
 
   // Settings live in localStorage (per kiosk); read after mount.
   useEffect(() => {
@@ -306,8 +316,7 @@ export function KioskScreen() {
             </ul>
             {!device ? (
               <p className="text-xs text-ink-3">
-                Not registered as a kiosk: scans are logged without a location. See
-                docs/kiosk-setup.md.
+                Not registered as a kiosk: scans are logged without a location. Open ⚙ to pair it.
               </p>
             ) : device.locationNote ? (
               <p className="text-xs text-ink-3">{device.locationNote}</p>
@@ -332,6 +341,7 @@ export function KioskScreen() {
             {det.status === "ready" ? "Scanner ready." : "Loading the scanner…"}{" "}
             {camera.status === "live" ? "Camera ready." : "Waiting for the camera…"}
           </p>
+          {!device && supabaseConfigured ? <KioskPairing onPaired={refreshDevice} /> : null}
         </div>
       ) : null}
 
@@ -388,11 +398,13 @@ export function KioskScreen() {
                 onChange={(e) => update({ sound: e.target.checked })}
               />
             </label>
-            <p className={cn("text-xs", device ? "text-ink-3" : "text-[#c4282d]")}>
-              {device
-                ? `Registered as “${device.label}”. Bin order follows the device settings.`
-                : "This browser isn't a registered kiosk. Sign in with the kiosk account (Account page) and link it in the devices table. See docs/kiosk-setup.md."}
-            </p>
+            {device ? (
+              <p className="text-xs text-ink-3">
+                Registered as “{device.label}”. Bin order follows the device settings.
+              </p>
+            ) : (
+              <KioskPairing onPaired={refreshDevice} />
+            )}
             <Button
               variant="outline"
               onClick={() => void document.exitFullscreen?.().catch(() => {})}

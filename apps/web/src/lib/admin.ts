@@ -218,3 +218,47 @@ export async function reviewFeedback(
   });
   return error ? { error: error.message } : {};
 }
+
+/** Register the kiosk that shows this 6-digit pairing code (Phase 25, no email needed). */
+export async function registerKioskByCode(input: {
+  code: string;
+  label: string;
+  location?: string;
+  binOrder: Category[];
+}): Promise<{ error?: string }> {
+  const sb = await getSupabase();
+  if (!sb) return { error: "Not available" };
+  const { error } = await sb.rpc("admin_register_kiosk_code", {
+    p_code: input.code.replace(/\D/g, ""),
+    p_label: input.label,
+    p_location: input.location ?? undefined,
+    p_bin_order: input.binOrder,
+  });
+  return error ? { error: error.message } : {};
+}
+
+export interface KioskUptime {
+  hours: number; // online time (5-minute heartbeats) in the period
+  days: number;
+  lastSeen: string | null;
+}
+
+/** Online time per kiosk between two Manila dates (heartbeats; RLS: own institution). */
+export async function fetchKioskUptime(
+  fromDay: string,
+  toDay: string,
+): Promise<Record<string, KioskUptime>> {
+  const sb = await getSupabase();
+  if (!sb) return {};
+  const { data, error } = await sb.rpc("kiosk_uptime", { p_from: fromDay, p_to: toDay });
+  if (error) throw error;
+  const out: Record<string, KioskUptime> = {};
+  for (const r of data ?? []) {
+    out[r.device_id] = {
+      hours: Math.round((Number(r.buckets) * 5) / 6) / 10,
+      days: Number(r.days),
+      lastSeen: r.last_seen,
+    };
+  }
+  return out;
+}

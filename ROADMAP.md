@@ -1027,6 +1027,15 @@ itapon/
 
 ## Phase 25: Pilot deployment & user acceptance testing
 
+> **Status (2026-10-18): Ready to run. All tooling and paperwork are built and verified; the pilot itself (people, location, dates) is the team's.** Kit: [`docs/pilot/`](docs/pilot/README.md).
+> 1. **Email-free kiosk pairing** (built because custom SMTP was skipped): the kiosk shows a 6-digit code (15 min) on its anonymous session, and the admin enters it on `/admin` → Kiosks (`admin_register_kiosk_code`). Verified end to end on a production build: code `621346` → registered → the kiosk screen updated by itself → heartbeat recorded. Test data removed. Email registration stays as an option. **Note:** the pilot admin signs in with a team member's email (the built-in mailer only reaches team members).
+> 2. **Kiosk uptime:** 5-minute heartbeats while a kiosk runs (`kiosk_heartbeats`, `kiosk_uptime` RPC). `/admin` shows online hours, days and "online now" per kiosk. SQL computes uptime % against scheduled hours. Role matrix **80/80** (pairing codes unreadable, only admins redeem, a code works once, institutions isolated).
+> 3. **QR poster:** `/print/poster` (A4, location line, QR to `/scan`, bin legend, privacy link; prints without controls).
+> 4. **Accessibility target:** Lighthouse accessibility **100** on `/`, `/scan`, `/guide`, `/guide/hazardous`, `/scan/result/battery`, `/privacy` and `/kiosk` (target ≥ 95).
+> 5. **Kit:** timeline + roles + checklist, UAT protocol (9 tasks incl. kiosk/admin/janitorial ones, success/time/errors sheet), informed consent (RA 10173), SUS (standard items + Filipino draft) and ISO/IEC 25010 survey (17 items, 8 characteristics), contamination audit, operational SQL (scans/day, bin mix, **P95 time to result**, low-confidence and wrong rates, kiosk uptime %). All 4 SQL queries were checked against the schema.
+> 6. **Analysis:** `scripts/pilot_report.py` turns the CSVs into Chapter-4 tables (SUS mean/SD/grade per group with the ≥ 75 check, task success ≥ 90% check, ISO weighted means with interpretation, contamination before/during with a two-proportion z-test). 5 tests; checked on synthetic data, then deleted. Real responses go to the git-ignored `pilot/data/`.
+> 7. **Still to do (team):** approvals, recruit ≥ 20 participants (incl. PWD), run the baseline audit, kiosks, UAT, field test and the "during" audit, then the report and v1.0.x fixes.
+
 **Goal:** Validate with real users in a real setting and collect the evaluation data the study needs.
 
 **Why now:** The system is stable, secure and monitored, so it's safe to put in front of people.

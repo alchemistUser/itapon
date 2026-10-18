@@ -176,6 +176,50 @@ export type Database = {
         }
         Relationships: []
       }
+      kiosk_heartbeats: {
+        Row: {
+          bucket: string
+          device_id: string
+        }
+        Insert: {
+          bucket: string
+          device_id: string
+        }
+        Update: {
+          bucket?: string
+          device_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kiosk_heartbeats_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kiosk_pairings: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -446,6 +490,29 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_register_kiosk_code: {
+        Args: {
+          p_bin_order?: string[]
+          p_code: string
+          p_label: string
+          p_location?: string
+        }
+        Returns: {
+          bin_order: string[]
+          created_at: string
+          id: string
+          institution_id: string
+          kiosk_user_id: string | null
+          label: string
+          location_note: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "devices"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_review_feedback: {
         Args: { p_class_key?: string; p_id: string; p_status: string }
         Returns: undefined
@@ -463,6 +530,23 @@ export type Database = {
         Returns: {
           feedback_deleted: number
           scans_deleted: number
+        }[]
+      }
+      kiosk_heartbeat: { Args: never; Returns: undefined }
+      kiosk_request_pairing: {
+        Args: never
+        Returns: {
+          code: string
+          expires_at: string
+        }[]
+      }
+      kiosk_uptime: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          buckets: number
+          days: number
+          device_id: string
+          last_seen: string
         }[]
       }
       purge_client_errors: { Args: { p_days?: number }; Returns: number }

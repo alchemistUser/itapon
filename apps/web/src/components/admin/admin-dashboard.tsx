@@ -11,10 +11,12 @@ import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, PageTitle, Skeleton } from "@/components/ui/primitives";
 import {
   fetchDevices,
+  fetchKioskUptime,
   fetchInstitutionFeedback,
   fetchInstitutionScans,
   useAdminContext,
   type AdminDevice,
+  type KioskUptime,
 } from "@/lib/admin";
 import {
   applyFilters,
@@ -88,6 +90,7 @@ export function AdminDashboard() {
   const [scans, setScans] = useState<AnalyticsScan[]>([]);
   const [devices, setDevices] = useState<AdminDevice[]>([]);
   const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
+  const [uptime, setUptime] = useState<Record<string, KioskUptime>>({});
   const [truncated, setTruncated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -108,9 +111,11 @@ export function AdminDashboard() {
       fetchInstitutionScans(range.from, range.to),
       fetchDevices(),
       fetchInstitutionFeedback(range.from, range.to),
+      fetchKioskUptime(range.from, range.to),
     ])
-      .then(([res, devs, fb]) => {
+      .then(([res, devs, fb, up]) => {
         if (cancelled) return;
+        setUptime(up);
         setScans(res.scans);
         setFeedback(fb);
         setTruncated(res.truncated);
@@ -479,7 +484,7 @@ export function AdminDashboard() {
 
       <ReviewQueue rows={filteredFeedback} onChange={reload} />
 
-      <DevicesPanel devices={devices} onChange={reload} />
+      <DevicesPanel devices={devices} uptime={uptime} onChange={reload} />
     </div>
   );
 }
