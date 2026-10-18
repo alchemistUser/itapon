@@ -6,18 +6,42 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
 // Relative path from the repo root: Windows' shell would split an absolute path with spaces.
-const out = execFileSync("npx", ["supabase", "db", "query", "--linked", "-f", "supabase/tests/rls-roles.sql"], {
+const args = [
+  "supabase",
+  "db",
+  "query",
+  "--linked",
+  "-o",
+  "json",
+  "-f",
+  "supabase/tests/rls-roles.sql",
+];
+const out = execFileSync("npx", args, {
   cwd: root,
   encoding: "utf8",
   shell: process.platform === "win32",
   stdio: ["ignore", "pipe", "inherit"],
 });
-const rows = JSON.parse(out.slice(out.indexOf("{"))).rows ?? [];
+// The CLI prints {rows: [...]} in some environments and a bare [...] array in others (CI).
+const start = Math.min(...["{", "["].map((c) => out.indexOf(c)).filter((i) => i >= 0));
+let parsed;
+try {
+  parsed = JSON.parse(out.slice(start));
+} catch {
+  console.error(`Unexpected output from supabase db query:
+${out.slice(0, 1500)}`);
+  process.exit(2);
+}
+const rows = Array.isArray(parsed) ? parsed : (parsed.rows ?? []);
 for (const r of rows) console.log(`${r.ok ? "PASS" : "FAIL"}  ${r.check_name}`);
 const failed = rows.filter((r) => !r.ok).length;
 if (!rows.length) {
   console.error("No results: did the script run?");
   process.exit(2);
 }
-console.log(failed ? `\n${failed} of ${rows.length} checks FAILED` : `\nAll ${rows.length} role checks passed`);
+console.log(
+  failed
+    ? `\n${failed} of ${rows.length} checks FAILED`
+    : `\nAll ${rows.length} role checks passed`,
+);
 process.exit(failed ? 1 : 0);
