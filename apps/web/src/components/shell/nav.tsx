@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 "use client";
 
-import { BookOpen, History, Scan, type LucideIcon } from "lucide-react";
+import { BookOpen, History, Scan, Trophy, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -20,6 +20,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { href: "/scan", label: "Scan", longLabel: "Scan", icon: Scan },
   { href: "/guide", label: "Guide", longLabel: "Bin Guide", icon: BookOpen, also: ["/library"] },
+  { href: "/missions", label: "Missions", longLabel: "Missions", icon: Trophy },
   { href: "/history", label: "History", longLabel: "History", icon: History },
 ];
 
@@ -37,7 +38,7 @@ export function BottomTabs() {
       aria-label="Main"
       className="pb-safe fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 backdrop-blur md:hidden"
     >
-      <ul className="mx-auto grid max-w-md grid-cols-3">
+      <ul className="mx-auto grid max-w-md grid-cols-4">
         {NAV.map(({ href, label, icon: Icon }) => {
           const on = isActive(href);
           return (

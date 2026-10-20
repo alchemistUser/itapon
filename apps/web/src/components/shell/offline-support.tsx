@@ -21,6 +21,7 @@ const OFFLINE_PAGES = [
   "/scan/plan",
   ...DETECTABLE_KEYS.map((k) => `/scan/result/${k}`),
   "/history",
+  "/missions",
   "/account",
   "/kiosk",
   // Phase 30: the disposal library (group pages and data files are warmed by the worker)

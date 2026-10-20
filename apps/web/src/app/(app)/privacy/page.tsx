@@ -79,6 +79,11 @@ export default function PrivacyPage() {
           <li>
             <strong>Institution membership</strong>, if you join a school or office with its code.
           </li>
+          <li>
+            <strong>Missions and points:</strong> which library entries you opened, ideas you
+            marked, your quiz answers and the points you earned, so the server can check your
+            missions. Only you (and, for points, your institution&apos;s admins) can see them.
+          </li>
         </ul>
         <p>
           We don&apos;t collect your location, contacts or advertising ids, and there are no ads or

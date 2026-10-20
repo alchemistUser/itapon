@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { DevicesPanel } from "@/components/admin/devices-panel";
 import { LibraryPanel } from "@/components/admin/library-panel";
 import { MembersPanel } from "@/components/admin/members-panel";
+import { PointsPanel } from "@/components/admin/points-panel";
 import { ReviewQueue } from "@/components/admin/review-queue";
 import { DailyChart, Heatmap, HBarList, TrendLine } from "@/components/admin/charts";
 import { Button, ButtonLink } from "@/components/ui/button";
@@ -491,6 +492,8 @@ export function AdminDashboard() {
       <DevicesPanel devices={devices} uptime={uptime} onChange={reload} />
 
       {admin.institution ? <MembersPanel institutionId={admin.institution.id} /> : null}
+
+      {admin.institution ? <PointsPanel institutionId={admin.institution.id} /> : null}
     </div>
   );
 }

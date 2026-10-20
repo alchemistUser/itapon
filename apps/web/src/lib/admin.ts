@@ -336,3 +336,55 @@ export async function removeMember(userId: string): Promise<void> {
   const { error } = await sb.rpc("admin_remove_member", { p_user: userId });
   if (error) throw error;
 }
+
+export interface MemberPoints {
+  id: number;
+  userId: string;
+  mission: string | null;
+  points: number;
+  kind: "award" | "reversal";
+  reverses: number | null;
+  createdAt: string;
+}
+
+/** Members' recent points and scan-burst flags (Phase 32; RLS: own institution only). */
+export async function fetchMemberPoints(): Promise<{
+  events: MemberPoints[];
+  flags: { userId: string; reason: string; day: string }[];
+}> {
+  const sb = await getSupabase();
+  if (!sb) return { events: [], flags: [] };
+  const [events, flags] = await Promise.all([
+    sb
+      .from("point_events")
+      .select("id, user_id, mission_code, points, kind, reverses, created_at")
+      .order("created_at", { ascending: false })
+      .limit(200),
+    sb
+      .from("point_flags")
+      .select("user_id, reason, day_key")
+      .order("created_at", { ascending: false })
+      .limit(50),
+  ]);
+  if (events.error) throw events.error;
+  if (flags.error) throw flags.error;
+  return {
+    events: (events.data ?? []).map((e) => ({
+      id: e.id,
+      userId: e.user_id,
+      mission: e.mission_code,
+      points: e.points,
+      kind: e.kind as MemberPoints["kind"],
+      reverses: e.reverses,
+      createdAt: e.created_at,
+    })),
+    flags: (flags.data ?? []).map((f) => ({ userId: f.user_id, reason: f.reason, day: f.day_key })),
+  };
+}
+
+export async function reversePoints(eventId: number, reason: string): Promise<void> {
+  const sb = await getSupabase();
+  if (!sb) throw new Error("Not available");
+  const { error } = await sb.rpc("admin_reverse_points", { p_event: eventId, p_reason: reason });
+  if (error) throw error;
+}

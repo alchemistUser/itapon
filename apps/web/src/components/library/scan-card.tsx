@@ -27,6 +27,7 @@ import {
   type LibraryEventSource,
 } from "@/lib/library/client";
 import type { LibraryItem } from "@/lib/library/types";
+import { recordActivity } from "@/lib/points";
 import { usePrefs } from "@/lib/prefs";
 
 import { IdeaActions } from "./actions";
@@ -111,6 +112,7 @@ export function LibraryScanCard({
                   if (c.slug === chosenSlug) return;
                   setPicked({ classKey, slug: c.slug });
                   logLibraryEvent(c.slug, "chooser", source);
+                  recordActivity("chooser", c.slug); // missions (D26)
                 }}
                 className={cn(
                   "min-h-9 rounded-full border px-3 text-xs font-semibold",

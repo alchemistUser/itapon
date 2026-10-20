@@ -37,6 +37,11 @@ leaderboards exist (Phase 33).
 | **Password** | Supabase Auth (stored only as a salted hash) | Sign-in for full accounts (D24: no emails are sent) | Only for full accounts | Nobody, not even the team, can read it | Account deleted |
 | **Sign-in emails** | not used in the prototype (D24) | Would send confirmation and reset links via Brevo | — | — | — |
 
+**Added by Phase 32 (points, D26):** `mission_activity` (library entries opened, ideas marked;
+owner only), `quiz_answers` (owner only), `point_events` (owner and their institution's admins)
+and `point_flags` (scan bursts; admins). See [docs/points.md](../points.md). All are deleted with
+the account.
+
 **Not collected:** real name (the existing optional `display_name` stays optional), full date
 of birth, photos of people, location, contacts, phone number or school ID numbers.
 

@@ -1,7 +1,8 @@
 # iTapon v2 roadmap: disposal library, accounts & points
 
-Planned features on top of v1.0 ([ROADMAP.md](ROADMAP.md), Phases 1–26). **Nothing here is
-built yet.** Phases continue the v1 numbering (27–35) and follow the same Definition of Done
+Planned features on top of v1.0 ([ROADMAP.md](ROADMAP.md), Phases 1–26). **Built so far:**
+Phases 27–32. The short list of what's left is in
+[ROADMAP-remaining.md](ROADMAP-remaining.md). Phases continue the v1 numbering (27–35) and follow the same Definition of Done
 (ROADMAP §6: tests, RLS checks, accessibility, docs).
 
 | Feature | In one line |
@@ -246,23 +247,27 @@ content quickly and safely.
 
 ## Phase 32: Points engine
 
+> **Status (2026-10-21): Built (D26: missions instead of the kiosk claim QR).** Migration `20261021180000_points.sql`: a missions catalogue (5 daily, 5 weekly; the same 3 + 3 for everyone, picked from the date); an append-only `point_events` ledger (one award per mission and period, enforced by a unique index; admin reversals with a reason); `mission_activity`, `quiz_answers` and `point_flags`. Progress is computed on the server: confident scans at least 5 s apart, 30 per hour, distinct kinds or bins; new library entries; chooser and ideas recorded through `record_activity` (item and idea checked, rate-limited); daily quiz (same question for everyone) and a per-person 5-question group quiz (one try each). `claim_mission` refuses guests, inactive or unfinished missions and repeats, and caps 30/day and 150/week. 10 or more scans in a minute flags the user and pauses scan missions. App: a **Missions** tab (points totals, daily and weekly cards with progress and Claim, today's question, material quiz, points history, rules); library pages and the scan card record activity; a **Points** panel on `/admin` (flags, top members, reverse with a reason). Role matrix **175/175** (28 new checks); 4 new unit tests; axe on `/missions`. **Known limits:** scan results come from the device, so faked scans can earn at most the scan missions' points (the caps); the signed-in missions screen wasn't viewed with real data here (covered by the matrix); library activity needs a connection.
+
 **Goal:** Fair, cheat-resistant points, computed only on the server.
 
 **Tasks**
 1. **Ledger** (append-only): `point_events` (user, action, points, reference, created_at, unique
    per user + action + reference) and balances. Clients can never write points directly; awards
    come from triggers or SECURITY DEFINER RPCs with the Phase 27 rules.
-2. **Earning actions** (per Q5, final values in `docs/points.md`):
-   - **Kiosk-verified disposal**: after a kiosk result, the kiosk shows a one-time **claim QR**
-     (short-lived, single use, bound to that scan). Scanning it with your phone awards points.
-   - **Library learning**: first time reading each material group page, short quizzes built
-     from library entries ("Which bin does a Pyrex dish go in?"), daily cap.
-   - First scan of each item type ("discovery"), capped.
-   - Library idea "done", capped. Feedback a reviewer **approves** (Phase 20).
-3. **Anti-abuse**: caps, cooldowns, the duplicate guard, no points for anonymous or
-   unconfirmed accounts, anomaly flags with an admin review queue and reversal events.
+2. **Earning actions: daily and weekly missions** (D26, replacing the kiosk claim QR; values in
+   [`docs/points.md`](docs/points.md)): the same 3 daily and 3 weekly missions for everyone,
+   picked from the date. They cover scanning different item kinds, reading new library entries,
+   today's quiz question, "Which one is yours?", ideas planned or done, all 4 bins in a week, a
+   5-question group quiz, and 3 material groups in a week. Each pays once per period;
+   30 points/day and 150 points/week caps.
+3. **Anti-abuse** (no people needed): server-only awards, one claim per mission and period,
+   only distinct items and groups count, scan spacing and hourly limits, burst flags, quiz answers
+   checked on the server with one attempt, no points for guests (D24: no email confirmation, so
+   any signed-in account), and admin reversal events.
 4. **Transparency**: a points history page and the rules page; toasts announced to screen readers.
-5. Offline: claims and actions queue like scan logs; the server decides on sync.
+5. Offline: scans already queue and sync, so they count once synced. Library activity and claims
+   need a connection.
 
 **Exit criteria:** a scripted cheater (repeat scans, replayed claims, parallel requests) earns no more than the caps; every point is traceable.
 
@@ -279,9 +284,10 @@ content quickly and safely.
 2. **Streaks** with a grace day.
 3. **Leaderboards**: opt-in, per institution, weekly/monthly, top 10 + your rank; handle and
    avatar only; under-18s excluded; admins can hide abusive handles.
-4. **Rewards**: institution-created rewards, redemption codes, admin fulfilment; points deducted
-   by a ledger event; no cash value; terms page.
-5. **Kiosk**: "Top recyclers this week" idle slide (opt-in users only) and the claim-QR prompt.
+4. **Rewards** (D26): badges and levels by default. Institution-run prizes are optional
+   (created and handed out by the institution, points deducted by a ledger event, no cash value,
+   terms page).
+5. **Kiosk**: "Top recyclers this week" idle slide (opt-in users only). There is no claim QR (D26).
 
 **Exit criteria:** leaderboards show only opted-in adults; a reward goes from created to fulfilled; balances reconcile with the ledger.
 
@@ -301,8 +307,8 @@ content quickly and safely.
    before vs after the library/points (Phase 25 audit + `pilot_report.py`); retention; SUS for
    the new screens.
 4. Update the privacy notice, consent forms, RLS matrix and security checklist.
-5. QA: unit, E2E (chooser, search, claim-QR flow, leaderboard privacy, rewards), axe, offline,
-   and load on the points RPCs (busy canteen kiosk at lunch).
+5. QA: unit, E2E (chooser, search, missions and claims, leaderboard privacy, rewards), axe,
+   offline, and load on the points RPCs (a class claiming at once).
 
 **Exit criteria:** all v2 checks green; evaluation results recorded.
 

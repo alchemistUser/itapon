@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/cn";
 import { logLibraryEvent, type LibraryEventSource } from "@/lib/library/client";
+import { recordActivity } from "@/lib/points";
 
 const SLOT = "itapon-library-ideas";
 
@@ -42,6 +43,7 @@ export function IdeaActions({
   function mark(next: "plan" | "done") {
     setState(next);
     logLibraryEvent(slug, next === "plan" ? "idea_plan" : "idea_done", source);
+    recordActivity(next === "plan" ? "idea_plan" : "idea_done", slug, idea); // missions (D26)
     try {
       localStorage.setItem(SLOT, JSON.stringify({ ...readIdeas(), [key]: next }));
     } catch {
@@ -91,6 +93,9 @@ export function IdeaActions({
 
 /** Counts one "viewed" per entry and page load. */
 export function ViewLogger({ slug, source }: { slug: string; source: LibraryEventSource }) {
-  useEffect(() => logLibraryEvent(slug, "view", source), [slug, source]);
+  useEffect(() => {
+    logLibraryEvent(slug, "view", source);
+    if (source === "library") recordActivity("read_entry", slug); // missions (D26)
+  }, [slug, source]);
   return null;
 }

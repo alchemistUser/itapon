@@ -361,5 +361,96 @@ insert into rls_results values
    not exists (select 1 from auth.users where id = '00000000-0000-4000-8000-00000000a006')
    and not exists (select 1 from public.scan_sessions where user_id = '00000000-0000-4000-8000-00000000a006'));
 
+-- ---------------------------------------------------------------- points (v2 Phase 32, D26)
+-- user 1 (full account) can complete every daily mission today, whichever 3 are active:
+-- 3 kinds of confident, spaced scans; a quiz answer; library activity.
+insert into auth.users (id, instance_id, aud, role, email, is_anonymous, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+values ('00000000-0000-4000-8000-00000000a008', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', null, true, '{}', '{}', now(), now());
+update public.profiles set institution_id = '00000000-0000-4000-8000-0000000000b1' where id = '00000000-0000-4000-8000-00000000a001';
+insert into public.scan_sessions (id, user_id, model_version, created_at) values
+  ('00000000-0000-4000-8000-0000000000f1', '00000000-0000-4000-8000-00000000a001', 'rls', now() - interval '3 minutes'),
+  ('00000000-0000-4000-8000-0000000000f2', '00000000-0000-4000-8000-00000000a001', 'rls', now() - interval '2 minutes'),
+  ('00000000-0000-4000-8000-0000000000f3', '00000000-0000-4000-8000-00000000a001', 'rls', now() - interval '1 minute');
+insert into public.scan_detections (session_id, class_key, category_key, confidence, bbox, is_primary) values
+  ('00000000-0000-4000-8000-0000000000f1', 'banana_peel', 'x', 0.9, '{}', true),
+  ('00000000-0000-4000-8000-0000000000f2', 'plastic_bottle', 'x', 0.9, '{}', true),
+  ('00000000-0000-4000-8000-0000000000f3', 'straw', 'x', 0.9, '{}', true);
+-- a burst: 10 scans within a minute for user 3
+insert into public.scan_sessions (user_id, model_version, created_at)
+select '00000000-0000-4000-8000-00000000a007', 'rls', now() - make_interval(secs => g * 3) from generate_series(1, 10) g;
+create temp table quiz_today (slug text, bin text) on commit drop;
+grant all on quiz_today to authenticated;
+insert into quiz_today select d.item_slug, i.bin from public.daily_quiz() d join public.library_items i on i.slug = d.item_slug;
+create temp table idea_item (slug text, idea text) on commit drop;
+grant all on idea_item to authenticated;
+insert into idea_item select slug, reuse_en[1] from public.library_items where cardinality(reuse_en) > 0 order by slug limit 1;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a001'); -- user 1
+insert into rls_results values
+  ('points: users cannot write points', pg_temp.refused($q$insert into public.point_events (user_id, kind, mission_code, period_key, points) values ('00000000-0000-4000-8000-00000000a001', 'award', 'read_entry', 'x', 999)$q$)),
+  ('points: users cannot write activity directly', pg_temp.refused($q$insert into public.mission_activity (kind, item_slug) values ('read_entry', 'rls-published-item')$q$)),
+  ('points: users cannot write quiz answers directly', pg_temp.refused($q$insert into public.quiz_answers (quiz_key, item_slug, answer, correct) values ('daily:2026-01-01', 'rls-published-item', 'recyclable', true)$q$)),
+  ('points: activity needs a real item', pg_temp.refused($q$select public.record_activity('read_entry', 'rls-no-such-item')$q$)),
+  ('points: idea must be one of the item''s ideas', pg_temp.refused($q$select public.record_activity('idea_plan', 'rls-published-item', 'made up idea')$q$)),
+  ('points: unfinished missions cannot be claimed', pg_temp.refused($q$select public.claim_mission(code) from public.mission_status() where period = 'weekly' and code <> 'all_bins' limit 1$q$)),
+  ('points: unknown missions cannot be claimed', pg_temp.refused($q$select public.claim_mission('free_points')$q$)),
+  ('points: a closed quiz cannot be answered', pg_temp.refused($q$select public.answer_quiz('daily:2020-01-01', 'rls-published-item', 'recyclable')$q$));
+select public.record_activity('read_entry', 'rls-published-item');
+select public.record_activity('chooser', 'rls-published-item');
+select public.record_activity('idea_plan', (select slug from idea_item), (select idea from idea_item));
+insert into rls_results values
+  ('points: today''s quiz answered once', (select bool_and(correct) from public.answer_quiz((select 'daily:' || to_char(now() at time zone 'Asia/Manila', 'YYYY-MM-DD')), (select slug from quiz_today), (select bin from quiz_today)))),
+  ('points: quiz answers can''t be retried', pg_temp.refused(format('select public.answer_quiz(%L, %L, %L)', 'daily:' || to_char(now() at time zone 'Asia/Manila', 'YYYY-MM-DD'), (select slug from quiz_today), 'hazardous')));
+insert into rls_results values
+  ('points: every daily mission is complete', (select bool_and(progress = target and not blocked) from public.mission_status() where period = 'daily'));
+insert into rls_results values
+  ('points: claim all 3 daily missions', (select count(*) = 3 and sum(c.points) = 30 from public.mission_status() s, lateral public.claim_mission(s.code) c where s.period = 'daily'));
+insert into rls_results values
+  ('points: a mission pays once', pg_temp.refused($q$select public.claim_mission(code) from public.mission_status() where period = 'daily' limit 1$q$)),
+  ('points: balance matches the ledger', (select total = 30 and today = 30 from public.my_points()));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a008'); -- a guest (anonymous)
+select public.record_activity('chooser', 'rls-published-item');
+insert into rls_results values
+  ('points: guests cannot claim', pg_temp.refused($q$select public.claim_mission(code) from public.mission_status() where code = 'use_chooser'$q$) and pg_temp.refused($q$select public.claim_mission('read_entry')$q$));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a007'); -- user 3 (burst)
+select count(*) from public.mission_status();
+insert into rls_results values
+  ('points: others cannot read user 1 points or activity', (select count(*) = 0 from public.point_events where user_id = '00000000-0000-4000-8000-00000000a001') and (select count(*) = 0 from public.mission_activity where user_id = '00000000-0000-4000-8000-00000000a001') and (select count(*) = 0 from public.quiz_answers where user_id = '00000000-0000-4000-8000-00000000a001')),
+  ('points: users cannot reverse points', pg_temp.refused($q$select public.admin_reverse_points((select min(id) from public.point_events), 'nope')$q$));
+reset role;
+insert into rls_results values
+  ('points: a scan burst is flagged', exists (select 1 from public.point_flags where user_id = '00000000-0000-4000-8000-00000000a007' and reason = 'scan_burst'));
+
+create temp table award_id (id bigint) on commit drop;
+grant all on award_id to authenticated;
+insert into award_id select min(id) from public.point_events where user_id = '00000000-0000-4000-8000-00000000a001';
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a005'); -- admin B
+insert into rls_results values
+  ('points: admin B cannot see or reverse institution A points', (select count(*) = 0 from public.point_events where user_id = '00000000-0000-4000-8000-00000000a001') and pg_temp.refused(format('select public.admin_reverse_points(%s, %L)', (select id from award_id), 'test')));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a004'); -- admin A
+insert into rls_results values
+  ('points: admin A sees member points', (select count(*) = 3 from public.point_events where user_id = '00000000-0000-4000-8000-00000000a001')),
+  ('points: admin A reverses an award with a reason', not pg_temp.refused(format('select public.admin_reverse_points(%s, %L)', (select id from award_id), 'Testing a reversal')));
+insert into rls_results values
+  ('points: an award is reversed once', pg_temp.refused(format('select public.admin_reverse_points(%s, %L)', (select id from award_id), 'again')));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a001');
+insert into rls_results values
+  ('points: reversal shows in the balance', (select total = 20 from public.my_points()));
+reset role;
+
 select check_name, ok from rls_results order by ok, check_name;
 rollback;

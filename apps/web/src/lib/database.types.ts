@@ -669,6 +669,149 @@ export type Database = {
         }
         Relationships: []
       }
+      mission_activity: {
+        Row: {
+          created_at: string
+          detail: string | null
+          id: number
+          item_slug: string
+          kind: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          id?: never
+          item_slug: string
+          kind: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          id?: never
+          item_slug?: string
+          kind?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_activity_item_slug_fkey"
+            columns: ["item_slug"]
+            isOneToOne: false
+            referencedRelation: "library_items"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
+      missions: {
+        Row: {
+          code: string
+          period: string
+          points: number
+          sort_order: number
+          target: number
+          title_en: string
+          title_fil: string
+        }
+        Insert: {
+          code: string
+          period: string
+          points: number
+          sort_order?: number
+          target: number
+          title_en: string
+          title_fil: string
+        }
+        Update: {
+          code?: string
+          period?: string
+          points?: number
+          sort_order?: number
+          target?: number
+          title_en?: string
+          title_fil?: string
+        }
+        Relationships: []
+      }
+      point_events: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: number
+          kind: string
+          mission_code: string | null
+          period_key: string | null
+          points: number
+          reason: string | null
+          reverses: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: never
+          kind: string
+          mission_code?: string | null
+          period_key?: string | null
+          points: number
+          reason?: string | null
+          reverses?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: never
+          kind?: string
+          mission_code?: string | null
+          period_key?: string | null
+          points?: number
+          reason?: string | null
+          reverses?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "point_events_mission_code_fkey"
+            columns: ["mission_code"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "point_events_reverses_fkey"
+            columns: ["reverses"]
+            isOneToOne: false
+            referencedRelation: "point_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      point_flags: {
+        Row: {
+          created_at: string
+          day_key: string
+          id: number
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day_key: string
+          id?: never
+          reason: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day_key?: string
+          id?: never
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profile_private: {
         Row: {
           birth_year: number | null
@@ -740,6 +883,41 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "institutions"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_answers: {
+        Row: {
+          answer: string
+          correct: boolean
+          created_at: string
+          item_slug: string
+          quiz_key: string
+          user_id: string
+        }
+        Insert: {
+          answer: string
+          correct: boolean
+          created_at?: string
+          item_slug: string
+          quiz_key: string
+          user_id?: string
+        }
+        Update: {
+          answer?: string
+          correct?: boolean
+          created_at?: string
+          item_slug?: string
+          quiz_key?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_answers_item_slug_fkey"
+            columns: ["item_slug"]
+            isOneToOne: false
+            referencedRelation: "library_items"
+            referencedColumns: ["slug"]
           },
         ]
       }
@@ -999,17 +1177,47 @@ export type Database = {
         }
       }
       admin_remove_member: { Args: { p_user: string }; Returns: undefined }
+      admin_reverse_points: {
+        Args: { p_event: number; p_reason: string }
+        Returns: undefined
+      }
       admin_review_feedback: {
         Args: { p_class_key?: string; p_id: string; p_status: string }
         Returns: undefined
       }
       admin_rotate_join_code: { Args: never; Returns: string }
+      answer_quiz: {
+        Args: { p_answer: string; p_key: string; p_slug: string }
+        Returns: {
+          correct: boolean
+          right_bin: string
+        }[]
+      }
+      claim_mission: {
+        Args: { p_code: string }
+        Returns: {
+          points: number
+          total: number
+        }[]
+      }
       daily_counts_by_category: {
         Args: { p_from?: string; p_to?: string }
         Returns: {
           category_key: string
           day: string
           detections: number
+        }[]
+      }
+      daily_quiz: {
+        Args: never
+        Returns: {
+          correct: boolean
+          item_slug: string
+          my_answer: string
+          name_en: string
+          name_fil: string
+          quiz_key: string
+          right_bin: string
         }[]
       }
       delete_my_account: { Args: never; Returns: undefined }
@@ -1021,6 +1229,18 @@ export type Database = {
         }[]
       }
       export_my_data: { Args: never; Returns: Json }
+      group_quiz: {
+        Args: { p_group: string }
+        Returns: {
+          correct: boolean
+          item_slug: string
+          my_answer: string
+          name_en: string
+          name_fil: string
+          quiz_key: string
+          right_bin: string
+        }[]
+      }
       handle_available: { Args: { p_handle: string }; Returns: boolean }
       join_institution: {
         Args: { p_code: string }
@@ -1056,7 +1276,34 @@ export type Database = {
           item_slug: string
         }[]
       }
+      mission_status: {
+        Args: never
+        Returns: {
+          blocked: boolean
+          claimed: boolean
+          code: string
+          period: string
+          period_key: string
+          points: number
+          progress: number
+          target: number
+          title_en: string
+          title_fil: string
+        }[]
+      }
+      my_points: {
+        Args: never
+        Returns: {
+          this_week: number
+          today: number
+          total: number
+        }[]
+      }
       purge_client_errors: { Args: { p_days?: number }; Returns: number }
+      record_activity: {
+        Args: { p_detail?: string; p_kind: string; p_slug: string }
+        Returns: undefined
+      }
       top_items: {
         Args: { p_from?: string; p_limit?: number; p_to?: string }
         Returns: {
