@@ -35,6 +35,10 @@ These decisions are settled. Reopen one only for a concrete reason, and add a da
 | D17 | Library rules | National default (RA 9003, DENR/EMB rules) with **Quezon City and TIP overrides**, shown as "In Quezon City: …". | 2026-10-20 |
 | D18 | Library review | Reviewed by the **team** against cited sources (`docs/library/sources.md`); hazardous, medical and e-waste rows need two reviewers; unresolved gaps (household sharps, medicine) use a safe fallback text. | 2026-10-20 |
 | D19 | Library authoring | Claude researches and **drafts** entries from the source register into the content sheets; nothing is published until the team reviews it. No invented programmes, addresses or schedules. | 2026-10-20 |
+| D20 | Accounts v2 timing | Phase 31 is **built now** but stays **future work** in the manuscript (D16 unchanged). | 2026-10-21 |
+| D21 | Sign-in email | Custom SMTP via **Brevo** (free plan, one verified sender address, no domain) plus Google. SMTP credentials go only into Supabase's SMTP settings. | 2026-10-21 |
+| D22 | Minors | **Age gate**: birth year only; under-18s are private by default, no leaderboard, guardian notice; consent version and date recorded (RA 10173). | 2026-10-21 |
+| D23 | Joining an institution | One **standing join code per institution** that its admins can rotate (no preference given; recommended default). | 2026-10-21 |
 
 ---
 

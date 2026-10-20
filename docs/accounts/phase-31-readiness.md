@@ -17,7 +17,12 @@ below get recorded in ROADMAP.md as D20 onwards.
 Email sign-in in production waits on SMTP: Phase 24 skipped it. Supabase's built-in mailer is
 for testing only. It sends to the project team's own addresses at a very low hourly limit.
 
-## Decisions needed before building
+## Decisions (answered 2026-10-21)
+
+**D20** build now, keep as future work in the manuscript · **D21** Brevo SMTP + Google ·
+**D22** age gate · **D23** one standing join code per institution (rotatable).
+
+The original questions:
 
 1. **Scope (D16).** D16 put accounts and points out of the thesis as "future work". Starting
    Phase 31 means either changing D16 (with the adviser's OK), or building it after the
@@ -47,8 +52,6 @@ for testing only. It sends to the project team's own addresses at a very low hou
 - [ ] **Email templates.** Branded confirmation, magic-link and email-change templates in EN and
       FIL (Supabase → Authentication → Email templates), then copy them into `supabase/templates/`
       so they're versioned.
-- [ ] **Join codes for institutions.** Decide: one standing code per institution that an admin can
-      rotate, or one-time codes like kiosk pairing. One standing code is simpler for classes.
 - [ ] **Library publishing** (Phase 29 review) can run in parallel. It doesn't block Phase 31.
 
 ## Risks to watch
