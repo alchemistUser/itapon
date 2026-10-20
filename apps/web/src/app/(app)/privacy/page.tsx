@@ -58,7 +58,9 @@ export default function PrivacyPage() {
             box, <strong>that one photo</strong> (see &quot;Shared photos&quot;).
           </li>
           <li>
-            <strong>Your email</strong>, only if you choose to save your history or sign in.
+            <strong>Your email and a password</strong>, only if you create an account. The password
+            is stored only in scrambled (hashed) form; nobody can read it. We don&apos;t send you
+            any emails.
           </li>
           <li>
             <strong>Preferences</strong> such as read-aloud, language and text size.
@@ -116,9 +118,7 @@ export default function PrivacyPage() {
         </ul>
         <p>
           Data is stored with Supabase (database and private file storage) and the app is served by
-          Vercel. Sign-in emails are sent through Brevo, which handles your email address only to
-          deliver them. The model files come from Hugging Face. We don&apos;t sell or share your
-          data.
+          Vercel. The model files come from Hugging Face. We don&apos;t sell or share your data.
         </p>
       </Section>
 

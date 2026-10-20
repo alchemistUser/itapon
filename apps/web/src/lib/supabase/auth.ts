@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Auth for Phase 16. Guests are anonymous Supabase users (created on first scan or here).
-// "Save your history" attaches an email to that same user (supabase updateUser): after the
-// emailed link is opened the account is permanent and keeps the same id, so every scan
-// stays. Returning users on another device sign in with a magic link.
+// "Create an account" gives that same user an email and password (supabase updateUser), so it
+// keeps the same id and every scan stays. Returning users sign in with email + password.
+// D24: no emails are sent (no SMTP): email confirmation is off and there's no password reset
+// by email; the team resets passwords in the Supabase dashboard.
 //
 // Sessions live in localStorage (supabase-js). All data is read in the browser under RLS
 // and every page is prerendered, so no server-side session (proxy/middleware) is needed.
@@ -59,37 +60,65 @@ export function useAuth(): AuthState {
 const redirectTo = (path: string) =>
   typeof window === "undefined" ? undefined : `${window.location.origin}${path}`;
 
-/** Keep this device's (anonymous) history by attaching an email to the same account. */
-export async function saveHistoryWithEmail(email: string): Promise<{ error?: string }> {
-  const sb = await getSupabase();
-  if (!sb) return { error: "Accounts aren't available right now." };
-  const userId = await ensureUserId(); // guest who hasn't scanned yet still gets an account
-  if (!userId) return { error: "Couldn't start a session. Check your connection." };
-  const { error } = await sb.auth.updateUser(
-    { email: email.trim() },
-    { emailRedirectTo: redirectTo("/account?saved=1") },
-  );
-  if (error) {
-    return {
-      error: /already|registered|exists/i.test(error.message)
-        ? "That email already has an iTapon account. Use “Sign in” instead (scans on this device won't move over)."
-        : /invalid/i.test(error.message)
-          ? "Please enter a valid email address you can open."
-          : error.message,
-    };
-  }
-  return {};
+export const MIN_PASSWORD = 8;
+
+/** Turns Supabase auth errors into short, user-facing messages (pure; tested). */
+export function authMessage(message: string): string {
+  if (/already|registered|exists/i.test(message))
+    return "That email already has an iTapon account. Use “Sign in” instead (scans made here as a guest won't move over).";
+  if (/invalid login|invalid credentials/i.test(message)) return "Wrong email or password.";
+  if (/invalid.*email|email.*invalid|unable to validate email/i.test(message))
+    return "Please enter a valid email address.";
+  if (/password/i.test(message) && /(short|least|weak|characters)/i.test(message))
+    return `Use a password of at least ${MIN_PASSWORD} characters.`;
+  if (/rate limit|too many/i.test(message))
+    return "Too many tries. Wait a few minutes and try again.";
+  return message;
 }
 
-/** Magic-link sign-in for an existing account (e.g. on a new device). */
-export async function signInWithEmail(email: string): Promise<{ error?: string }> {
+/**
+ * Create an account with email + password (D24: no emails are sent, so email confirmation
+ * is off in Supabase). A guest's anonymous user becomes the account, so every scan stays.
+ */
+export async function createAccount(email: string, password: string): Promise<{ error?: string }> {
   const sb = await getSupabase();
   if (!sb) return { error: "Accounts aren't available right now." };
-  const { error } = await sb.auth.signInWithOtp({
-    email: email.trim(),
-    options: { shouldCreateUser: true, emailRedirectTo: redirectTo("/history") },
-  });
-  return error ? { error: error.message } : {};
+  if (password.length < MIN_PASSWORD)
+    return { error: `Use a password of at least ${MIN_PASSWORD} characters.` };
+  const userId = await ensureUserId(); // guest who hasn't scanned yet still gets an account
+  if (!userId) return { error: "Couldn't start a session. Check your connection." };
+  // Two steps: Supabase only lets an anonymous user set a password once it has an email.
+  const first = await sb.auth.updateUser({ email: email.trim() });
+  if (first.error) return { error: authMessage(first.error.message) };
+  if (!first.data.user?.email) {
+    // Still waiting for a confirmation email: the "Confirm email" setting is on.
+    return {
+      error:
+        "Email confirmation is still switched on in Supabase, so the account can't be finished here. Ask the iTapon team.",
+    };
+  }
+  const second = await sb.auth.updateUser({ password });
+  return second.error ? { error: authMessage(second.error.message) } : {};
+}
+
+/** Sign in on another device. Scans made there as a guest stay with that guest. */
+export async function signInWithPassword(
+  email: string,
+  password: string,
+): Promise<{ error?: string }> {
+  const sb = await getSupabase();
+  if (!sb) return { error: "Accounts aren't available right now." };
+  const { error } = await sb.auth.signInWithPassword({ email: email.trim(), password });
+  return error ? { error: authMessage(error.message) } : {};
+}
+
+export async function changePassword(password: string): Promise<{ error?: string }> {
+  const sb = await getSupabase();
+  if (!sb) return { error: "Accounts aren't available right now." };
+  if (password.length < MIN_PASSWORD)
+    return { error: `Use a password of at least ${MIN_PASSWORD} characters.` };
+  const { error } = await sb.auth.updateUser({ password });
+  return error ? { error: authMessage(error.message) } : {};
 }
 
 /** Google sign-in (needs the Google provider + manual linking enabled in Supabase). */

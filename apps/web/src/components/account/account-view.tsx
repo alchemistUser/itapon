@@ -1,7 +1,15 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 "use client";
 
-import { CheckCircle2, Mail, ShieldCheck, Trash2, UserRound } from "lucide-react";
+import {
+  CheckCircle2,
+  KeyRound,
+  LogIn,
+  ShieldCheck,
+  Trash2,
+  UserPlus,
+  UserRound,
+} from "lucide-react";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 
 import { AccountV2 } from "@/components/account/account-v2";
@@ -10,9 +18,11 @@ import { Card, PageTitle } from "@/components/ui/primitives";
 import { deleteMyData } from "@/lib/history";
 import { setPrefs, usePrefs, type Prefs } from "@/lib/prefs";
 import {
+  changePassword,
   continueWithGoogle,
-  saveHistoryWithEmail,
-  signInWithEmail,
+  createAccount,
+  MIN_PASSWORD,
+  signInWithPassword,
   signOut,
   useAuth,
 } from "@/lib/supabase/auth";
@@ -31,27 +41,32 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-function EmailForm({ mode, onDone }: { mode: "save" | "signin"; onDone: (email: string) => void }) {
+function AuthForm({ mode, onDone }: { mode: "create" | "signin"; onDone: () => void }) {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   async function submit(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError(null);
-    const res = mode === "save" ? await saveHistoryWithEmail(email) : await signInWithEmail(email);
+    const res =
+      mode === "create"
+        ? await createAccount(email, password)
+        : await signInWithPassword(email, password);
     setBusy(false);
     if (res.error) setError(res.error);
-    else onDone(email.trim());
+    else onDone();
   }
   return (
-    <form onSubmit={submit} className="flex flex-col gap-2 sm:flex-row">
-      <label className="flex-1">
-        <span className="sr-only">Email address</span>
+    <form onSubmit={submit} className="flex flex-col gap-2">
+      <label className="flex flex-col gap-1 text-sm">
+        <span className="font-medium text-ink">Email</span>
         <input
           type="email"
           required
-          autoComplete="email"
+          autoComplete={mode === "create" ? "email" : "username"}
           inputMode="email"
           placeholder="you@example.com"
           value={email}
@@ -59,13 +74,107 @@ function EmailForm({ mode, onDone }: { mode: "save" | "signin"; onDone: (email: 
           className={inputCls}
         />
       </label>
-      <Button type="submit" disabled={busy || !email.includes("@")}>
-        <Mail aria-hidden className="size-4" />
-        {busy ? "Sending…" : mode === "save" ? "Save my history" : "Email me a sign-in link"}
+      <label className="flex flex-col gap-1 text-sm">
+        <span className="font-medium text-ink">Password</span>
+        <input
+          type={show ? "text" : "password"}
+          required
+          minLength={mode === "create" ? MIN_PASSWORD : undefined}
+          autoComplete={mode === "create" ? "new-password" : "current-password"}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          aria-describedby={mode === "create" ? "password-help" : undefined}
+          className={inputCls}
+        />
+      </label>
+      <label className="flex items-center gap-2 text-sm text-ink-3">
+        <input
+          type="checkbox"
+          className="size-4 accent-brand-button"
+          checked={show}
+          onChange={(e) => setShow(e.target.checked)}
+        />
+        Show password
+      </label>
+      {mode === "create" ? (
+        <p id="password-help" className="text-xs text-ink-3">
+          At least {MIN_PASSWORD} characters. Write it down: iTapon can&apos;t email you a reset
+          link yet.
+        </p>
+      ) : null}
+      <Button
+        type="submit"
+        className="self-start"
+        disabled={busy || !email.includes("@") || !password}
+      >
+        {mode === "create" ? (
+          <UserPlus aria-hidden className="size-4" />
+        ) : (
+          <LogIn aria-hidden className="size-4" />
+        )}
+        {busy ? "Please wait…" : mode === "create" ? "Create account" : "Sign in"}
       </Button>
       {error ? (
-        <p role="alert" className="text-sm text-[#c4282d] sm:basis-full">
+        <p role="alert" className="text-sm text-[#c4282d]">
           {error}
+        </p>
+      ) : null}
+    </form>
+  );
+}
+
+function ChangePassword() {
+  const [open, setOpen] = useState(false);
+  const [password, setPassword] = useState("");
+  const [msg, setMsg] = useState<{ text: string; error?: boolean } | null>(null);
+  if (!open) {
+    return (
+      <>
+        <Button variant="outline" className="self-start" onClick={() => setOpen(true)}>
+          <KeyRound aria-hidden className="size-4" /> Change password
+        </Button>
+        {msg ? (
+          <p role="status" className="basis-full text-sm text-ink-2">
+            {msg.text}
+          </p>
+        ) : null}
+      </>
+    );
+  }
+  return (
+    <form
+      className="flex basis-full flex-col gap-2"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        const r = await changePassword(password);
+        setMsg(r.error ? { text: r.error, error: true } : { text: "Password changed." });
+        if (!r.error) {
+          setPassword("");
+          setOpen(false);
+        }
+      }}
+    >
+      <label className="flex flex-col gap-1 text-sm">
+        <span className="font-medium text-ink">New password</span>
+        <input
+          type="password"
+          required
+          minLength={MIN_PASSWORD}
+          autoComplete="new-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className={inputCls}
+        />
+      </label>
+      <div className="flex gap-2">
+        <Button type="submit">Save password</Button>
+        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+          Cancel
+        </Button>
+      </div>
+      {msg?.error ? (
+        <p role="alert" className="text-sm text-[#c4282d]">
+          {msg.text}
         </p>
       ) : null}
     </form>
@@ -74,8 +183,7 @@ function EmailForm({ mode, onDone }: { mode: "save" | "signin"; onDone: (email: 
 
 export function AccountView() {
   const auth = useAuth();
-  const [mode, setMode] = useState<"save" | "signin">("save");
-  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [mode, setMode] = useState<"create" | "signin">("create");
   const [justSaved, setJustSaved] = useState(false);
   const prefs = usePrefs();
   const [displayName, setDisplayName] = useState("");
@@ -161,7 +269,6 @@ export function AccountView() {
   }
 
   const guest = !auth.user || auth.isAnonymous;
-  const pending = sentTo ?? auth.pendingEmail;
 
   return (
     <div className="flex flex-col gap-5 md:max-w-2xl">
@@ -175,51 +282,42 @@ export function AccountView() {
           role="status"
           className="flex items-center gap-2 rounded-card bg-bin-green-tint p-4 text-sm font-medium text-ink"
         >
-          <CheckCircle2 aria-hidden className="size-5 text-[#1a7f37]" /> Your history is saved to
-          your account.
+          <CheckCircle2 aria-hidden className="size-5 text-[#1a7f37]" /> Account created. Your
+          history is saved to it.
         </p>
       ) : null}
 
       {guest ? (
-        <Section title={mode === "save" ? "Save your history" : "Sign in"}>
-          {pending ? (
-            <p role="status" className="text-sm text-ink-2">
-              <Mail aria-hidden className="mr-1.5 inline size-4 text-brand-strong" />
-              We sent a link to <strong>{pending}</strong>. Open it on this device to finish.
-              {mode === "save" ? " Your scans stay with you." : null}
+        <Section title={mode === "create" ? "Create an account" : "Sign in"}>
+          <p className="text-sm text-ink-3">
+            {mode === "create"
+              ? "Your scans are only stored for this browser. Create an account to keep them and see them on any device."
+              : "Sign in with your email and password. Scans made here as a guest won't move over."}
+          </p>
+          <AuthForm key={mode} mode={mode} onDone={() => setJustSaved(mode === "create")} />
+          {mode === "signin" ? (
+            <p className="text-xs text-ink-3">
+              Forgot your password? Ask the iTapon team to reset it. Reset emails aren&apos;t
+              available yet.
             </p>
-          ) : (
-            <>
-              <p className="text-sm text-ink-3">
-                {mode === "save"
-                  ? "Your scans are only stored for this browser. Add your email to keep them and see them on any device. No password needed."
-                  : "Already saved your history on another device? We'll email you a sign-in link. Scans made here as a guest won't move over."}
-              </p>
-              <EmailForm mode={mode} onDone={setSentTo} />
-              {GOOGLE_ENABLED ? (
-                <Button
-                  variant="outline"
-                  onClick={async () => {
-                    const r = await continueWithGoogle(mode === "save");
-                    if (r.error) setSentTo(null);
-                  }}
-                >
-                  Continue with Google
-                </Button>
-              ) : null}
-            </>
-          )}
+          ) : null}
+          {GOOGLE_ENABLED ? (
+            <Button
+              variant="outline"
+              className="self-start"
+              onClick={() => void continueWithGoogle(mode === "create")}
+            >
+              Continue with Google
+            </Button>
+          ) : null}
           <button
             type="button"
-            onClick={() => {
-              setMode(mode === "save" ? "signin" : "save");
-              setSentTo(null);
-            }}
+            onClick={() => setMode(mode === "create" ? "signin" : "create")}
             className="self-start text-sm font-medium text-brand-strong underline"
           >
-            {mode === "save"
+            {mode === "create"
               ? "Already have an account? Sign in"
-              : "Save this device's history instead"}
+              : "New here? Create an account instead"}
           </button>
         </Section>
       ) : (
@@ -234,15 +332,18 @@ export function AccountView() {
               className={inputCls}
             />
           </label>
-          <Button
-            variant="outline"
-            className="self-start"
-            onClick={() => {
-              void signOut();
-            }}
-          >
-            <UserRound aria-hidden className="size-4" /> Sign out
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <ChangePassword />
+            <Button
+              variant="outline"
+              className="self-start"
+              onClick={() => {
+                void signOut();
+              }}
+            >
+              <UserRound aria-hidden className="size-4" /> Sign out
+            </Button>
+          </div>
         </Section>
       )}
 

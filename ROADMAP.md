@@ -39,7 +39,7 @@ These decisions are settled. Reopen one only for a concrete reason, and add a da
 | D21 | Sign-in email | Custom SMTP via **Brevo** (free plan, one verified sender address, no domain) plus Google. SMTP credentials go only into Supabase's SMTP settings. | 2026-10-21 |
 | D22 | Minors | **Age gate**: birth year only; under-18s are private by default, no leaderboard, guardian notice; consent version and date recorded (RA 10173). | 2026-10-21 |
 | D23 | Joining an institution | One **standing join code per institution** that its admins can rotate (no preference given; recommended default). | 2026-10-21 |
-| D24 | Email for the demo | **No SMTP for the prototype demo.** Email sign-in stays off; the demo uses guest (anonymous) accounts. Brevo setup (`docs/accounts/email-setup.md`) is kept for later. Replaces the email part of D21. | 2026-10-21 |
+| D24 | Email for the demo | **No SMTP for the prototype demo.** Accounts use **email + password** with email confirmation **off**; no emails are sent (no confirmation, magic links or password reset: the team resets passwords in the Supabase dashboard). Brevo setup (`docs/accounts/email-setup.md`) is kept for later. Replaces the email part of D21. | 2026-10-21 |
 
 ---
 

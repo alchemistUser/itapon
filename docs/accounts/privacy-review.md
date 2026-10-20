@@ -5,8 +5,9 @@ Phase 31 goes live (see "Approval" at the end). It follows the shape of a privac
 assessment under RA 10173 (Data Privacy Act of 2012) and covers only what Phase 31 adds. Points,
 leaderboards and rewards (Phases 32–35) need their own review.
 
-Decisions this builds on: D20 (build now, future work in the manuscript), D21 (Brevo SMTP +
-Google), D22 (age gate), D23 (one rotatable join code per institution).
+Decisions this builds on: D20 (build now, future work in the manuscript), D22 (age gate), D23
+(one rotatable join code per institution) and D24 (email + password, no emails sent; replaces the
+Brevo part of D21).
 
 ## 1. What changes for users
 
@@ -33,7 +34,8 @@ leaderboards exist (Phase 34).
 | **Institution membership** (institution, joined at) | `profiles.institution_id`, `profiles.institution_joined_at` | Institution totals and admin dashboards (existing purpose) | Optional; you join with a code | You; that institution's admins | You leave, an admin removes you, or the account is deleted |
 | **Join code** (8 characters) | `institutions.join_code` | Lets members join without an admin typing emails | Per institution | That institution's admins and members | Rotated or institution removed |
 | **Email** (existing) | Supabase Auth | Sign-in, account recovery | Only for full accounts | You; the project team; **never** shown to admins | Account deleted |
-| **Sign-in emails** (new sender) | Brevo (SMTP processor) | Sends sign-in and confirmation links | Only for email sign-in | Brevo processes the email address and message to deliver it | Brevo's own log retention (check their terms) |
+| **Password** | Supabase Auth (stored only as a salted hash) | Sign-in for full accounts (D24: no emails are sent) | Only for full accounts | Nobody, not even the team, can read it | Account deleted |
+| **Sign-in emails** | not used in the prototype (D24) | Would send confirmation and reset links via Brevo | — | — | — |
 
 **Not collected:** real name (the existing optional `display_name` stays optional), full date
 of birth, photos of people, location, contacts, phone number or school ID numbers.
@@ -47,8 +49,8 @@ of birth, photos of people, location, contacts, phone number or school ID number
   is under 18. It is never shown to anyone, including admins.
 - **Shared photos:** unchanged, separate consent per photo (existing notice).
 
-No data is sold or used for advertising. Brevo, Supabase and Vercel are processors.
-**To confirm (team):** that Brevo's terms cover processing for a student project, and whether a
+No data is sold or used for advertising. Supabase and Vercel are processors (no email provider is
+used in the prototype, D24). **To confirm (team):** that their terms cover processing for a student project, and whether a
 data sharing or processing agreement is needed. Note this in the manuscript's ethics section.
 
 ## 4. Minors (D22)
@@ -114,13 +116,13 @@ and not under our control; say so in the notice.
 | Join code shared outside the class | Rotation; admins can remove members; membership gives no access to others' data |
 | Handle squatting or impersonation | Reserved words, 30-day change cooldown, admins report to the team |
 | Export file left on a shared device | Download happens only on request; the notice warns about shared devices |
-| Brevo stores email addresses | Data minimisation (only transactional emails, no marketing lists); mention in the notice |
+| Forgotten passwords with no reset email (D24) | The team resets them in the Supabase dashboard after checking the person; the form says so |
 | Handles can be enumerated through the "is it available?" check | Returns only true/false and is rate-limited |
 
 ## 9. Notice and form changes
 
 - `/privacy`: add the new data, the minors rule, membership and admin visibility, export and
-  account deletion, and Brevo as a processor. Update the date at the top.
+  account deletion, and that passwords are stored hashed and no emails are sent. Update the date at the top.
 - `docs/pilot/consent.md`: add one line saying a profile is optional and that minors' profiles
   are private.
 - Sign-up screen: a short "why we ask" line under the birth year and handle fields.

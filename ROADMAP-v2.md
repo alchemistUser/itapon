@@ -212,7 +212,7 @@ content quickly and safely.
 
 ## Phase 31: Account system v2
 
-> **Status (2026-10-21): Built. The privacy review waits for team and adviser approval. No email sign-in for the prototype demo (D24): guests use the app anonymously.** Decisions D20–D23 (build now, future work in the manuscript; Brevo + Google; age gate; one rotatable join code per institution). **Privacy review** drafted: [`docs/accounts/privacy-review.md`](docs/accounts/privacy-review.md) (data inventory, lawful basis, minors, membership, rights, risks); the privacy notice and pilot consent form are updated. Migration `20261021120000_accounts_v2.sql`:
+> **Status (2026-10-21): Built. The privacy review waits for team and adviser approval. Accounts use email + password with no emails sent (D24).** Decisions D20–D23 (build now, future work in the manuscript; Brevo + Google; age gate; one rotatable join code per institution). **Privacy review** drafted: [`docs/accounts/privacy-review.md`](docs/accounts/privacy-review.md) (data inventory, lawful basis, minors, membership, rights, risks); the privacy notice and pilot consent form are updated. Migration `20261021120000_accounts_v2.sql`:
 > - **Profile:** handle with format, reserved and blocked-word rules, unique, 30-day change cooldown; preset avatar; public toggle, off by default and locked for minors.
 > - **Birth year:** in an **owner-only** `profile_private` table, because admins can read institution profiles. Conservative age rule: adult from 1 January of birth year + 19. It can be corrected once.
 > - **Consents:** `consents` records (notice version and date; insert-only).
