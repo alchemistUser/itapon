@@ -304,6 +304,48 @@ export type Database = {
           },
         ]
       }
+      library_events: {
+        Row: {
+          created_at: string
+          event: string
+          id: number
+          institution_id: string | null
+          item_slug: string
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          id?: never
+          institution_id?: string | null
+          item_slug: string
+          source: string
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          id?: never
+          institution_id?: string | null
+          item_slug?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "library_events_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "library_events_item_slug_fkey"
+            columns: ["item_slug"]
+            isOneToOne: false
+            referencedRelation: "library_items"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
       library_item_destinations: {
         Row: {
           destination_code: string
@@ -924,6 +966,15 @@ export type Database = {
           days: number
           device_id: string
           last_seen: string
+        }[]
+      }
+      library_event_counts: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          event: string
+          everyone: number
+          institution: number
+          item_slug: string
         }[]
       }
       purge_client_errors: { Args: { p_days?: number }; Returns: number }

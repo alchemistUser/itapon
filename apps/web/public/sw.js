@@ -12,6 +12,8 @@
 // Cross-origin requests (Supabase, Hugging Face) pass straight through.
 // The page posts {type: "warm", build, urls} once per deploy, and we pre-cache those pages
 // (Bin Guide, scanner, item pages) plus the scripts and styles they reference.
+// Phase 30: the disposal library's JSON files are pre-cached too, and an item page that was
+// never visited falls back to /library/offline-item, which renders it from those files.
 
 const PAGES = "itapon-pages-v1";
 const STATIC = "itapon-static-v2"; // v2: drops v1's stale worker bootstrap entries
@@ -50,8 +52,12 @@ async function networkFirstPage(req) {
     if (res.ok && res.type === "basic") await cache.put(key.href, res.clone());
     return res;
   } catch {
+    const libraryItem = key.pathname.startsWith("/library/item/")
+      ? await cache.match(new URL("/library/offline-item", self.location.origin).href)
+      : undefined;
     return (
       (await cache.match(key.href)) ||
+      libraryItem ||
       (await cache.match(new URL("/offline", self.location.origin).href)) ||
       new Response("You're offline.", { status: 503, headers: { "Content-Type": "text/plain" } })
     );
@@ -136,7 +142,33 @@ async function warm(build, urls) {
     }
   }
   await trim(STATIC, MAX_STATIC);
+  if (!(await warmLibrary(meta))) return;
   await meta.put(marker, new Response(build));
+}
+
+/** The library index and every group file, at the URLs the app asks for (versioned). */
+async function warmLibrary(cache) {
+  try {
+    const res = await fetch("/library/index.json");
+    if (!res.ok) return true; // no library in this build
+    const index = await res.clone().json();
+    await cache.put(new URL("/library/index.json", self.location.origin).href, res);
+    const v = encodeURIComponent(index.content_version);
+    const pages = await caches.open(PAGES);
+    for (const m of index.materials.filter((m) => !m.parent)) {
+      const url = `/library/groups/${m.code}.json?v=${v}`;
+      if (!(await cache.match(url))) {
+        const g = await fetch(url);
+        if (g.ok) await cache.put(url, g);
+      }
+      const page = `/library/${m.code.toLowerCase()}`; // group pages (item pages: offline-item)
+      const p = await fetch(page, { credentials: "same-origin" });
+      if (p.ok) await pages.put(new URL(page, self.location.origin).href, p);
+    }
+    return true;
+  } catch {
+    return false; // offline mid-way: try again next time
+  }
 }
 
 self.addEventListener("message", (event) => {

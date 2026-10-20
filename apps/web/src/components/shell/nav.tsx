@@ -13,17 +13,20 @@ interface NavItem {
   label: string;
   longLabel: string;
   icon: LucideIcon;
+  /** Other sections that belong to this tab (the library lives under the Bin Guide). */
+  also?: string[];
 }
 
 const NAV: NavItem[] = [
   { href: "/scan", label: "Scan", longLabel: "Scan", icon: Scan },
-  { href: "/guide", label: "Guide", longLabel: "Bin Guide", icon: BookOpen },
+  { href: "/guide", label: "Guide", longLabel: "Bin Guide", icon: BookOpen, also: ["/library"] },
   { href: "/history", label: "History", longLabel: "History", icon: History },
 ];
 
 function useActive() {
   const path = usePathname();
-  return (href: string) => path === href || path.startsWith(`${href}/`);
+  const under = (href: string) => path === href || path.startsWith(`${href}/`);
+  return (href: string) => under(href) || !!NAV.find((n) => n.href === href)?.also?.some(under);
 }
 
 /** Mobile tab bar (Figma iPhone frames). Hidden from md up. */

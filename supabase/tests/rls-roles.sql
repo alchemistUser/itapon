@@ -252,5 +252,36 @@ insert into rls_results values
   ('library: admin B cannot edit institution A notes', pg_temp.refused($q$update public.library_local_rules set note_en = 'x' where institution_id = '00000000-0000-4000-8000-0000000000b1'$q$));
 reset role;
 
+-- ---------------------------------------------------------------- library usage counts (v2 Phase 30)
+set local role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', true);
+insert into rls_results values
+  ('library events: anon counts a published item', not pg_temp.refused($q$insert into public.library_events (item_slug, event, source) values ('rls-published-item', 'view', 'library')$q$)),
+  ('library events: anon cannot count a draft item', pg_temp.refused($q$insert into public.library_events (item_slug, event, source) values ('rls-draft-item', 'view', 'library')$q$)),
+  ('library events: anon cannot set the institution', pg_temp.refused($q$insert into public.library_events (item_slug, event, source, institution_id) values ('rls-published-item', 'view', 'library', '00000000-0000-4000-8000-0000000000b1')$q$)),
+  ('library events: anon cannot read events', pg_temp.refused($q$select * from public.library_events$q$)),
+  ('library events: anon cannot read totals', pg_temp.refused($q$select * from public.library_event_counts(current_date - 1, current_date + 1)$q$));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a004'); -- admin A
+insert into public.library_events (item_slug, event, source) values ('rls-published-item', 'idea_done', 'scan');
+insert into rls_results values
+  ('library events: admin A counts own institution', (select coalesce(sum(institution), 0) = 1 from public.library_event_counts(current_date - 1, current_date + 1) where item_slug = 'rls-published-item')),
+  ('library events: admin A cannot read raw events', pg_temp.refused($q$select * from public.library_events$q$));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a005'); -- admin B
+insert into rls_results values
+  ('library events: admin B sees totals but not A as own', (select sum(everyone) = 2 and sum(institution) = 0 from public.library_event_counts(current_date - 1, current_date + 1) where item_slug = 'rls-published-item'));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a001'); -- user 1 (not an admin)
+insert into rls_results values
+  ('library events: users get no totals', (select count(*) = 0 from public.library_event_counts(current_date - 1, current_date + 1)));
+reset role;
+
 select check_name, ok from rls_results order by ok, check_name;
 rollback;

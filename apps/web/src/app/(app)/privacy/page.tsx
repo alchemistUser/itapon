@@ -67,7 +67,10 @@ export default function PrivacyPage() {
         <p>
           We don&apos;t collect your location, contacts or advertising ids, and there are no ads or
           third-party trackers. To keep the app working we log app errors without any account or
-          device id. Your browser keeps your session, preferences and offline copies of the app in
+          device id. The disposal library counts how often each entry is read and how often its
+          ideas are marked &quot;I&apos;ll do this&quot; or &quot;Done it&quot;, without any account,
+          device or scan id; if you already belong to an institution, the count is tagged with it
+          so its admins see totals. Your browser keeps your session, preferences and offline copies of the app in
           its own storage on your device.
         </p>
       </Section>

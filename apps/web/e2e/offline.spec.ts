@@ -63,6 +63,11 @@ test("Bin Guide works offline after one visit", async ({ page }, info) => {
   await expect(
     page.locator("h1, h2").filter({ visible: true, hasText: /Red Bin|Hazardous/ }),
   ).toHaveCount(1);
+  // Phase 30: the library works offline, even item pages never opened online
+  await page.goto(`${BASE}/library/gla`);
+  await expect(page.getByRole("heading", { level: 1, name: "Glass", exact: true })).toBeVisible();
+  await page.goto(`${BASE}/library/item/glass-jar`);
+  await expect(page.getByRole("heading", { level: 1, name: /jar/i })).toBeVisible();
   await page.goto(`${BASE}/never-visited-e2e`); // not cached: the offline page instead
   await expect(page.getByRole("heading", { name: /offline/i })).toBeVisible();
 });

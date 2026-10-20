@@ -5,10 +5,13 @@ import Link from "next/link";
 
 import { BinTile } from "@/components/bins/bins";
 import { GuideSearch } from "@/components/guide/guide-search";
+import { LibrarySearch } from "@/components/library/library-search";
 import { ButtonLink } from "@/components/ui/button";
 import { PageTitle } from "@/components/ui/primitives";
 import { BIN_ORDER, BINS } from "@/lib/bins";
 import { ITEMS } from "@/lib/content";
+import { groupsOf, materialPath } from "@/lib/library/core";
+import { LIBRARY } from "@/lib/library/server";
 
 export const metadata: Metadata = {
   title: "Bin Guide",
@@ -26,7 +29,8 @@ export default function GuidePage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <PageTitle title="Bin Guide" subtitle="What goes where" />
-        <GuideSearch className="md:w-96" />
+        {/* Phase 30: searches the whole disposal library once it has entries */}
+        <LibrarySearch className="md:w-96" fallback={<GuideSearch />} />
       </div>
 
       <ul className="grid gap-3 md:grid-cols-2 md:gap-5">
@@ -54,6 +58,31 @@ export default function GuidePage() {
           );
         })}
       </ul>
+
+      {LIBRARY.items.length ? (
+        <section aria-labelledby="library-heading" className="flex flex-col gap-3">
+          <div className="flex items-baseline justify-between gap-2">
+            <h2 id="library-heading" className="text-base font-semibold text-ink">
+              Look up an item by material
+            </h2>
+            <Link href="/library" className="text-sm font-semibold text-brand-strong">
+              Disposal library · {LIBRARY.items.length} items
+            </Link>
+          </div>
+          <ul className="flex flex-wrap gap-2">
+            {groupsOf(LIBRARY.materials).map((g) => (
+              <li key={g.code}>
+                <Link
+                  href={materialPath(g.code)}
+                  className="inline-flex min-h-10 items-center rounded-full border border-line bg-white px-3 text-sm text-ink hover:bg-surface"
+                >
+                  {g.name_en}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <div className="flex flex-col gap-3 rounded-card bg-card p-4 shadow-card sm:flex-row sm:items-center sm:justify-between md:bg-transparent md:p-0 md:shadow-none">
         <div className="flex items-start gap-3">

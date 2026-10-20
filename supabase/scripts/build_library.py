@@ -4,11 +4,15 @@
 
     python supabase/scripts/build_library.py          # validate + write outputs
     python supabase/scripts/build_library.py --check  # validate + fail if outputs are stale (CI)
+    python supabase/scripts/build_library.py --preview  # also put DRAFTS in the app copies (local
+                                                        # review and E2E only; never commit them)
 
 Inputs  (supabase/content/library/):  sources.csv, materials.csv, destinations.csv,
                                       items/<GROUP>.csv, local_rules.csv, dropoff_points.csv
 Outputs: supabase/seed_library.sql               (all rows; RLS shows only published ones)
-         apps/web/src/content/library.json       (published items only: offline copy)
+         apps/web/src/content/library.json       (published only: prerendered pages, server side)
+         apps/web/public/library/index.json      (published only: search index, materials, rules)
+         apps/web/public/library/groups/<G>.json (published only: full items per group, offline)
          docs/library/coverage.md                (what's written, reviewed, missing)
 
 Rules come from docs/library/style-guide.md and entry-template.md. Errors stop the build;
@@ -31,6 +35,7 @@ CONTENT = ROOT / "supabase" / "content" / "library"
 V1_CONTENT = ROOT / "supabase" / "content" / "waste_content.json"
 SEED = ROOT / "supabase" / "seed_library.sql"
 WEB = ROOT / "apps" / "web" / "src" / "content" / "library.json"
+PUBLIC = ROOT / "apps" / "web" / "public" / "library"
 COVERAGE = ROOT / "docs" / "library" / "coverage.md"
 
 BINS = {"biodegradable", "recyclable", "residual", "hazardous"}
@@ -571,18 +576,21 @@ def build_seed(lib: Library, version: str) -> str:
     return "\n".join(out) + "\n"
 
 
-def build_web(lib: Library, version: str) -> str:
-    """Offline copy for the app: published content only (drafts never reach users)."""
-    published = [
-        item_record(i)
-        for i in sorted(lib.items, key=lambda i: i["slug"])
-        if i["status"] == "published"
-    ]
-    for p in published:
+def web_data(lib: Library, version: str, preview: bool = False) -> dict:
+    """What the app ships: published content only (drafts never reach users). With preview,
+    drafts are included and flagged so the team can review them in the app."""
+    show = {"published", "draft", "reviewed"} if preview else {"published"}
+    items = []
+    for i in sorted(lib.items, key=lambda i: i["slug"]):
+        if i["status"] not in show:
+            continue
+        rec = item_record(i)
+        rec["draft"] = i["status"] != "published"
         for k in ("status", "reviewed_by"):
-            p.pop(k)
-    data = {
-        "content_version": version,
+            rec.pop(k)
+        items.append(rec)
+    return {
+        "content_version": version + ("-preview" if preview else ""),
         "sources": [{k: s[k] for k in ("id", "title", "url", "level")} for s in lib.sources],
         "materials": [
             {
@@ -590,6 +598,8 @@ def build_web(lib: Library, version: str) -> str:
                 "parent": m["parent_code"] or None,
                 "name_en": m["name_en"],
                 "name_fil": m["name_fil"],
+                "description_en": m["description_en"] or None,
+                "description_fil": m["description_fil"] or None,
                 "resin_code": int(m["resin_code"]) if m["resin_code"] else None,
                 "default_bin": m["default_bin"] or None,
             }
@@ -597,23 +607,73 @@ def build_web(lib: Library, version: str) -> str:
         ],
         "destinations": [
             {"code": d["code"], "name_en": d["name_en"], "name_fil": d["name_fil"]}
-            for d in lib.destinations
+            for d in sorted(lib.destinations, key=lambda d: int(d["sort_order"] or 0))
         ],
-        "items": published,
+        "items": items,
         "local_rules": [
             {
-                "lgu": lr["lgu"],
+                "lgu": lr["lgu"] or None,
                 "item": lr["item_slug"] or None,
                 "material": lr["material_code"] or None,
                 "note_en": lr["note_en"],
                 "note_fil": lr["note_fil"] or None,
                 "sources": split(lr["sources"], ";"),
+                "draft": lr["status"] != "published",
             }
             for lr in lib.local_rules
-            if lr["status"] == "published"
+            if lr["status"] in show and lr["lgu"]
+        ],
+        "dropoffs": [
+            {
+                "name": d["name"],
+                "destination": d["destination"],
+                "address": d["address"] or None,
+                "map_url": d["map_url"] or None,
+                "hours": d["hours"] or None,
+                "lgu": d["lgu"] or None,
+                "notes": d["notes"] or None,
+                "draft": d["status"] != "published",
+            }
+            for d in lib.dropoffs
+            if d["status"] in show and d["lgu"]
         ],
     }
-    return json.dumps(data, ensure_ascii=False, indent=1) + "\n"
+
+
+def dump(data: object) -> str:
+    return json.dumps(data, ensure_ascii=False, separators=(",", ":")) + "\n"
+
+
+INDEX_FIELDS = (
+    "slug",
+    "name_en",
+    "name_fil",
+    "aliases",
+    "material",
+    "resin_code",
+    "bin",
+    "summary_en",
+    "summary_fil",
+    "detectable_class_key",
+    "draft",
+)
+
+
+def build_web(lib: Library, version: str, preview: bool = False) -> dict[Path, str]:
+    """Server copy (prerendering) + public files the browser loads lazily and caches offline:
+    a small index for search and the scan card, and one file per material group."""
+    data = web_data(lib, version, preview)
+    out: dict[Path, str] = {WEB: json.dumps(data, ensure_ascii=False, indent=1) + "\n"}
+    index = {k: v for k, v in data.items() if k != "items"}
+    index["items"] = [{k: i[k] for k in INDEX_FIELDS} for i in data["items"]]
+    out[PUBLIC / "index.json"] = dump(index)
+    groups = [m["code"] for m in data["materials"] if not m["parent"]]
+    for g in groups:
+        items = [i for i in data["items"] if i["material"].split("-")[0] == g]
+        out[PUBLIC / "groups" / f"{g}.json"] = dump(
+            {"content_version": data["content_version"], "items": items}
+        )
+    return out
 
 
 def build_coverage(lib: Library, report: Report, version: str) -> str:
@@ -672,6 +732,9 @@ def build_coverage(lib: Library, report: Report, version: str) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--check", action="store_true", help="fail if generated files are out of date")
+    ap.add_argument(
+        "--preview", action="store_true", help="include drafts in the app copies (don't commit)"
+    )
     args = ap.parse_args()
 
     lib = load()
@@ -685,7 +748,7 @@ def main() -> int:
     version = content_version(lib)
     outputs = {
         SEED: build_seed(lib, version),
-        WEB: build_web(lib, version),
+        **build_web(lib, version, preview=args.preview and not args.check),
         COVERAGE: build_coverage(lib, report, version),
     }
     stale = [

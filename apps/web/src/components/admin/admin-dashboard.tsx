@@ -5,6 +5,7 @@ import { Download, LockKeyhole, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { DevicesPanel } from "@/components/admin/devices-panel";
+import { LibraryPanel } from "@/components/admin/library-panel";
 import { ReviewQueue } from "@/components/admin/review-queue";
 import { DailyChart, Heatmap, HBarList, TrendLine } from "@/components/admin/charts";
 import { Button, ButtonLink } from "@/components/ui/button";
@@ -481,6 +482,8 @@ export function AdminDashboard() {
           </div>
         </div>
       </Panel>
+
+      <LibraryPanel from={from} to={to} />
 
       <ReviewQueue rows={filteredFeedback} onChange={reload} />
 

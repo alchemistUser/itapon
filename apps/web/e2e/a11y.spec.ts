@@ -12,6 +12,11 @@ const PAGES = [
   "/account",
   "/privacy",
   "/offline",
+  "/library",
+  "/library/pla",
+  "/library/pla/pla-1",
+  "/library/item/aa-battery",
+  "/library/dropoff",
 ];
 
 for (const path of PAGES) {

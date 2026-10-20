@@ -42,6 +42,11 @@ const FeedbackPrompt = dynamic(
   () => import("@/components/scan/feedback-prompt").then((m) => m.FeedbackPrompt),
   { ssr: false },
 );
+// Disposal library card (Phase 30): also loaded after a result locks, never in the first load.
+const LibraryScanCard = dynamic(
+  () => import("@/components/library/scan-card").then((m) => m.LibraryScanCard),
+  { ssr: false },
+);
 
 const SLOW_AFTER_MS = 10_000;
 const GIVE_UP_AFTER_MS = 90_000;
@@ -584,7 +589,18 @@ export function ScanScreen() {
 
         <div className="md:hidden">
           {locked ? (
-            <ResultSheet item={locked.view} onNext={next} feedback={feedback} />
+            <ResultSheet
+              item={locked.view}
+              onNext={next}
+              feedback={feedback}
+              library={
+                <LibraryScanCard
+                  classKey={locked.view.classKey}
+                  category={locked.view.category}
+                  compact
+                />
+              }
+            />
           ) : (
             <SheetShell label="Scanner status">
               {statusContent}
@@ -599,6 +615,9 @@ export function ScanScreen() {
               item={locked.view}
               onNext={next}
               feedback={feedback}
+              library={
+                <LibraryScanCard classKey={locked.view.classKey} category={locked.view.category} />
+              }
               className="flex-1 py-4"
             />
           ) : (

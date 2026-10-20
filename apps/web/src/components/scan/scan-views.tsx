@@ -155,6 +155,7 @@ export function ResultPanel({
   binOrder,
   hidePlanLink = false,
   feedback,
+  library,
   className,
 }: {
   item: ResultView;
@@ -163,6 +164,8 @@ export function ResultPanel({
   hidePlanLink?: boolean;
   /** "Was this right?" slot (Phase 20). */
   feedback?: ReactNode;
+  /** Disposal library card slot (Phase 30). */
+  library?: ReactNode;
   className?: string;
 }) {
   const bin = BINS[item.category];
@@ -184,6 +187,7 @@ export function ResultPanel({
       </div>
       <Instruction text={item.instruction} category={item.category} className="text-xl text-ink" />
       {isUnsure(item) ? <UnsureNote item={item} /> : null}
+      {library}
       {hidePlanLink ? null : <PlanLink item={item} className="self-start" />}
       {feedback}
       <BinRow active={item.category} order={binOrder} className="mt-auto pt-4" />
@@ -200,10 +204,12 @@ export function ResultSheet({
   item,
   onNext,
   feedback,
+  library,
 }: {
   item: ResultView;
   onNext?: () => void;
   feedback?: ReactNode;
+  library?: ReactNode;
 }) {
   const bin = BINS[item.category];
   return (
@@ -228,6 +234,7 @@ export function ResultSheet({
           <UnsureNote item={item} />
         </div>
       ) : null}
+      {library ? <div className="mt-3">{library}</div> : null}
       <PlanLink item={item} className="mt-4 w-full" />
       {feedback ? <div className="mt-4">{feedback}</div> : null}
       <div className="mt-4 mb-3 grid grid-cols-[auto_1fr] gap-3">

@@ -23,6 +23,10 @@ const OFFLINE_PAGES = [
   "/history",
   "/account",
   "/kiosk",
+  // Phase 30: the disposal library (group pages and data files are warmed by the worker)
+  "/library",
+  "/library/dropoff",
+  "/library/offline-item",
 ];
 
 export function OfflineSupport() {

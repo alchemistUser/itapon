@@ -23,11 +23,26 @@ python supabase/scripts/build_library.py
 ```
 
 It **validates** every row (required fields, lengths, bins and destinations, sources, Filipino,
-safety rules, reviewers) and writes `supabase/seed_library.sql`, the app's offline copy
-`apps/web/src/content/library.json` (**published items only**) and [coverage.md](coverage.md).
+safety rules, reviewers) and writes `supabase/seed_library.sql`, the app's copies (**published
+items only**) and [coverage.md](coverage.md):
+
+- `apps/web/src/content/library.json`: the server copy the `/library` pages are prerendered from;
+- `apps/web/public/library/index.json` + `groups/<GROUP>.json`: what the browser loads lazily
+  (search, the post-scan card, offline use). About 60 KB gzipped for 175 items.
+
 CI runs it with `--check`. Merging to `main` applies the seed to the database (`db.yml`).
-Institution-specific notes and drop-off points are added by admins in the app (Phase 30), not
-in these files.
+Institution-specific notes and drop-off points go straight into Supabase
+(`library_local_rules`, `library_dropoff_points`; RLS lets admins write their own), not into
+these files. There is no in-app editor for them yet.
+
+**See drafts in the app** (for review, and what CI's E2E tests use):
+
+```bash
+python supabase/scripts/build_library.py --preview   # drafts included, marked "Draft"
+```
+
+Never commit preview output: run the build again without `--preview` first. CI's `--check`
+fails if you forget.
 
 ## Decisions (ROADMAP D16–D19)
 
@@ -38,9 +53,27 @@ in these files.
 
 ## Privacy (library only)
 
-The library collects **no personal data**. Usage is counted per item ("viewed", "chooser
-used", "idea done") without account or device ids, like the scan logs. No privacy notice change
-is needed for v1.1. (Accounts v2 and points will need the full review in their own phase.)
+The library collects **no personal data**. Usage is counted per item (`library_events`:
+"view", "chooser", "idea_plan", "idea_done") without account, device or scan ids. The server
+tags a count with the visitor's institution only if they already belong to one, so admins see
+their own totals (`library_event_counts`). Nobody can read raw rows. The privacy notice says
+this (Phase 30). Accounts v2 and points will need the full review in their own phase.
+
+## Phase 30 status (2026-10-21): library in the app
+
+- **Pages** `/library`, `/library/[group]`, `/library/[group]/[subgroup]`, `/library/item/[slug]`
+  (prerendered; English/Filipino switch; read aloud; related and "commonly confused with"),
+  `/library/dropoff` (drop-off finder).
+- **Search** (names, Filipino, aliases, materials, resin codes like "#5"/"PP", typos, "did you
+  mean") on `/library` and the Bin Guide.
+- **Post-scan card** under every result (phone sheet, desktop panel, result page) with "Which
+  one is yours?" and the kiosk's spoken line + QR code.
+- **Offline**: the service worker pre-caches the library files and group pages; item pages
+  never opened online render from the cached files.
+- **Counts** for the admin dashboard (Disposal library panel).
+
+With nothing published yet, production shows "Coming soon" on `/library` and no card. Pages
+fill in as the team publishes entries.
 
 ## Phase 29 status (2026-10-20): Wave 1 drafted
 

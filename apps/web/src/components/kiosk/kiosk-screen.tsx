@@ -11,6 +11,7 @@ import { Hand, Maximize, Settings, Volume2, VolumeX, WifiOff, X } from "lucide-r
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { BinTile } from "@/components/bins/bins";
+import { KioskLibraryLine, useKioskLines, type KioskLine } from "@/components/library/kiosk-line";
 import { ResultPanel, type ResultView } from "@/components/scan/scan-views";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/misc";
@@ -57,6 +58,8 @@ export function KioskScreen() {
   const [started, setStarted] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [locked, setLocked] = useState<ResultView | null>(null);
+  const [line, setLine] = useState<KioskLine | null>(null);
+  const kioskLine = useKioskLines(); // Phase 30: "where else / idea" after the bin
   const [lockedAt, setLockedAt] = useState(0);
   const [idle, setIdle] = useState(false);
   const [now, setNow] = useState(0);
@@ -103,10 +106,15 @@ export function KioskScreen() {
       if (!view) return false;
       lastKey.current = s.classKey;
       clearedSince.current = false;
+      const extra = kioskLine(s.classKey);
       setLocked(view);
+      setLine(extra);
       setLockedAt(Date.now());
       lastActivity.current = Date.now();
-      if (settings.sound) speak(partsFor(view, getPrefs().language));
+      if (settings.sound) {
+        const parts = partsFor(view, getPrefs().language);
+        speak(extra ? [...parts, { text: extra.text, lang: "en" }] : parts);
+      }
       void logScan({
         modelVersion: det.info?.modelVersion ?? "unknown",
         backend: det.info?.backend ?? "wasm",
@@ -115,7 +123,7 @@ export function KioskScreen() {
         detections: frame.detections,
       });
     },
-    [settings.sound, det.info],
+    [settings.sound, det.info, kioskLine],
   );
 
   const loop = useScanLoop(videoRef, {
@@ -285,6 +293,7 @@ export function KioskScreen() {
               onNext={next}
               binOrder={order}
               hidePlanLink
+              library={<KioskLibraryLine line={line} />}
               className="flex-1"
             />
             <div aria-hidden className="mt-4 h-1.5 overflow-hidden rounded-full bg-line">

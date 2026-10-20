@@ -262,3 +262,24 @@ export async function fetchKioskUptime(
   }
   return out;
 }
+
+export interface LibraryCount {
+  slug: string;
+  event: "view" | "chooser" | "idea_plan" | "idea_done";
+  institution: number;
+  everyone: number;
+}
+
+/** Library use per item and event (Phase 30): your institution and all users; no ids. */
+export async function fetchLibraryCounts(fromDay: string, toDay: string): Promise<LibraryCount[]> {
+  const sb = await getSupabase();
+  if (!sb) return [];
+  const { data, error } = await sb.rpc("library_event_counts", { p_from: fromDay, p_to: toDay });
+  if (error) throw error;
+  return (data ?? []).map((r) => ({
+    slug: r.item_slug,
+    event: r.event as LibraryCount["event"],
+    institution: Number(r.institution),
+    everyone: Number(r.everyone),
+  }));
+}

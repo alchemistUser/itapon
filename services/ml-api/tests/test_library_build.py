@@ -3,6 +3,7 @@
 """Disposal library validator (ROADMAP-v2 Phase 28): the safety and review rules."""
 
 import copy
+import json
 import sys
 from pathlib import Path
 
@@ -220,3 +221,20 @@ def test_repo_content_is_valid():
     report = bl.validate(lib, bl.v1_detectable())
     assert report.errors == []
     assert len(lib.items) >= 36
+
+
+def test_app_copies_hold_published_items_only_unless_preview():
+    published = item(slug="pub", status="published", reviewed_by="AB", reviewed_at="2026-10-20")
+    lib = bl.Library(SOURCES, MATERIALS, DESTS, [item(), published], [], [])
+    out = bl.build_web(lib, "v1")
+    index = json.loads(out[bl.PUBLIC / "index.json"])
+    assert [i["slug"] for i in index["items"]] == ["pub"]
+    assert index["items"][0]["draft"] is False
+    assert "sources" in index and "prep_en" not in index["items"][0]  # small index
+    group = json.loads(out[bl.PUBLIC / "groups" / "PLA.json"])
+    assert [i["slug"] for i in group["items"]] == ["pub"] and group["content_version"] == "v1"
+    assert json.loads(out[bl.PUBLIC / "groups" / "BAT.json"])["items"] == []
+
+    preview = json.loads(bl.build_web(lib, "v1", preview=True)[bl.PUBLIC / "index.json"])
+    assert {i["slug"]: i["draft"] for i in preview["items"]} == {"pet-bottle": True, "pub": False}
+    assert preview["content_version"] == "v1-preview"

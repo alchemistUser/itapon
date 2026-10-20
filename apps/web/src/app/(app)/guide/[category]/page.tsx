@@ -10,6 +10,8 @@ import { ButtonLink } from "@/components/ui/button";
 import { Note } from "@/components/ui/primitives";
 import { BIN_ORDER, BINS } from "@/lib/bins";
 import { ITEMS } from "@/lib/content";
+import { itemPath } from "@/lib/library/core";
+import { LIBRARY } from "@/lib/library/server";
 import type { Category } from "@/lib/detector/types";
 
 const isCategory = (v: string): v is Category => (BIN_ORDER as string[]).includes(v);
@@ -34,6 +36,9 @@ export default async function GuideCategoryPage(props: PageProps<"/guide/[catego
   const { category } = await props.params;
   if (!isCategory(category)) notFound();
   const bin = BINS[category];
+  const more = LIBRARY.items
+    .filter((i) => i.bin === category)
+    .sort((a, b) => a.name_en.localeCompare(b.name_en));
   const items = ITEMS.filter((i) => i.category === category).sort(
     (a, b) => Number(b.detectable) - Number(a.detectable) || a.name.localeCompare(b.name),
   );
@@ -100,6 +105,26 @@ export default async function GuideCategoryPage(props: PageProps<"/guide/[catego
           </li>
         ))}
       </ul>
+
+      {more.length ? (
+        <section aria-labelledby="more-heading" className="flex flex-col gap-3">
+          <h2 id="more-heading" className="text-base font-semibold text-ink">
+            More items for this bin ({more.length})
+          </h2>
+          <ul className="flex flex-wrap gap-2">
+            {more.map((i) => (
+              <li key={i.slug}>
+                <Link
+                  href={itemPath(i.slug)}
+                  className="inline-flex min-h-10 items-center rounded-full border border-line bg-white px-3 text-sm text-ink hover:bg-surface"
+                >
+                  {i.name_en}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <HashHighlight />
       <Note>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BinTile, Instruction } from "@/components/bins/bins";
+import { LibraryScanCard } from "@/components/library/scan-card";
 import { CameraMock, ResultPanel } from "@/components/scan/scan-views";
 import { ButtonLink } from "@/components/ui/button";
 import { ReadAloudButton } from "@/components/ui/read-aloud-button";
@@ -57,6 +58,7 @@ export default async function ResultPage(props: PageProps<"/scan/result/[item]">
             <BinTile category={item.category} size="lg" />
             <Instruction text={item.instruction} category={item.category} className="text-sm" />
           </div>
+          <LibraryScanCard classKey={item.classKey} category={item.category} className="mt-4" />
           <div className="mt-5 flex items-center justify-between gap-3">
             <ReadAloudButton item={item} variant="outline" />
             <ButtonLink href="/scan" variant="dark" className="px-6">
@@ -68,7 +70,11 @@ export default async function ResultPage(props: PageProps<"/scan/result/[item]">
 
       <div className="hidden gap-8 md:grid md:grid-rows-[minmax(380px,46vh)_auto] lg:min-h-[600px] lg:grid-cols-2 lg:grid-rows-1">
         <CameraMock className="rounded-[28px]" />
-        <ResultPanel item={item} className="py-4" />
+        <ResultPanel
+          item={item}
+          library={<LibraryScanCard classKey={item.classKey} category={item.category} />}
+          className="py-4"
+        />
       </div>
     </>
   );
