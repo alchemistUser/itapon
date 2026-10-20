@@ -2,7 +2,7 @@
 
 Planned features on top of v1.0 ([ROADMAP.md](ROADMAP.md), Phases 1–26). **Built so far:**
 Phases 27–35 (the v2.0.0 tag waits for the production smoke test). The short list of what's left is in
-[ROADMAP-remaining.md](ROADMAP-remaining.md). Phases continue the v1 numbering (27–35) and follow the same Definition of Done
+[leftoff/ROADMAP-remaining.md](leftoff/ROADMAP-remaining.md). Phases continue the v1 numbering (27–35) and follow the same Definition of Done
 (ROADMAP §6: tests, RLS checks, accessibility, docs).
 
 | Feature | In one line |

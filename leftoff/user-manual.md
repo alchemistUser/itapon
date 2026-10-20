@@ -305,7 +305,7 @@ or office uses points, **Top recyclers this week**. Move in front of the camera 
 ## Part 5: Setting up a kiosk (staff)
 
 You need a tablet or laptop with a camera, a stand near the bins, power and (ideally) Wi-Fi.
-Detailed guide: [kiosk-setup.md](kiosk-setup.md).
+Detailed guide: [kiosk-setup.md](../docs/kiosk-setup.md).
 
 1. Open **itapon.vercel.app/kiosk** on the device, ideally in its own browser profile.
 2. **Pair it:** tap **Get pairing code**. A 6-digit code appears for 15 minutes. An admin
@@ -327,7 +327,7 @@ Please use the bin labels", people can still use the colour labels on the bins.
 
 You're an admin if the iTapon team gave your account the admin role for your school or office.
 Open **/admin** (sign in first). A short version of this part is in
-[staff-guide.md](staff-guide.md).
+[staff-guide.md](../docs/staff-guide.md).
 
 ### 6.1 Dashboard
 
@@ -349,7 +349,7 @@ and whether it's online now.
 Answers to "Was this right?" from your institution's kiosks and members, with any shared
 photos. For each, confirm the right item and press **Approve** (or **Save label** to change an
 approved one), or **Reject** it, always rejecting photos that show people, faces, IDs or
-screens. Approved answers with photos feed model retraining ([retraining.md](retraining.md)).
+screens. Approved answers with photos feed model retraining ([retraining.md](../docs/retraining.md)).
 
 ### 6.4 Disposal library and search insights
 
@@ -400,7 +400,7 @@ drop-off finder.
 
 ## Part 7: Facilitators (pilot and knowledge test)
 
-The pilot kit is in [docs/pilot/](pilot/README.md): protocol, consent form, task sheet,
+The pilot kit is in [docs/pilot/](../docs/pilot/README.md): protocol, consent form, task sheet,
 questionnaires (SUS, ISO/IEC 25010, v2 screens) and the bin contamination audit.
 
 **Knowledge test (pre/post)**
@@ -425,10 +425,10 @@ Technical details: [system-documentation.md](system-documentation.md) §12 (runb
 |---|---|
 | Make someone an institution admin | SQL editor (runbook) |
 | Reset a forgotten password | Supabase → Authentication → Users |
-| Review and publish library entries | `supabase/content/library/items/*.csv` → `build_library.py` → commit ([library/README.md](library/README.md)) |
+| Review and publish library entries | `supabase/content/library/items/*.csv` → `build_library.py` → commit ([library/README.md](../docs/library/README.md)) |
 | Add new entries from the "no result" backlog | same pipeline |
 | Pause points for everyone | `update public.feature_flags set enabled = false where key = 'points';` |
-| Release and rollback | [release.md](release.md) |
+| Release and rollback | [release.md](../docs/release.md) |
 
 ---
 

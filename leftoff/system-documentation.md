@@ -13,7 +13,7 @@ CS 406 Machine Learning project, Technological Institute of the Philippines, Que
 Live app: <https://itapon.vercel.app>.
 
 For end users, see the [user manual](user-manual.md). For what's left to do, see
-[ROADMAP-remaining.md](../ROADMAP-remaining.md).
+[ROADMAP-remaining.md](ROADMAP-remaining.md).
 
 ---
 
@@ -292,7 +292,7 @@ reviewers and a primary source to publish hazardous items). CI runs both scripts
 
 ## 5. Data model
 
-Full ERD for the v1 tables: [database.md](database.md). Every table has RLS. "Owner" means the
+Full ERD for the v1 tables: [database.md](../docs/database.md). Every table has RLS. "Owner" means the
 signed-in user the row belongs to.
 
 | Domain | Table | Purpose | Who can read | Who can write |
@@ -341,7 +341,7 @@ signed-in user the row belongs to.
   matters (join codes, handle checks, claims, activity, tests).
 - **Web hardening:** CSP and security headers, COOP/COEP for the threaded WASM runtime, model
   hash pinning, secret scan (gitleaks) and dependency audit in CI. Checklist:
-  [security.md](security.md).
+  [security.md](../docs/security.md).
 - **Privacy (RA 10173):** the notice at `/privacy` lists every data item, purpose, who sees it
   and retention. Highlights:
   - camera images stay on the device; scan logs have no images; photos are shared only per photo
@@ -351,7 +351,7 @@ signed-in user the row belongs to.
     year + 19) can't go public or appear on leaderboards (D22);
   - admins never see emails, birth years or consents;
   - export and delete are self-service.
-  The accounts privacy review ([accounts/privacy-review.md](accounts/privacy-review.md)) is
+  The accounts privacy review ([accounts/privacy-review.md](../docs/accounts/privacy-review.md)) is
   **awaiting adviser approval**.
 - **Secrets** live only in the Vercel, Supabase and GitHub settings. The service-role key is
   used only by GitHub Actions secrets.
@@ -378,7 +378,7 @@ signed-in user the row belongs to.
 
 ## 8. Points engine
 
-Full rules: [points.md](points.md). In short:
+Full rules: [points.md](../docs/points.md). In short:
 - the same 3 daily and 3 weekly missions for everyone, picked from the date;
 - each pays once per period, with caps of 30 per day and 150 per week;
 - only signed-in accounts can claim, and only distinct items, groups and bins count;
@@ -434,7 +434,7 @@ rather than by E2E, because CI has no Supabase backend.
 | `model-export.yml` | manual | export the in-browser model |
 | `model-regression.yml` | changes to the model pin or regression set (PR and `main`), manual | verify model pins and hashes, run the regression set |
 
-Release and rollback: [release.md](release.md) (v2 checklist; rollback turns the `points` flag
+Release and rollback: [release.md](../docs/release.md) (v2 checklist; rollback turns the `points` flag
 off first, then Vercel Instant Rollback; database roll-forward only). Monitoring: first-party
 `client_errors`, real-device speed on `/admin`, `/api/health`.
 
@@ -469,18 +469,18 @@ off first, then Vercel Instant Rollback; database roll-forward only). Monitoring
 
 | Task | How |
 |---|---|
-| Make someone an institution admin | They sign up once; then in the SQL editor: create the institution if needed and `update public.profiles set role = 'admin', institution_id = '<id>' where id = (select id from auth.users where email = '<email>');` ([kiosk-setup.md](kiosk-setup.md)) |
+| Make someone an institution admin | They sign up once; then in the SQL editor: create the institution if needed and `update public.profiles set role = 'admin', institution_id = '<id>' where id = (select id from auth.users where email = '<email>');` ([kiosk-setup.md](../docs/kiosk-setup.md)) |
 | Reset a forgotten password | Supabase → Authentication → Users → the user → set a new password, after checking it's really them (no reset emails, D24) |
 | Publish a reviewed library entry | Edit its CSV row (`status = published`, `reviewed_by`, `reviewed_at`), run `python supabase/scripts/build_library.py`, commit; `db.yml` applies the seed |
-| Add a new library entry | Add a row to `items/<GROUP>.csv` per [library/entry-template.md](library/entry-template.md), build, commit |
+| Add a new library entry | Add a row to `items/<GROUP>.csv` per [library/entry-template.md](../docs/library/entry-template.md), build, commit |
 | Pause points everywhere | `update public.feature_flags set enabled = false where key = 'points';` |
 | Pause points for one institution | That admin: Members panel → points switch off |
-| Register a kiosk | `/kiosk` shows a 6-digit code → `/admin` → Kiosks → enter the code ([kiosk-setup.md](kiosk-setup.md)) |
+| Register a kiosk | `/kiosk` shows a 6-digit code → `/admin` → Kiosks → enter the code ([kiosk-setup.md](../docs/kiosk-setup.md)) |
 | Roll back a bad deploy | Vercel → Deployments → previous → Instant Rollback |
 | Undo a database change | New migration, merged to `main` (never edit production by hand) |
 | Check permissions after a schema change | `node supabase/tests/run-rls-roles.mjs` |
 | Pilot report | `uv run python -m scripts.pilot_report --data ../../pilot/data --out ../../pilot/data/report.md` |
-| Retrain / swap the model | [retraining.md](retraining.md) |
+| Retrain / swap the model | [retraining.md](../docs/retraining.md) |
 
 ---
 
@@ -534,7 +534,7 @@ Full text in [ROADMAP.md](../ROADMAP.md) §1.
 - Institution-run prizes aren't built (D26).
 - Signed-in screens are verified by database tests, not by browser E2E against a backend.
 
-**Waiting on the team** (details in [ROADMAP-remaining.md](../ROADMAP-remaining.md))
+**Waiting on the team** (details in [ROADMAP-remaining.md](ROADMAP-remaining.md))
 1. Turn off "Confirm email" in Supabase; production smoke test; tag v2.0.0.
 2. Review and publish library entries; verify 3 sources; add campus notes and drop-off points.
 3. Adviser approval of the privacy review and the minors rule; a profanity/reserved-word list.
@@ -564,18 +564,18 @@ pilot/                 pilot data folder (templates, report output)
 | Document | For |
 |---|---|
 | [user-manual.md](user-manual.md) | Everyone who uses iTapon |
-| [staff-guide.md](staff-guide.md) | Institution admins (short version) |
-| [spec.md](spec.md) | Classes, bin mapping, metrics, user stories |
-| [database.md](database.md) | Database, ERD, RLS |
-| [security.md](security.md) | Security and privacy checklist |
-| [release.md](release.md) | Environments, release, rollback, monitoring |
-| [kiosk-setup.md](kiosk-setup.md) | Setting up a kiosk |
-| [retraining.md](retraining.md) | Feedback → retraining → promotion |
-| [setup-accounts.md](setup-accounts.md) | One-time service setup |
-| [points.md](points.md) | Missions, points, levels, badges, leaderboards |
-| [library/](library/README.md) | Library taxonomy, template, style guide, sources, coverage |
-| [accounts/](accounts/privacy-review.md) | Privacy review, readiness, email setup |
-| [pilot/](pilot/README.md) | Pilot protocol, consent, questionnaires, audit |
-| [qa/](qa/README.md) | Device matrix, field test, performance |
-| [ROADMAP.md](../ROADMAP.md), [ROADMAP-v2.md](../ROADMAP-v2.md), [ROADMAP-remaining.md](../ROADMAP-remaining.md) | Plans, decisions, status |
+| [staff-guide.md](../docs/staff-guide.md) | Institution admins (short version) |
+| [spec.md](../docs/spec.md) | Classes, bin mapping, metrics, user stories |
+| [database.md](../docs/database.md) | Database, ERD, RLS |
+| [security.md](../docs/security.md) | Security and privacy checklist |
+| [release.md](../docs/release.md) | Environments, release, rollback, monitoring |
+| [kiosk-setup.md](../docs/kiosk-setup.md) | Setting up a kiosk |
+| [retraining.md](../docs/retraining.md) | Feedback → retraining → promotion |
+| [setup-accounts.md](../docs/setup-accounts.md) | One-time service setup |
+| [points.md](../docs/points.md) | Missions, points, levels, badges, leaderboards |
+| [library/](../docs/library/README.md) | Library taxonomy, template, style guide, sources, coverage |
+| [accounts/](../docs/accounts/privacy-review.md) | Privacy review, readiness, email setup |
+| [pilot/](../docs/pilot/README.md) | Pilot protocol, consent, questionnaires, audit |
+| [qa/](../docs/qa/README.md) | Device matrix, field test, performance |
+| [ROADMAP.md](../ROADMAP.md), [ROADMAP-v2.md](../ROADMAP-v2.md), [ROADMAP-remaining.md](ROADMAP-remaining.md) | Plans, decisions, status |
 | [CHANGELOG.md](../CHANGELOG.md) | Release notes |
