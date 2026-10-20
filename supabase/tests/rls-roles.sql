@@ -209,5 +209,48 @@ insert into rls_results values
   ('admin B cannot read institution A heartbeats', (select count(*) = 0 from public.kiosk_heartbeats));
 reset role;
 
+-- ---------------------------------------------------------------- disposal library (v2 Phase 28)
+insert into public.library_items (slug, name_en, name_fil, material_code, bin, summary_en, sources, status, reviewed_by, reviewed_at)
+values ('rls-published-item', 'RLS published', 'RLS published', 'PLA-1', 'recyclable', 'x', '{S-RA9003-22}', 'published', '{AB}', current_date),
+       ('rls-draft-item', 'RLS draft', 'RLS draft', 'PLA-1', 'recyclable', 'x', '{S-RA9003-22}', 'draft', '{}', null);
+insert into public.library_local_rules (institution_id, item_slug, note_en, status)
+values ('00000000-0000-4000-8000-0000000000b1', 'rls-published-item', 'Institution A draft note', 'draft'),
+       ('00000000-0000-4000-8000-0000000000b1', 'rls-published-item', 'Institution A published note', 'published');
+
+set local role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', true);
+insert into rls_results values
+  ('library: anon reads materials and destinations', (select count(*) > 0 from public.library_materials) and (select count(*) > 0 from public.library_destinations)),
+  ('library: anon sees published items', (select count(*) = 1 from public.library_items where slug = 'rls-published-item')),
+  ('library: anon never sees draft items', (select count(*) = 0 from public.library_items where status <> 'published')),
+  ('library: anon sees no institution notes', (select count(*) = 0 from public.library_local_rules where institution_id is not null)),
+  ('library: anon cannot edit items', pg_temp.refused($q$update public.library_items set summary_en = 'x' where slug = 'rls-published-item'$q$));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a001'); -- user 1 (no institution)
+insert into rls_results values
+  ('library: users cannot add items', pg_temp.refused($q$insert into public.library_items (slug, name_en, name_fil, material_code, bin, summary_en) values ('x', 'x', 'x', 'PLA-1', 'recyclable', 'x')$q$)),
+  ('library: users cannot add local rules', pg_temp.refused($q$insert into public.library_local_rules (institution_id, item_slug, note_en) values ('00000000-0000-4000-8000-0000000000b1', 'rls-published-item', 'x')$q$));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a004'); -- admin A
+insert into rls_results values
+  ('library: admin A sees own drafts and published notes', (select count(*) = 2 from public.library_local_rules where institution_id = '00000000-0000-4000-8000-0000000000b1')),
+  ('library: admin A adds a note for own institution', not pg_temp.refused($q$insert into public.library_local_rules (institution_id, item_slug, note_en) values ('00000000-0000-4000-8000-0000000000b1', 'rls-published-item', 'Bring it to the library e-waste box')$q$)),
+  ('library: admin A adds an own drop-off point', not pg_temp.refused($q$insert into public.library_dropoff_points (name, destination_code, institution_id) values ('Library e-waste box', 'ewaste', '00000000-0000-4000-8000-0000000000b1')$q$)),
+  ('library: admin A cannot add city-wide (LGU) rules', pg_temp.refused($q$insert into public.library_local_rules (lgu, item_slug, note_en) values ('QC', 'rls-published-item', 'x')$q$)),
+  ('library: admin A cannot write for institution B', pg_temp.refused($q$insert into public.library_local_rules (institution_id, item_slug, note_en) values ('00000000-0000-4000-8000-0000000000b2', 'rls-published-item', 'x')$q$)),
+  ('library: admin A cannot edit global items', pg_temp.refused($q$update public.library_items set summary_en = 'x' where slug = 'rls-published-item'$q$));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a005'); -- admin B
+insert into rls_results values
+  ('library: admin B cannot see institution A notes', (select count(*) = 0 from public.library_local_rules where institution_id = '00000000-0000-4000-8000-0000000000b1')),
+  ('library: admin B cannot edit institution A notes', pg_temp.refused($q$update public.library_local_rules set note_en = 'x' where institution_id = '00000000-0000-4000-8000-0000000000b1'$q$));
+reset role;
+
 select check_name, ok from rls_results order by ok, check_name;
 rollback;

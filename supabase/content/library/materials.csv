@@ -1,0 +1,88 @@
+code,parent_code,name_en,name_fil,description_en,description_fil,resin_code,default_bin,sort_order
+PLA,,Plastics,Plastik,,,,,10
+PLA-1,PLA,#1 PET,#1 PET,,,1,recyclable,11
+PLA-2,PLA,#2 HDPE,#2 HDPE,,,2,recyclable,12
+PLA-3,PLA,#3 PVC,#3 PVC,,,3,residual,13
+PLA-4,PLA,#4 LDPE,#4 LDPE,,,4,residual,14
+PLA-5,PLA,#5 PP,#5 PP,,,5,recyclable,15
+PLA-6,PLA,#6 PS and styrofoam,#6 PS at styrofoam,,,6,residual,16
+PLA-7,PLA,#7 Other plastics,#7 Iba pang plastik,,,7,residual,17
+PLA-FILM,PLA,Plastic films and bags,Plastic film at supot,,,,residual,18
+PLA-FLEX,PLA,Sachets and flexible packaging,Sachet at malambot na pakete,,,,residual,19
+PAP,,Paper & cardboard,Papel at karton,,,,recyclable,20
+PAP-CLEAN,PAP,Clean paper,Malinis na papel,,,,recyclable,21
+PAP-BOARD,PAP,Cardboard and boxes,Karton at kahon,,,,recyclable,22
+PAP-COAT,PAP,"Coated, waxed or laminated paper",Papel na may coating o wax,,,,residual,23
+PAP-THERM,PAP,Thermal paper (receipts),Thermal na papel (resibo),,,,residual,24
+PAP-TISSUE,PAP,Tissue and napkins,Tisyu at napkin,,,,biodegradable,25
+PAP-SOIL,PAP,Food-soiled paper,Papel na may mantsa ng pagkain,,,,residual,26
+MET,,Metals,Metal,,,,recyclable,30
+MET-AL,MET,Aluminum,Aluminyo,,,,recyclable,31
+MET-FE,MET,Steel and tin cans,Lata (bakal),,,,recyclable,32
+MET-AERO,MET,Aerosol cans,Lata ng spray,,,,hazardous,33
+MET-FOIL,MET,Foil and trays,Foil at tray,,,,recyclable,34
+MET-SCRAP,MET,Scrap metal and wire,Scrap at alambre,,,,recyclable,35
+GLA,,Glass,Salamin,,,,recyclable,40
+GLA-CONT,GLA,Bottles and jars,Bote at garapon,,,,recyclable,41
+GLA-FLAT,GLA,Window glass and mirrors,Salamin ng bintana at salamin,,,,residual,42
+GLA-HEAT,GLA,Heat-resistant and drinking glass,Pyrex at baso,,,,residual,43
+GLA-BROKEN,GLA,Broken glass,Basag na salamin,,,,residual,44
+CER,,Ceramics & porcelain,Seramika at porselana,,,,residual,50
+CER-DISH,CER,Dishware,Pinggan at tasa,,,,residual,51
+CER-TILE,CER,Tiles,Tisa,,,,residual,52
+CER-POT,CER,Clay and terracotta,Paso at palayok,,,,residual,53
+TEX,,Textiles & footwear,Tela at sapatos,,,,residual,60
+TEX-CLOTH,TEX,Clothing,Damit,,,,residual,61
+TEX-HOME,TEX,Household textiles,Tela sa bahay,,,,residual,62
+TEX-SHOE,TEX,Footwear,Sapatos at tsinelas,,,,residual,63
+TEX-BAG,TEX,Bags,Bag,,,,residual,64
+ELE,,Electronics (e-waste),Elektroniks (e-waste),,,,hazardous,70
+ELE-SMALL,ELE,Small devices,Maliliit na gadget,,,,hazardous,71
+ELE-CABLE,ELE,Cables and chargers,Kable at charger,,,,hazardous,72
+ELE-ACC,ELE,Accessories and cartridges,Accessories at cartridge,,,,hazardous,73
+ELE-LARGE,ELE,Appliances,Appliances,,,,hazardous,74
+BAT,,Batteries,Baterya,,,,hazardous,80
+BAT-ALK,BAT,Alkaline and zinc batteries,Alkaline na baterya,,,,hazardous,81
+BAT-LI,BAT,Lithium-ion and power banks,Lithium-ion at power bank,,,,hazardous,82
+BAT-BTN,BAT,Button and coin cells,Button na baterya,,,,hazardous,83
+BAT-PB,BAT,Lead-acid batteries,Baterya ng sasakyan,,,,hazardous,84
+LIG,,Lighting,Ilaw at bombilya,,,,hazardous,90
+LIG-FLUO,LIG,Fluorescent tubes and CFLs,Fluorescent at CFL,,,,hazardous,91
+LIG-LED,LIG,LED bulbs,LED na bombilya,,,,hazardous,92
+LIG-INC,LIG,Incandescent and halogen,Incandescent at halogen,,,,residual,93
+LIG-STRING,LIG,String lights,Christmas lights,,,,hazardous,94
+ORG,,Organics,Nabubulok,,,,biodegradable,100
+ORG-FOOD,ORG,Food scraps,Tirang pagkain,,,,biodegradable,101
+ORG-GARDEN,ORG,Garden waste,Dahon at damo,,,,biodegradable,102
+ORG-OIL,ORG,Cooking oil and fats,Mantika,,,,hazardous,103
+ORG-BONE,ORG,Bones and shells,Buto at balat ng itlog,,,,biodegradable,104
+WOO,,Wood & natural,Kahoy at natural,,,,biodegradable,110
+WOO-RAW,WOO,Untreated wood and bamboo,Kahoy at kawayan,,,,biodegradable,111
+WOO-TREAT,WOO,Treated or painted wood,Pinturadong kahoy,,,,residual,112
+WOO-CORK,WOO,Cork,Cork,,,,biodegradable,113
+RUB,,Rubber & foam,Goma at foam,,,,residual,120
+RUB-RUB,RUB,Rubber,Goma,,,,residual,121
+RUB-FOAM,RUB,Foam and cushions,Foam at unan,,,,residual,122
+RUB-TIRE,RUB,Tires,Gulong,,,,residual,123
+CMP,,Composites & multilayer,Halo-halong materyales,,,,residual,130
+CMP-CARTON,CMP,Cartons (Tetra Pak),Karton ng juice at gatas,,,,residual,131
+CMP-BLISTER,CMP,Blister packs,Blister pack,,,,residual,132
+CMP-TUBE,CMP,Tubes,Tubo ng toothpaste,,,,residual,133
+CMP-MIXED,CMP,Mixed-material items,Halo-halong gamit,,,,residual,134
+MED,,Medical & sanitary,Medikal at pangkalinisan,,,,residual,140
+MED-SHARP,MED,Sharps,Karayom at matutulis,,,,hazardous,141
+MED-DRUG,MED,Medicine,Gamot,,,,hazardous,142
+MED-PPE,MED,Masks and gloves,Face mask at gloves,,,,residual,143
+MED-SAN,MED,Diapers and sanitary products,Diaper at napkin,,,,residual,144
+MED-TEST,MED,Test kits,Test kit,,,,residual,145
+HHW,,Household hazardous,Mapanganib sa bahay,,,,hazardous,150
+HHW-PAINT,HHW,Paints and thinners,Pintura at thinner,,,,hazardous,151
+HHW-CHEM,HHW,Cleaning chemicals,Panlinis na kemikal,,,,hazardous,152
+HHW-PEST,HHW,Pesticides,Pamatay-peste,,,,hazardous,153
+HHW-AUTO,HHW,Motor oil and automotive,Langis ng makina,,,,hazardous,154
+HHW-COSM,HHW,Nail polish and solvents,Nail polish at solvent,,,,hazardous,155
+BLK,,Bulky & special,Malalaki at espesyal,,,,residual,160
+BLK-FURN,BLK,Furniture,Muwebles,,,,residual,161
+BLK-MATT,BLK,Mattresses,Kutson,,,,residual,162
+BLK-APPL,BLK,Large appliances,Malalaking appliances,,,,hazardous,163
+BLK-CONST,BLK,Construction debris,Debris ng konstruksyon,,,,residual,164

@@ -1,0 +1,21 @@
+id,title,url,level,verified
+S-RA9003-22,"RA 9003 Sec. 22(b): containers marked compostable, non-recyclable, recyclable, special waste",https://lawphil.net/statutes/repacts/ra2001/ra_9003_2001.html,P,true
+S-RA9003-21,RA 9003 Sec. 21: mandatory segregation at source,https://lawphil.net/statutes/repacts/ra2001/ra_9003_2001.html,P,true
+S-RA9003-3PP,RA 9003 Sec. 3(pp): special wastes (household hazardous wastes),https://lawphil.net/statutes/repacts/ra2001/ra_9003_2001.html,P,true
+S-RA9003-3Z,RA 9003 Sec. 3(z): recyclable material is free from contamination,https://lawphil.net/statutes/repacts/ra2001/ra_9003_2001.html,P,true
+S-RA9003-48,"RA 9003 Sec. 48: prohibited acts (littering, open burning, mixing)",https://lawphil.net/statutes/repacts/ra2001/ra_9003_2001.html,P,true
+S-RA6969,RA 6969 Toxic Substances and Hazardous and Nuclear Wastes Control Act; DAO 1992-29,,P,true
+S-DAO2013-22,DENR AO 2013-22: hazardous waste management incl. WEEE; registered handlers,,P,false
+S-JAO-LAMPS,Joint DOE-DENR Administrative Order (2013) on lamp waste management,https://legacy.doe.gov.ph/node/310,P,false
+S-RA11898,RA 11898 Extended Producer Responsibility Act of 2022 (IRR DAO 2023-02),https://web.senate.gov.ph/republic_acts/ra%2011898.pdf,P,true
+S-EWASTE-EMB,EMB presentation (2024) on draft WEEE management guidelines,https://www.env.go.jp/en/recycle/asian_net/Annual_Workshops/2024_PDF/Session3/S3_Philippines.pdf,S,false
+S-QC-SP2876,QC Ordinance SP-2876 s. 2019: single-use plastics ban for dine-in,https://quezoncity.gov.ph/public-notice/sp-2876-s-2019an-ordinance-prohibiting-the-distribution-and-or-use-of-single-use-plastics-disposable-materials-including-cutlery-for-dine-in-purposes-in-all-hotels-and-restaurants-in-quezon-city/,P,true
+S-QC-SP2868,QC Ordinance SP-2868: plastic bag rules,,S,false
+S-QC-T2C,Quezon City Trash to Cashback programme,https://quezoncity.gov.ph/program/qc-residents-can-exchange-trash-for-food-and-groceries-through-trash-to-cashback/,P,true
+S-QC-LAMPS,QC Ordinances 1483-2005 and 2350-2014 on used fluorescent lamps,,S,false
+S-QC-SP1804,QC Ordinance SP-1804 s. 2007: no grease or oil in drains (food establishments),https://libros.quezoncitypubliclibrary.org/items/11b1532e-5378-475e-8ec7-89a5f9155688,P,true
+S-QC-SP2691,QC Ordinance SP-2691 s. 2018: used cooking oil handling by food businesses,https://libros.quezoncitypubliclibrary.org/items/01886e6e-fd69-4117-8dd1-fe8e35f0200b,P,true
+S-DOH-HCWM4,"DOH Health Care Waste Management Manual, 4th edition",https://medbox.org/document/health-care-waste-management-manual-fourth-edition,P,false
+S-I-USFDA-MED,US FDA guidance on disposing of unused medicines (international reference),https://www.fda.gov/drugs/safe-disposal-medicines/disposal-unused-medicines-what-you-should-know,I,true
+S-NGO-ECOWASTE,EcoWaste Coalition,https://www.ecowastecoalition.org/,S,true
+S-STD-RIC,Resin Identification Codes 1-7 (ASTM D7611),,S,true

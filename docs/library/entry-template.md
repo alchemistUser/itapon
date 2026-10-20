@@ -13,14 +13,15 @@ One row per item in the material group's sheet (Phase 28 turns sheets into the d
 | `bin` | ✔ | `biodegradable` · `recyclable` · `residual` · `hazardous` |
 | `destinations` | ✔ | ranked codes `;`-separated: `junkshop;program;bin` |
 | `summary_en` / `summary_fil` | ✔ | ≤ 140 chars: the result-card line |
-| `prep_en` / `prep_fil` | ✔ | steps separated by `|`: "Empty it \| Rinse \| Flatten \| Keep the cap on" |
-| `dont_en` / `dont_fil` | | common mistakes: "Don't burn it" |
+| `prep_en` / `prep_fil` | ✔ | steps separated by `|`, each `Title :: detail` (title ≤ 40, detail ≤ 160): "Empty it :: Pour out any drink left inside. \| Flatten it :: Squeeze out the air." |
+| `note_en` / `note_fil` | | a "watch out" caveat, e.g. dirty vs clean |
+| `dont_en` / `dont_fil` | | `|`-separated common mistakes: "Don't burn it" |
 | `hazard_en` / `hazard_fil` | hazardous/medical | what can go wrong and why |
 | `value` | | `buys` (junk shop pays) · `accepts` · `none` |
 | `reuse_en` / `reuse_fil` | | `|`-separated ideas; **never for hazardous items** |
 | `reduce_en` / `reduce_fil` | | swaps/avoidance ideas |
 | `fact_en` / `fact_fil` | | one fact; **requires `sources`** |
-| `local_qc_en` / `local_qc_fil` | | Quezon City difference or programme ("In Quezon City: …") |
+| *(local differences)* | | not a column: Quezon City (or other LGU) notes go in `local_rules.csv` ("In Quezon City: …"), institution notes are added by admins in the app |
 | `related` | | slugs of related or commonly confused items |
 | `detectable_class_key` | | model class if the scanner can detect it |
 | `sources` | ✔ | source IDs from [sources.md](sources.md), `;`-separated |
@@ -37,15 +38,15 @@ One row per item in the material group's sheet (Phase 28 turns sheets into the d
 | material / resin_code | `PLA-1` / 1 |
 | bin | `recyclable` |
 | destinations | `junkshop;program;bin` |
-| summary_en | Empty and rinse it, flatten it, then sell it to a junk shop or put it in the blue bin. |
-| summary_fil | Ubusin at banlawan, pitpitin, saka ibenta sa junk shop o ilagay sa asul na basurahan. |
-| prep_en | Empty it \| Rinse it \| Flatten it to save space \| Put the cap back on |
+| summary_en | Empty it, remove the cap and flatten it. Sell it to a junk shop or put it in the blue bin. |
+| summary_fil | Ubusin ang laman, tanggalin ang takip at pitpitin. Ibenta sa junk shop o ilagay sa asul na basurahan. |
+| prep_en | Empty it :: Pour out any drink left inside. \| Remove the cap :: Caps are a different plastic. Put the cap in the blue bin separately. \| Flatten it :: Squeeze out the air to save space. |
 | dont_en | Don't burn it \| Don't put it in the blue bin with food or drink still inside |
 | value | `buys` |
 | reuse_en | Use it as a plant pot or seedling starter \| Refill it for watering plants |
 | reduce_en | Bring a refillable tumbler \| Use water refill stations |
 | fact_en | Recyclables must be clean to be recycled. A bottle with leftover drink can spoil a whole bag of recyclables. |
-| local_qc_en | In Quezon City: trade PET bottles for Environmental Points at Trash to Cashback booths. |
+| *(local_rules.csv)* | `QC,,plastic-bottle,,"In Quezon City: trade PET bottles for Environmental Points at Trash to Cashback booths.",,S-QC-T2C,draft` |
 | related | `hdpe-shampoo-bottle;plastic-cup-pp` |
 | detectable_class_key | `plastic_bottle` |
 | sources | `S-RA9003-22;S-RA9003-3Z;S-QC-T2C;S-STD-RIC` |

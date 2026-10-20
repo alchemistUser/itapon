@@ -67,6 +67,9 @@ jobs:
       - name: Supabase seed is up to date
         working-directory: .
         run: python3 supabase/scripts/build_seed.py --check
+      - name: Disposal library content is valid and generated files are up to date
+        working-directory: .
+        run: python3 supabase/scripts/build_library.py --check
 
   secrets:
     name: Secret scan (gitleaks)

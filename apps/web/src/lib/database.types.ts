@@ -220,6 +220,383 @@ export type Database = {
         }
         Relationships: []
       }
+      library_destinations: {
+        Row: {
+          code: string
+          name_en: string
+          name_fil: string
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          name_en: string
+          name_fil: string
+          sort_order?: number
+        }
+        Update: {
+          code?: string
+          name_en?: string
+          name_fil?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      library_dropoff_points: {
+        Row: {
+          address: string | null
+          created_at: string
+          destination_code: string
+          hours: string | null
+          id: string
+          institution_id: string | null
+          lgu: string | null
+          map_url: string | null
+          name: string
+          notes: string | null
+          sources: string[]
+          status: string
+          verified_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          destination_code: string
+          hours?: string | null
+          id?: string
+          institution_id?: string | null
+          lgu?: string | null
+          map_url?: string | null
+          name: string
+          notes?: string | null
+          sources?: string[]
+          status?: string
+          verified_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          destination_code?: string
+          hours?: string | null
+          id?: string
+          institution_id?: string | null
+          lgu?: string | null
+          map_url?: string | null
+          name?: string
+          notes?: string | null
+          sources?: string[]
+          status?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "library_dropoff_points_destination_code_fkey"
+            columns: ["destination_code"]
+            isOneToOne: false
+            referencedRelation: "library_destinations"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "library_dropoff_points_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      library_item_destinations: {
+        Row: {
+          destination_code: string
+          item_slug: string
+          rank: number
+        }
+        Insert: {
+          destination_code: string
+          item_slug: string
+          rank: number
+        }
+        Update: {
+          destination_code?: string
+          item_slug?: string
+          rank?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "library_item_destinations_destination_code_fkey"
+            columns: ["destination_code"]
+            isOneToOne: false
+            referencedRelation: "library_destinations"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "library_item_destinations_item_slug_fkey"
+            columns: ["item_slug"]
+            isOneToOne: false
+            referencedRelation: "library_items"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
+      library_items: {
+        Row: {
+          aliases: string[]
+          bin: string
+          detectable_class_key: string | null
+          dont_en: string[]
+          dont_fil: string[]
+          fact_en: string | null
+          fact_fil: string | null
+          hazard_en: string | null
+          hazard_fil: string | null
+          material_code: string
+          name_en: string
+          name_fil: string
+          note_en: string | null
+          note_fil: string | null
+          prep_en: Json
+          prep_fil: Json
+          reduce_en: string[]
+          reduce_fil: string[]
+          related: string[]
+          resin_code: number | null
+          reuse_en: string[]
+          reuse_fil: string[]
+          reviewed_at: string | null
+          reviewed_by: string[]
+          slug: string
+          sources: string[]
+          status: string
+          summary_en: string
+          summary_fil: string | null
+          updated_at: string
+          value: string | null
+        }
+        Insert: {
+          aliases?: string[]
+          bin: string
+          detectable_class_key?: string | null
+          dont_en?: string[]
+          dont_fil?: string[]
+          fact_en?: string | null
+          fact_fil?: string | null
+          hazard_en?: string | null
+          hazard_fil?: string | null
+          material_code: string
+          name_en: string
+          name_fil: string
+          note_en?: string | null
+          note_fil?: string | null
+          prep_en?: Json
+          prep_fil?: Json
+          reduce_en?: string[]
+          reduce_fil?: string[]
+          related?: string[]
+          resin_code?: number | null
+          reuse_en?: string[]
+          reuse_fil?: string[]
+          reviewed_at?: string | null
+          reviewed_by?: string[]
+          slug: string
+          sources?: string[]
+          status?: string
+          summary_en: string
+          summary_fil?: string | null
+          updated_at?: string
+          value?: string | null
+        }
+        Update: {
+          aliases?: string[]
+          bin?: string
+          detectable_class_key?: string | null
+          dont_en?: string[]
+          dont_fil?: string[]
+          fact_en?: string | null
+          fact_fil?: string | null
+          hazard_en?: string | null
+          hazard_fil?: string | null
+          material_code?: string
+          name_en?: string
+          name_fil?: string
+          note_en?: string | null
+          note_fil?: string | null
+          prep_en?: Json
+          prep_fil?: Json
+          reduce_en?: string[]
+          reduce_fil?: string[]
+          related?: string[]
+          resin_code?: number | null
+          reuse_en?: string[]
+          reuse_fil?: string[]
+          reviewed_at?: string | null
+          reviewed_by?: string[]
+          slug?: string
+          sources?: string[]
+          status?: string
+          summary_en?: string
+          summary_fil?: string | null
+          updated_at?: string
+          value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "library_items_bin_fkey"
+            columns: ["bin"]
+            isOneToOne: false
+            referencedRelation: "waste_categories"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "library_items_detectable_class_key_fkey"
+            columns: ["detectable_class_key"]
+            isOneToOne: false
+            referencedRelation: "waste_items"
+            referencedColumns: ["class_key"]
+          },
+          {
+            foreignKeyName: "library_items_material_code_fkey"
+            columns: ["material_code"]
+            isOneToOne: false
+            referencedRelation: "library_materials"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      library_local_rules: {
+        Row: {
+          created_at: string
+          id: string
+          institution_id: string | null
+          item_slug: string | null
+          lgu: string | null
+          material_code: string | null
+          note_en: string
+          note_fil: string | null
+          sources: string[]
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          institution_id?: string | null
+          item_slug?: string | null
+          lgu?: string | null
+          material_code?: string | null
+          note_en: string
+          note_fil?: string | null
+          sources?: string[]
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          institution_id?: string | null
+          item_slug?: string | null
+          lgu?: string | null
+          material_code?: string | null
+          note_en?: string
+          note_fil?: string | null
+          sources?: string[]
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "library_local_rules_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "library_local_rules_item_slug_fkey"
+            columns: ["item_slug"]
+            isOneToOne: false
+            referencedRelation: "library_items"
+            referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "library_local_rules_material_code_fkey"
+            columns: ["material_code"]
+            isOneToOne: false
+            referencedRelation: "library_materials"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      library_materials: {
+        Row: {
+          code: string
+          default_bin: string | null
+          description_en: string | null
+          description_fil: string | null
+          name_en: string
+          name_fil: string
+          parent_code: string | null
+          resin_code: number | null
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          default_bin?: string | null
+          description_en?: string | null
+          description_fil?: string | null
+          name_en: string
+          name_fil: string
+          parent_code?: string | null
+          resin_code?: number | null
+          sort_order?: number
+        }
+        Update: {
+          code?: string
+          default_bin?: string | null
+          description_en?: string | null
+          description_fil?: string | null
+          name_en?: string
+          name_fil?: string
+          parent_code?: string | null
+          resin_code?: number | null
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "library_materials_default_bin_fkey"
+            columns: ["default_bin"]
+            isOneToOne: false
+            referencedRelation: "waste_categories"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "library_materials_parent_code_fkey"
+            columns: ["parent_code"]
+            isOneToOne: false
+            referencedRelation: "library_materials"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      library_sources: {
+        Row: {
+          id: string
+          level: string
+          title: string
+          url: string | null
+          verified: boolean
+        }
+        Insert: {
+          id: string
+          level: string
+          title: string
+          url?: string | null
+          verified?: boolean
+        }
+        Update: {
+          id?: string
+          level?: string
+          title?: string
+          url?: string | null
+          verified?: boolean
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

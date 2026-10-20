@@ -129,3 +129,18 @@ New schema changes always go in a **new** migration file (`supabase migration ne
 - `supabase db lint`: no schema errors.
 - `supabase/tests/rls-roles.sql` (`pnpm db:rls-roles`): **59/59** role-matrix checks (anon, users, kiosk, two admins × every table), rolled back. See `docs/security.md`.
 - `supabase/tests/rls-check.mjs`: **32/32 checks passed** (2026-10-17). Public read-only content; two anonymous users can't see, add to or delete each other's scans; server-side bin; no self-promotion to admin; prefs editable; RPCs scoped by RLS; `delete_my_data` works; feedback only on your own detections, never pre-approved, photo needs consent, no review by non-admins, no uploads into another user's folder (Phase 20).
+
+## Disposal library (v2 Phase 28)
+
+Material-based library tables, filled from `supabase/content/library/*.csv` by
+`supabase/scripts/build_library.py` → `seed_library.sql` (see [library/README.md](library/README.md)).
+
+| Table | Holds | Read | Write |
+|---|---|---|---|
+| `library_sources` | rule sources (laws, ordinances) | everyone | seed only |
+| `library_materials` | 16 material groups + subgroups (resin codes for plastics) | everyone | seed only |
+| `library_destinations` | where things can go (junk shop, e-waste, hazardous drop-off, …) | everyone | seed only |
+| `library_items` | one row per specific item (bin, prep, hazards, reuse/reduce, fact, sources, review status) | **published** rows only | seed only |
+| `library_item_destinations` | ranked destinations per item | for published items | seed only |
+| `library_local_rules` | "In Quezon City: …" (LGU, from the seed) or institution notes | published LGU rows; own institution's rows | institution admins: own institution only |
+| `library_dropoff_points` | named drop-off points | published LGU rows; own institution's rows | institution admins: own institution only |

@@ -1,0 +1,13 @@
+code,name_en,name_fil,sort_order
+bin,The bin,Basurahan,10
+junkshop,Junk shop,Junk shop,20
+program,City or brand programme,Programa ng lungsod o kumpanya,30
+ewaste,E-waste drop-off,E-waste drop-off,40
+hazdrop,Hazardous waste collection,Koleksyon ng mapanganib na basura,50
+takeback,Store or brand take-back,Take-back ng tindahan o brand,60
+health,Health centre or pharmacy,Health center o botika,70
+compost,Compost,Compost,80
+donate,Donate or sell,Ipamigay o ibenta,90
+repair,Repair,Ipaayos,100
+bulky,LGU bulky-waste pickup,Bulky pickup ng LGU,110
+special,Special handling,Espesyal na paghawak,120

@@ -8,6 +8,26 @@ Planning and content rules for the material-based disposal library (ROADMAP-v2, 
 | [entry-template.md](entry-template.md) | the columns of a library row, with a worked example (PET water bottle) |
 | [style-guide.md](style-guide.md) | voice, Filipino, accuracy and **safety rules**, review workflow, rules for AI-drafted content |
 | [sources.md](sources.md) | the source register every entry must cite (laws, DENR/EMB, Quezon City), with verification status and known gaps |
+| [coverage.md](coverage.md) | **generated**: items per group by status, Filipino completeness, hazardous items awaiting review, warnings |
+
+## Editing content (Phase 28 pipeline)
+
+Content lives in [`supabase/content/library/`](../../supabase/content/library):
+`items/<GROUP>.csv` (one row per item, columns in [entry-template.md](entry-template.md)),
+`materials.csv`, `destinations.csv`, `sources.csv`, `local_rules.csv` (city-wide notes, e.g.
+QC) and `dropoff_points.csv`. Edit them in Google Sheets or any spreadsheet (save as CSV,
+UTF-8), then:
+
+```bash
+python supabase/scripts/build_library.py
+```
+
+It **validates** every row (required fields, lengths, bins and destinations, sources, Filipino,
+safety rules, reviewers) and writes `supabase/seed_library.sql`, the app's offline copy
+`apps/web/src/content/library.json` (**published items only**) and [coverage.md](coverage.md).
+CI runs it with `--check`. Merging to `main` applies the seed to the database (`db.yml`).
+Institution-specific notes and drop-off points are added by admins in the app (Phase 30), not
+in these files.
 
 ## Decisions (ROADMAP D16–D19)
 
@@ -21,6 +41,20 @@ Planning and content rules for the material-based disposal library (ROADMAP-v2, 
 The library collects **no personal data**. Usage is counted per item ("viewed", "chooser
 used", "idea done") without account or device ids, like the scan logs. No privacy notice change
 is needed for v1.1. (Accounts v2 and points will need the full review in their own phase.)
+
+## Phase 28 status (2026-10-20): done
+
+- **Database** (migration `20261020100000_library.sql`): `library_sources`, `library_materials`
+  (16 groups + 71 subgroups), `library_destinations` (12), `library_items`,
+  `library_item_destinations`, `library_local_rules`, `library_dropoff_points`. RLS: everyone
+  reads **published** content only; global content can't be written by any client; institution
+  admins manage notes and drop-off points for their own institution only. Role matrix
+  **102/102** (15 new library checks).
+- **Pipeline**: `build_library.py` with a validator, seed, offline JSON (`content_version`),
+  coverage report and CI `--check`; 13 validator tests.
+- **Content**: the 36 v1 items migrated as **drafts** (material, destinations, sources, hazard
+  text for the 7 hazardous items, reduce ideas), plus 8 Quezon City notes (drafts). No group is
+  at the 10-item target yet, and Filipino is missing on the new fields. That's Phase 29.
 
 ## Phase 27 status
 

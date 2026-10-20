@@ -107,6 +107,8 @@ recommended. Q4–Q8 wait for the accounts/points phases.
 
 ## Phase 28: Library data model & content pipeline
 
+> **Status (2026-10-20): Done.** 7 tables with RLS (published-only reads; no client writes to global content; institution admins manage their own notes and drop-offs), applied to the database with the seed. `supabase/scripts/build_library.py` validates the CSVs (structure, sources, Filipino, **safety**: no burning/draining advice, no DIY for hazardous items, two reviewers and a primary source to publish hazardous items) and generates the seed, the offline JSON and `docs/library/coverage.md`, with a CI `--check`. The 36 v1 items were migrated as drafts. Role matrix 102/102; 13 validator tests. **Deviation:** suggestions (reuse/reduce/fact) are fields on the item rather than a separate table, which is simpler for authoring; a shared-suggestions table can come later if ideas need reusing across many items.
+
 **Goal:** A structure that can hold 500+ items with local rules, and a way for the team to write
 content quickly and safely.
 
