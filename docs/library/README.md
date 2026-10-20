@@ -42,6 +42,21 @@ The library collects **no personal data**. Usage is counted per item ("viewed", 
 used", "idea done") without account or device ids, like the scan logs. No privacy notice change
 is needed for v1.1. (Accounts v2 and points will need the full review in their own phase.)
 
+## Phase 29 status (2026-10-20): Wave 1 drafted
+
+- **175 draft items**, ≥ 10 in every group, English and Filipino complete, 0 validator errors.
+  See [`coverage.md`](coverage.md) for each group.
+- **Group descriptions** (EN + FIL) for the 16 groups and the 7 resin codes in `materials.csv`.
+- **Everything is a draft.** Before publishing, the team must:
+  1. Peer-review every row against its sources (D19).
+  2. Get **two reviewers and an expert** for the 50 hazardous and medical items.
+  3. Verify the 3 sources marked "verify" (DAO 2013-22, lamp JAO, DOH manual). These cause
+     the 32 warnings.
+  4. Add TIP campus notes and real drop-off points to `local_rules.csv` and
+     `dropoff_points.csv` (Claude did not invent any).
+- To publish an item, set `status`, `reviewed_by` and `reviewed_at` in its CSV row, then run
+  the build. The production workflow re-applies the library seed on every change.
+
 ## Phase 28 status (2026-10-20): done
 
 - **Database** (migration `20261020100000_library.sql`): `library_sources`, `library_materials`

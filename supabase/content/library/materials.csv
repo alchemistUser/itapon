@@ -1,87 +1,87 @@
 code,parent_code,name_en,name_fil,description_en,description_fil,resin_code,default_bin,sort_order
-PLA,,Plastics,Plastik,,,,,10
-PLA-1,PLA,#1 PET,#1 PET,,,1,recyclable,11
-PLA-2,PLA,#2 HDPE,#2 HDPE,,,2,recyclable,12
-PLA-3,PLA,#3 PVC,#3 PVC,,,3,residual,13
-PLA-4,PLA,#4 LDPE,#4 LDPE,,,4,residual,14
-PLA-5,PLA,#5 PP,#5 PP,,,5,recyclable,15
-PLA-6,PLA,#6 PS and styrofoam,#6 PS at styrofoam,,,6,residual,16
-PLA-7,PLA,#7 Other plastics,#7 Iba pang plastik,,,7,residual,17
+PLA,,Plastics,Plastik,"Bottles, containers, bags and packaging. The resin code tells you what it is.","Bote, lalagyan, supot at pakete. Sinasabi ng resin code kung anong plastik ito.",,,10
+PLA-1,PLA,#1 PET,#1 PET,Clear drink bottles. Widely bought by junk shops when clean.,Malinaw na bote ng inumin. Binibili ng junk shop kapag malinis.,1,recyclable,11
+PLA-2,PLA,#2 HDPE,#2 HDPE,"Stiff, opaque bottles like shampoo and detergent. Recyclable when clean.",Matigas at malabong bote tulad ng shampoo at sabon. Nare-recycle kapag malinis.,2,recyclable,12
+PLA-3,PLA,#3 PVC,#3 PVC,"Pipes, hoses and some blister packs. Rarely recycled.","Tubo, hose at ilang blister pack. Bihirang ma-recycle.",3,residual,13
+PLA-4,PLA,#4 LDPE,#4 LDPE,Soft bags and squeeze bottles. Accepted by some programmes when clean and dry.,Malambot na supot at bote. Tinatanggap ng ilang programa kapag malinis at tuyo.,4,residual,14
+PLA-5,PLA,#5 PP,#5 PP,"Food tubs, caps and microwavable boxes. Recyclable when clean.","Lalagyan ng pagkain, takip at microwavable. Nare-recycle kapag malinis.",5,recyclable,15
+PLA-6,PLA,#6 PS and styrofoam,#6 PS at styrofoam,Styrofoam and hard clear cups. Usually residual.,Styro at matigas na malinaw na baso. Kadalasang residual.,6,residual,16
+PLA-7,PLA,#7 Other plastics,#7 Iba pang plastik,Mixed or other resins. Usually residual unless a programme accepts them.,Halo o ibang resin. Kadalasang residual maliban kung may programa.,7,residual,17
 PLA-FILM,PLA,Plastic films and bags,Plastic film at supot,,,,residual,18
 PLA-FLEX,PLA,Sachets and flexible packaging,Sachet at malambot na pakete,,,,residual,19
-PAP,,Paper & cardboard,Papel at karton,,,,recyclable,20
+PAP,,Paper & cardboard,Papel at karton,"Clean, dry paper and cardboard are recyclable. Wet, waxed or food-soiled paper is not.","Nare-recycle ang malinis at tuyong papel at karton. Hindi ang basa, may wax o may pagkain.",,recyclable,20
 PAP-CLEAN,PAP,Clean paper,Malinis na papel,,,,recyclable,21
 PAP-BOARD,PAP,Cardboard and boxes,Karton at kahon,,,,recyclable,22
 PAP-COAT,PAP,"Coated, waxed or laminated paper",Papel na may coating o wax,,,,residual,23
 PAP-THERM,PAP,Thermal paper (receipts),Thermal na papel (resibo),,,,residual,24
 PAP-TISSUE,PAP,Tissue and napkins,Tisyu at napkin,,,,biodegradable,25
 PAP-SOIL,PAP,Food-soiled paper,Papel na may mantsa ng pagkain,,,,residual,26
-MET,,Metals,Metal,,,,recyclable,30
+MET,,Metals,Metal,"Cans, foil and scrap. Metals keep their value and junk shops buy most of them.","Lata, foil at scrap. May halaga ang metal at binibili ng junk shop.",,recyclable,30
 MET-AL,MET,Aluminum,Aluminyo,,,,recyclable,31
 MET-FE,MET,Steel and tin cans,Lata (bakal),,,,recyclable,32
 MET-AERO,MET,Aerosol cans,Lata ng spray,,,,hazardous,33
 MET-FOIL,MET,Foil and trays,Foil at tray,,,,recyclable,34
 MET-SCRAP,MET,Scrap metal and wire,Scrap at alambre,,,,recyclable,35
-GLA,,Glass,Salamin,,,,recyclable,40
+GLA,,Glass,Salamin,"Bottles and jars are recyclable. Window glass, mirrors and broken glass need care.","Nare-recycle ang bote at garapon. Mag-ingat sa salamin ng bintana, salamin at basag.",,recyclable,40
 GLA-CONT,GLA,Bottles and jars,Bote at garapon,,,,recyclable,41
 GLA-FLAT,GLA,Window glass and mirrors,Salamin ng bintana at salamin,,,,residual,42
 GLA-HEAT,GLA,Heat-resistant and drinking glass,Pyrex at baso,,,,residual,43
 GLA-BROKEN,GLA,Broken glass,Basag na salamin,,,,residual,44
-CER,,Ceramics & porcelain,Seramika at porselana,,,,residual,50
+CER,,Ceramics & porcelain,Seramika at porselana,"Plates, mugs, tiles and pots. Ceramics don't melt with glass, so they go in residual.","Pinggan, tasa, tisa at paso. Hindi natutunaw kasama ng bote ang seramika, kaya residual.",,residual,50
 CER-DISH,CER,Dishware,Pinggan at tasa,,,,residual,51
 CER-TILE,CER,Tiles,Tisa,,,,residual,52
 CER-POT,CER,Clay and terracotta,Paso at palayok,,,,residual,53
-TEX,,Textiles & footwear,Tela at sapatos,,,,residual,60
+TEX,,Textiles & footwear,Tela at sapatos,"Clothes, linens, shoes and bags. Reuse and donation come first.","Damit, kumot, sapatos at bag. Unahin ang paggamit ulit at pag-donate.",,residual,60
 TEX-CLOTH,TEX,Clothing,Damit,,,,residual,61
 TEX-HOME,TEX,Household textiles,Tela sa bahay,,,,residual,62
 TEX-SHOE,TEX,Footwear,Sapatos at tsinelas,,,,residual,63
 TEX-BAG,TEX,Bags,Bag,,,,residual,64
-ELE,,Electronics (e-waste),Elektroniks (e-waste),,,,hazardous,70
+ELE,,Electronics (e-waste),Elektroniks (e-waste),"Anything with a plug, battery or circuit board. E-waste goes to registered collectors.","Anumang may saksakan, baterya o circuit board. Sa rehistradong kolektor ang e-waste.",,hazardous,70
 ELE-SMALL,ELE,Small devices,Maliliit na gadget,,,,hazardous,71
 ELE-CABLE,ELE,Cables and chargers,Kable at charger,,,,hazardous,72
 ELE-ACC,ELE,Accessories and cartridges,Accessories at cartridge,,,,hazardous,73
 ELE-LARGE,ELE,Appliances,Appliances,,,,hazardous,74
-BAT,,Batteries,Baterya,,,,hazardous,80
+BAT,,Batteries,Baterya,All batteries are special waste. Never put them in a bin loose.,Special waste ang lahat ng baterya. Huwag ilagay nang maluwag sa basurahan.,,hazardous,80
 BAT-ALK,BAT,Alkaline and zinc batteries,Alkaline na baterya,,,,hazardous,81
 BAT-LI,BAT,Lithium-ion and power banks,Lithium-ion at power bank,,,,hazardous,82
 BAT-BTN,BAT,Button and coin cells,Button na baterya,,,,hazardous,83
 BAT-PB,BAT,Lead-acid batteries,Baterya ng sasakyan,,,,hazardous,84
-LIG,,Lighting,Ilaw at bombilya,,,,hazardous,90
+LIG,,Lighting,Ilaw at bombilya,Bulbs and tubes. Fluorescent lamps contain mercury and need special handling.,Bombilya at tubo. May mercury ang fluorescent at kailangan ng espesyal na paghawak.,,hazardous,90
 LIG-FLUO,LIG,Fluorescent tubes and CFLs,Fluorescent at CFL,,,,hazardous,91
 LIG-LED,LIG,LED bulbs,LED na bombilya,,,,hazardous,92
 LIG-INC,LIG,Incandescent and halogen,Incandescent at halogen,,,,residual,93
 LIG-STRING,LIG,String lights,Christmas lights,,,,hazardous,94
-ORG,,Organics,Nabubulok,,,,biodegradable,100
+ORG,,Organics,Nabubulok,Food scraps and garden waste. Compost them or use the green bin.,Tirang pagkain at dahon. I-compost o ilagay sa berdeng basurahan.,,biodegradable,100
 ORG-FOOD,ORG,Food scraps,Tirang pagkain,,,,biodegradable,101
 ORG-GARDEN,ORG,Garden waste,Dahon at damo,,,,biodegradable,102
 ORG-OIL,ORG,Cooking oil and fats,Mantika,,,,hazardous,103
 ORG-BONE,ORG,Bones and shells,Buto at balat ng itlog,,,,biodegradable,104
-WOO,,Wood & natural,Kahoy at natural,,,,biodegradable,110
+WOO,,Wood & natural,Kahoy at natural,"Wood, bamboo and cork. Untreated pieces can be reused or composted.","Kahoy, kawayan at cork. Puwedeng gamitin ulit o i-compost ang hindi pininturahan.",,biodegradable,110
 WOO-RAW,WOO,Untreated wood and bamboo,Kahoy at kawayan,,,,biodegradable,111
 WOO-TREAT,WOO,Treated or painted wood,Pinturadong kahoy,,,,residual,112
 WOO-CORK,WOO,Cork,Cork,,,,biodegradable,113
-RUB,,Rubber & foam,Goma at foam,,,,residual,120
+RUB,,Rubber & foam,Goma at foam,"Rubber, foam and tires. Hard to recycle, so reuse comes first.","Goma, foam at gulong. Mahirap i-recycle, kaya unahin ang paggamit ulit.",,residual,120
 RUB-RUB,RUB,Rubber,Goma,,,,residual,121
 RUB-FOAM,RUB,Foam and cushions,Foam at unan,,,,residual,122
 RUB-TIRE,RUB,Tires,Gulong,,,,residual,123
-CMP,,Composites & multilayer,Halo-halong materyales,,,,residual,130
+CMP,,Composites & multilayer,Halo-halong materyales,"Items made of layers that can't be separated, like cartons and pouches.","Gamit na gawa sa patong-patong na hindi mapaghiwalay, tulad ng karton at pouch.",,residual,130
 CMP-CARTON,CMP,Cartons (Tetra Pak),Karton ng juice at gatas,,,,residual,131
 CMP-BLISTER,CMP,Blister packs,Blister pack,,,,residual,132
 CMP-TUBE,CMP,Tubes,Tubo ng toothpaste,,,,residual,133
 CMP-MIXED,CMP,Mixed-material items,Halo-halong gamit,,,,residual,134
-MED,,Medical & sanitary,Medikal at pangkalinisan,,,,residual,140
+MED,,Medical & sanitary,Medikal at pangkalinisan,"Medicine, sharps and sanitary items. Sharps and medicine need special handling.","Gamot, karayom at pangkalinisan. Kailangan ng espesyal na paghawak ang karayom at gamot.",,residual,140
 MED-SHARP,MED,Sharps,Karayom at matutulis,,,,hazardous,141
 MED-DRUG,MED,Medicine,Gamot,,,,hazardous,142
 MED-PPE,MED,Masks and gloves,Face mask at gloves,,,,residual,143
 MED-SAN,MED,Diapers and sanitary products,Diaper at napkin,,,,residual,144
 MED-TEST,MED,Test kits,Test kit,,,,residual,145
-HHW,,Household hazardous,Mapanganib sa bahay,,,,hazardous,150
+HHW,,Household hazardous,Mapanganib sa bahay,"Paints, chemicals, pesticides and oils. Keep them in their containers for hazardous collection.","Pintura, kemikal, pesticide at langis. Iwan sa lalagyan para sa koleksyon ng mapanganib.",,hazardous,150
 HHW-PAINT,HHW,Paints and thinners,Pintura at thinner,,,,hazardous,151
 HHW-CHEM,HHW,Cleaning chemicals,Panlinis na kemikal,,,,hazardous,152
 HHW-PEST,HHW,Pesticides,Pamatay-peste,,,,hazardous,153
 HHW-AUTO,HHW,Motor oil and automotive,Langis ng makina,,,,hazardous,154
 HHW-COSM,HHW,Nail polish and solvents,Nail polish at solvent,,,,hazardous,155
-BLK,,Bulky & special,Malalaki at espesyal,,,,residual,160
+BLK,,Bulky & special,Malalaki at espesyal,"Furniture, mattresses, appliances and debris too big for household bins.","Muwebles, kutson, appliance at debris na masyadong malaki para sa basurahan.",,residual,160
 BLK-FURN,BLK,Furniture,Muwebles,,,,residual,161
 BLK-MATT,BLK,Mattresses,Kutson,,,,residual,162
 BLK-APPL,BLK,Large appliances,Malalaking appliances,,,,hazardous,163
