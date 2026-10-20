@@ -1,5 +1,7 @@
 # Sign-in email setup (Brevo SMTP, D21)
 
+> **Not used for the prototype demo (D24).** Kept for when real email accounts are needed.
+
 Needed for email sign-in and "Save your history" in production (Phase 31). Google sign-in
 doesn't need it. **Never paste the SMTP key in chat, code, issues or commits.** It goes only
 into the Supabase dashboard.
