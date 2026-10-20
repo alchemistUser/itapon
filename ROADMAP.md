@@ -31,6 +31,10 @@ These decisions are settled. Reopen one only for a concrete reason, and add a da
 | D13 | Feedback review & promotion | Institution admins review only feedback from **their own institution** (RLS); the project team reviews the rest with the service role. A new model ships only if, on **≥ 30** approved field photos, item accuracy and every bin's accuracy are ≥ the current model's (plus locked-test-set mAP once a trained model exists). Runbook: `docs/retraining.md`. | 2026-10-17 |
 | D14 | Service worker | A **hand-written** `public/sw.js` instead of Serwist: the Turbopack integration is new, and we need exact control over COEP-safe caching and the model cache. Pages network-first with an offline fallback, `/_next/static` and `/ort` cache-first, and a per-deploy warm-up of the offline pages. supabase-js is loaded lazily (not in the first-load bundle). | 2026-10-18 |
 | D15 | One Supabase project | `itapon-dev` also serves production (free tier, small pilot). Dev and preview share real data, so test with throwaway accounts, never run the demo SQL after launch, and keep a daily keep-alive against free-tier pausing. A separate prod project can be split off later with no code change (`docs/release.md`). | 2026-10-18 |
+| D16 | v2 thesis scope | The **disposal & suggestion library (v1.1)** is in the thesis; accounts v2 and the point system are **future work** (ROADMAP-v2 Phases 31–35). | 2026-10-20 |
+| D17 | Library rules | National default (RA 9003, DENR/EMB rules) with **Quezon City and TIP overrides**, shown as "In Quezon City: …". | 2026-10-20 |
+| D18 | Library review | Reviewed by the **team** against cited sources (`docs/library/sources.md`); hazardous, medical and e-waste rows need two reviewers; unresolved gaps (household sharps, medicine) use a safe fallback text. | 2026-10-20 |
+| D19 | Library authoring | Claude researches and **drafts** entries from the source register into the content sheets; nothing is published until the team reviews it. No invented programmes, addresses or schedules. | 2026-10-20 |
 
 ---
 

@@ -72,9 +72,15 @@ someone qualified.
 | Q8 | Minors | allow · parental consent · 18+ only | allow with an **age gate**: under-18s get no public leaderboard and a guardian notice (RA 10173) |
 | Q9 | Thesis scope | v2 before the defense · after ("future work") | decide with the adviser. The library (v1.1) fits well; points need their own evaluation |
 
+**Answered 2026-10-20:** Q2 team review against sources (D18), Q3 national + QC overrides (D17),
+Q9 library in, points later (D16); authoring: Claude drafts, team publishes (D19). Q1 adopted as
+recommended. Q4–Q8 wait for the accounts/points phases.
+
 ---
 
 ## Phase 27: v2 scope, rules & design
+
+> **Status (2026-10-20): Done for the library; deferred for accounts/points.** Decisions D16–D19 (ROADMAP.md): the library is in the thesis and accounts/points are future work; national rules + QC/TIP overrides; team review against sources; Claude drafts and the team publishes. Deliverables in [`docs/library/`](docs/library/README.md): taxonomy (bins ↔ RA 9003 labels, 12 destination types, 16 groups / 71 subgroups, scanner-class mapping checked against the 23 real classes), entry template with a worked example, style & safety guide, and a **source register** (RA 9003 Secs. 3, 21, 22, 48 quoted from the text; RA 6969; DAO 2013-22; lamp JAO; RA 11898 EPR; QC SP-2876, SP-2868, Trash to Cashback, lamp and cooking-oil ordinances; DOH HCWM manual). 6 sources are marked "verify" and there are 2 gaps (household sharps, medicine) with a safe fallback. **Team:** Figma frames and adviser sign-off. Points spec and the accounts privacy review are deferred with Phases 31–35.
 
 **Goal:** Lock what we build, the library structure and the points rules, so later phases don't churn.
 
