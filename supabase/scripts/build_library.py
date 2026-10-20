@@ -4,15 +4,16 @@
 
     python supabase/scripts/build_library.py          # validate + write outputs
     python supabase/scripts/build_library.py --check  # validate + fail if outputs are stale (CI)
-    python supabase/scripts/build_library.py --preview  # also put DRAFTS in the app copies (local
-                                                        # review and E2E only; never commit them)
+    python supabase/scripts/build_library.py --published-only  # app copies without unreviewed
+                                                               # entries (once the team reviews, D25)
 
 Inputs  (supabase/content/library/):  sources.csv, materials.csv, destinations.csv,
                                       items/<GROUP>.csv, local_rules.csv, dropoff_points.csv
 Outputs: supabase/seed_library.sql               (all rows; RLS shows only published ones)
-         apps/web/src/content/library.json       (published only: prerendered pages, server side)
-         apps/web/public/library/index.json      (published only: search index, materials, rules)
-         apps/web/public/library/groups/<G>.json (published only: full items per group, offline)
+         apps/web/src/content/library.json       (prerendered pages, server side)
+         apps/web/public/library/index.json      (search index, materials, rules)
+         apps/web/public/library/groups/<G>.json (full items per group, offline)
+         The app copies include unreviewed drafts, flagged, for the prototype demo (D25).
          docs/library/coverage.md                (what's written, reviewed, missing)
 
 Rules come from docs/library/style-guide.md and entry-template.md. Errors stop the build;
@@ -576,10 +577,10 @@ def build_seed(lib: Library, version: str) -> str:
     return "\n".join(out) + "\n"
 
 
-def web_data(lib: Library, version: str, preview: bool = False) -> dict:
-    """What the app ships: published content only (drafts never reach users). With preview,
-    drafts are included and flagged so the team can review them in the app."""
-    show = {"published", "draft", "reviewed"} if preview else {"published"}
+def web_data(lib: Library, version: str, unreviewed: bool = True) -> dict:
+    """What the app ships. D25 (prototype demo): unreviewed AI drafts are included and flagged
+    (`draft: true`, shown as "Not reviewed yet"); published_only drops them."""
+    show = {"published", "draft", "reviewed"} if unreviewed else {"published"}
     items = []
     for i in sorted(lib.items, key=lambda i: i["slug"]):
         if i["status"] not in show:
@@ -590,7 +591,7 @@ def web_data(lib: Library, version: str, preview: bool = False) -> dict:
             rec.pop(k)
         items.append(rec)
     return {
-        "content_version": version + ("-preview" if preview else ""),
+        "content_version": version + ("" if unreviewed else "-published"),
         "sources": [{k: s[k] for k in ("id", "title", "url", "level")} for s in lib.sources],
         "materials": [
             {
@@ -659,10 +660,10 @@ INDEX_FIELDS = (
 )
 
 
-def build_web(lib: Library, version: str, preview: bool = False) -> dict[Path, str]:
+def build_web(lib: Library, version: str, unreviewed: bool = True) -> dict[Path, str]:
     """Server copy (prerendering) + public files the browser loads lazily and caches offline:
     a small index for search and the scan card, and one file per material group."""
-    data = web_data(lib, version, preview)
+    data = web_data(lib, version, unreviewed)
     out: dict[Path, str] = {WEB: json.dumps(data, ensure_ascii=False, indent=1) + "\n"}
     index = {k: v for k, v in data.items() if k != "items"}
     index["items"] = [{k: i[k] for k in INDEX_FIELDS} for i in data["items"]]
@@ -733,7 +734,9 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--check", action="store_true", help="fail if generated files are out of date")
     ap.add_argument(
-        "--preview", action="store_true", help="include drafts in the app copies (don't commit)"
+        "--published-only",
+        action="store_true",
+        help="leave unreviewed entries out of the app copies (D25 includes them for the demo)",
     )
     args = ap.parse_args()
 
@@ -748,7 +751,7 @@ def main() -> int:
     version = content_version(lib)
     outputs = {
         SEED: build_seed(lib, version),
-        **build_web(lib, version, preview=args.preview and not args.check),
+        **build_web(lib, version, unreviewed=not args.published_only),
         COVERAGE: build_coverage(lib, report, version),
     }
     stale = [

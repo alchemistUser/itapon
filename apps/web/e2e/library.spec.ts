@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { expect, test } from "@playwright/test";
 
-// Phase 30: the disposal library. Needs library content in the build; CI builds with
-// `build_library.py --preview` (drafts included) because nothing is published yet.
+// Phase 30: the disposal library (unreviewed entries are in the app for the demo, D25).
 
 test("library home lists the material groups and searches in English, Filipino and resin codes", async ({
   page,
@@ -35,7 +34,7 @@ test("group and item pages show the full entry, in Filipino too", async ({ page 
   ).toBeVisible();
   await expect(page.getByRole("heading", { name: "How to prepare it" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Sources" })).toBeVisible();
-  await expect(page.getByRole("note").filter({ hasText: /Draft/ })).toBeVisible();
+  await expect(page.getByRole("note").filter({ hasText: /Not reviewed yet/ })).toBeVisible();
 
   await page.getByRole("button", { name: "Filipino" }).click();
   await expect(

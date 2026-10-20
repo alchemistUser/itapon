@@ -96,7 +96,8 @@ export default function LibraryPage() {
 
       <Note>
         Entries follow national law (RA 9003) and Quezon City rules, with sources on every page.
-        Rules can differ by city or barangay.
+        Most were drafted with AI and are still being reviewed by the team; those say &quot;Not
+        reviewed yet&quot;. Rules can differ by city or barangay.
       </Note>
     </div>
   );

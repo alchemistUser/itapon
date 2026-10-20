@@ -144,6 +144,8 @@ content quickly and safely.
 
 ## Phase 29: Content production (the big one)
 
+> **Update (2026-10-21, D25): all 175 entries are live in the app, labelled "Not reviewed yet".** They stay `draft` in the content files (no reviewer names were added). The team's review (D18) removes the label entry by entry.
+
 > **Status (2026-10-20): Wave 1 drafted; team review next.** **175 items** across all 16 groups (every group at ≥ 10), **EN + FIL complete**, 0 validator errors, all **draft** (D19), in the database and the offline JSON. Group descriptions in EN + FIL for the 16 groups and the 7 resin codes. Hazardous entries (batteries, e-waste, lamps, household chemicals, sharps, medicine, large appliances) route to hazardous collection with hazard text and no DIY advice; sharps and medicine use the safe fallback ("seal it, ask your barangay health centre or pharmacy") because the register has no national household rule. 32 warnings: items that cite the 3 sources still marked "verify" (DAO 2013-22, lamp JAO, DOH manual). `db.yml` now re-applies the library seed on every change (`db push` runs a seed only once). **Remaining (team):** peer review of every row and two reviewers + expert review for the 50 hazardous/medical items; verify the 3 sources; TIP campus notes and drop-off points (no addresses are invented); icons; Wave 2 to 250 items.
 
 **Goal:** Fill the library: at least 250 high-quality items for v1.1, growing to 500+.

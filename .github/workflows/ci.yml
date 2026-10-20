@@ -37,9 +37,6 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # Phase 30: nothing is published yet, so E2E tests the library with the drafts.
-      - name: Library with drafts (test build only)
-        run: python3 supabase/scripts/build_library.py --preview
       - run: pnpm --filter web build
       - run: pnpm --filter web exec playwright install --with-deps chromium
       # The fake-camera scan test needs a sample photo (private dev samples aren't in git),

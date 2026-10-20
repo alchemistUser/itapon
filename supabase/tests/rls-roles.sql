@@ -257,7 +257,7 @@ set local role anon;
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 insert into rls_results values
   ('library events: anon counts a published item', not pg_temp.refused($q$insert into public.library_events (item_slug, event, source) values ('rls-published-item', 'view', 'library')$q$)),
-  ('library events: anon cannot count a draft item', pg_temp.refused($q$insert into public.library_events (item_slug, event, source) values ('rls-draft-item', 'view', 'library')$q$)),
+  ('library events: anon counts an unreviewed item (D25)', not pg_temp.refused($q$insert into public.library_events (item_slug, event, source) values ('rls-draft-item', 'view', 'library')$q$)),
   ('library events: anon cannot set the institution', pg_temp.refused($q$insert into public.library_events (item_slug, event, source, institution_id) values ('rls-published-item', 'view', 'library', '00000000-0000-4000-8000-0000000000b1')$q$)),
   ('library events: anon cannot read events', pg_temp.refused($q$select * from public.library_events$q$)),
   ('library events: anon cannot read totals', pg_temp.refused($q$select * from public.library_event_counts(current_date - 1, current_date + 1)$q$));

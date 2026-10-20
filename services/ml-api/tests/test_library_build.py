@@ -223,18 +223,21 @@ def test_repo_content_is_valid():
     assert len(lib.items) >= 36
 
 
-def test_app_copies_hold_published_items_only_unless_preview():
+def test_app_copies_flag_unreviewed_items_and_can_drop_them():
     published = item(slug="pub", status="published", reviewed_by="AB", reviewed_at="2026-10-20")
     lib = bl.Library(SOURCES, MATERIALS, DESTS, [item(), published], [], [])
-    out = bl.build_web(lib, "v1")
+    out = bl.build_web(lib, "v1", unreviewed=False)
     index = json.loads(out[bl.PUBLIC / "index.json"])
     assert [i["slug"] for i in index["items"]] == ["pub"]
     assert index["items"][0]["draft"] is False
     assert "sources" in index and "prep_en" not in index["items"][0]  # small index
     group = json.loads(out[bl.PUBLIC / "groups" / "PLA.json"])
-    assert [i["slug"] for i in group["items"]] == ["pub"] and group["content_version"] == "v1"
+    assert [i["slug"] for i in group["items"]] == ["pub"]
+    assert group["content_version"] == "v1-published"
     assert json.loads(out[bl.PUBLIC / "groups" / "BAT.json"])["items"] == []
 
-    preview = json.loads(bl.build_web(lib, "v1", preview=True)[bl.PUBLIC / "index.json"])
-    assert {i["slug"]: i["draft"] for i in preview["items"]} == {"pet-bottle": True, "pub": False}
-    assert preview["content_version"] == "v1-preview"
+    # D25 default: unreviewed drafts are in the app, flagged
+    demo = json.loads(bl.build_web(lib, "v1")[bl.PUBLIC / "index.json"])
+    assert {i["slug"]: i["draft"] for i in demo["items"]} == {"pet-bottle": True, "pub": False}
+    assert demo["content_version"] == "v1"
+    assert index["content_version"] == "v1-published"

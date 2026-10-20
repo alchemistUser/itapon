@@ -28,7 +28,7 @@ export function ItemList({ items, className }: { items: LibraryIndexItem[]; clas
                   <Bi en={item.name_en} fil={item.name_fil} />
                   {item.draft ? (
                     <span className="ml-2 align-middle text-[11px] font-medium text-ink-3">
-                      draft
+                      not reviewed
                     </span>
                   ) : null}
                 </span>

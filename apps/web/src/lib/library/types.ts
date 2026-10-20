@@ -35,7 +35,7 @@ export interface LibraryIndexItem {
   summary_en: string;
   summary_fil: string | null;
   detectable_class_key: string | null;
-  /** Not reviewed yet: only present in --preview builds (never in production). */
+  /** AI-drafted and not reviewed by the team yet (shown as such; D25). */
   draft: boolean;
 }
 

@@ -202,6 +202,9 @@ export function LibraryScanCard({
         How to dispose of {nameOf(chosen, lang).toLowerCase()}
         <ArrowRight aria-hidden className="size-3.5" />
       </Link>
+      {chosen.draft ? (
+        <p className="-mt-2 text-xs text-ink-3">Not reviewed yet by the iTapon team.</p>
+      ) : null}
     </section>
   );
 }

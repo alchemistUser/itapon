@@ -35,14 +35,13 @@ Institution-specific notes and drop-off points go straight into Supabase
 (`library_local_rules`, `library_dropoff_points`; RLS lets admins write their own), not into
 these files. There is no in-app editor for them yet.
 
-**See drafts in the app** (for review, and what CI's E2E tests use):
+**Unreviewed entries are in the app (D25).** For the prototype demo, the app copies include
+draft rows too, each labelled "Not reviewed yet". Rows the team reviews and publishes lose the
+label. To ship reviewed entries only (for example after the defense), build with:
 
 ```bash
-python supabase/scripts/build_library.py --preview   # drafts included, marked "Draft"
+python supabase/scripts/build_library.py --published-only
 ```
-
-Never commit preview output: run the build again without `--preview` first. CI's `--check`
-fails if you forget.
 
 ## Decisions (ROADMAP D16–D19)
 
@@ -72,15 +71,15 @@ this (Phase 30). Accounts v2 and points will need the full review in their own p
   never opened online render from the cached files.
 - **Counts** for the admin dashboard (Disposal library panel).
 
-With nothing published yet, production shows "Coming soon" on `/library` and no card. Pages
-fill in as the team publishes entries.
+Since D25 the app shows all 175 entries; unreviewed ones say "Not reviewed yet".
 
 ## Phase 29 status (2026-10-20): Wave 1 drafted
 
 - **175 draft items**, ≥ 10 in every group, English and Filipino complete, 0 validator errors.
   See [`coverage.md`](coverage.md) for each group.
 - **Group descriptions** (EN + FIL) for the 16 groups and the 7 resin codes in `materials.csv`.
-- **Everything is a draft.** Before publishing, the team must:
+- **Everything is still a draft**, and it's live in the app with a "Not reviewed yet" label
+  (D25, prototype demo). To remove the label from an entry, the team should:
   1. Peer-review every row against its sources (D19).
   2. Get **two reviewers and an expert** for the 50 hazardous and medical items.
   3. Verify the 3 sources marked "verify" (DAO 2013-22, lamp JAO, DOH manual). These cause

@@ -136,7 +136,8 @@ export function ItemEntry({
           className="flex items-start gap-2 rounded-tile border border-dashed border-ink-4 bg-surface p-3 text-sm text-ink-2"
         >
           <ShieldAlert aria-hidden className="mt-0.5 size-4 shrink-0" />
-          Draft: the iTapon team hasn&apos;t reviewed this entry yet. Preview builds only.
+          Not reviewed yet: this entry was drafted with AI from official sources and the iTapon team
+          hasn&apos;t checked it. If your barangay or city says otherwise, follow them.
         </p>
       ) : null}
 
