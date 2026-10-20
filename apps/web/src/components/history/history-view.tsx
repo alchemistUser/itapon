@@ -193,7 +193,7 @@ export function HistoryView() {
             <div>
               <p className="font-semibold text-ink">Save your history</p>
               <p className="text-sm text-ink-2">
-                Your scans are only on this device. Add your email to keep them and see them
+                Your scans are only on this device. Create an account to keep them and see them
                 anywhere.
               </p>
             </div>

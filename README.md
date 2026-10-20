@@ -8,8 +8,9 @@ A CS 406 Machine Learning project, Technological Institute of the Philippines, Q
 
 | Part | Tech | Hosting |
 |---|---|---|
-| Web app | Next.js (React) + Tailwind CSS | Vercel |
-| ML / inference API | Python, FastAPI, PyTorch, Ultralytics YOLO | Hugging Face Spaces (Docker) |
+| Web app (with in-browser inference, ONNX) | Next.js (React) + Tailwind CSS | Vercel |
+| Model files | YOLO-World exported to ONNX | Hugging Face |
+| ML tools / reference API | Python, FastAPI, PyTorch, Ultralytics YOLO | local / Hugging Face Spaces |
 | Auth & database | Supabase (Auth, Postgres + RLS, Storage) | Supabase |
 
 ## Repo layout
@@ -33,8 +34,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, branching and commit conventio
 
 ## Docs
 
-- [ROADMAP.md](ROADMAP.md): 26-phase development plan
+- **[docs/user-manual.md](docs/user-manual.md): user manual for everyone** (residents, students,
+  kiosk users and staff, institution admins, facilitators)
+- **[docs/system-documentation.md](docs/system-documentation.md): how the system works and its
+  current state** (architecture, components, data model, security, operations)
+- [ROADMAP-remaining.md](ROADMAP-remaining.md): what's left to do
+- [ROADMAP.md](ROADMAP.md) (v1, Phases 1–26) and [ROADMAP-v2.md](ROADMAP-v2.md) (v2, Phases 27–35)
 - [docs/spec.md](docs/spec.md): v1 classes, bin mapping, metrics, user stories
+- [CHANGELOG.md](CHANGELOG.md): release notes
 
 ## Team
 
