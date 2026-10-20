@@ -1,7 +1,7 @@
 # iTapon v2 roadmap: disposal library, accounts & points
 
 Planned features on top of v1.0 ([ROADMAP.md](ROADMAP.md), Phases 1–26). **Built so far:**
-Phases 27–34. The short list of what's left is in
+Phases 27–35 (the v2.0.0 tag waits for the production smoke test). The short list of what's left is in
 [ROADMAP-remaining.md](ROADMAP-remaining.md). Phases continue the v1 numbering (27–35) and follow the same Definition of Done
 (ROADMAP §6: tests, RLS checks, accessibility, docs).
 
@@ -319,6 +319,8 @@ content quickly and safely.
 ---
 
 ## Phase 35: v2 release
+
+> **Status (2026-10-22): Ready to release; the tag waits for the production smoke test (team).** **Feature flags** (`20261022120000_feature_flags.sql`): a project-wide `points` switch (team only) and a per-institution points switch for admins, on by default for the demo (D27). Claims and leaderboards respect both, and Missions shows a paused state. The library has no flag (on for everyone). All v2 migrations are additive and roll forward through `db.yml`. Version **2.0.0** (footer and `/api/health`); CHANGELOG sections **1.1.0** (library) and **2.0.0** (accounts and points); the v2 release checklist and **rollback plan (points flag off first)** are in [`docs/release.md`](docs/release.md). The **staff guide** is [`docs/staff-guide.md`](docs/staff-guide.md) (members and join codes, campus notes and drop-offs, running points, prizes, disputes and reversals, insights, the knowledge test). Role matrix **218/218** (8 new checks). **Exit criteria pending (team):** the smoke test on production, then the tag and GitHub release; one institution live with points on.
 
 **Goal:** Ship safely and reversibly.
 

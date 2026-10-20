@@ -26,6 +26,7 @@ describe("claimable", () => {
     expect(claimable(mission({ progress: 0 }), false)).toBe(false);
     expect(claimable(mission({ claimed: true }), false)).toBe(false);
     expect(claimable(mission({ blocked: true }), false)).toBe(false);
+    expect(claimable(mission(), false, true)).toBe(false); // points paused (Phase 35 flags)
   });
 });
 

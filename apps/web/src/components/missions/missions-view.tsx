@@ -23,6 +23,7 @@ import {
   fetchGroupQuiz,
   fetchMissions,
   fetchPointHistory,
+  fetchPointsStatus,
   fetchPoints,
   MISSION_LINKS,
   quizScore,
@@ -39,11 +40,13 @@ import { BadgesCard, LeaderboardCard, LevelCard } from "./progress-sections";
 function MissionCard({
   m,
   guest,
+  paused,
   fil,
   onClaim,
 }: {
   m: Mission;
   guest: boolean;
+  paused: boolean;
   fil: boolean;
   onClaim: (m: Mission) => void;
 }) {
@@ -82,10 +85,12 @@ function MissionCard({
           </span>
         ) : m.blocked ? (
           <span className="text-xs text-[#c4282d]">Paused today: too many scans too fast</span>
-        ) : claimable(m, guest) ? (
+        ) : claimable(m, guest, paused) ? (
           <Button onClick={() => onClaim(m)}>
             <Gift aria-hidden className="size-4" /> Claim +{m.points}
           </Button>
+        ) : m.progress >= m.target && paused ? (
+          <span className="text-xs text-ink-3">Claiming is paused</span>
         ) : m.progress >= m.target && guest ? (
           <Link href="/account" className="text-sm font-semibold text-brand-strong underline">
             Create an account to claim
@@ -248,6 +253,11 @@ export function MissionsView() {
   const [noSession, setNoSession] = useState(false);
   const reload = useCallback(() => setVersion((v) => v + 1), []);
   const guest = auth.isAnonymous;
+  const [status, setStatus] = useState<{ enabled: boolean; reason: string | null }>({
+    enabled: true,
+    reason: null,
+  });
+  const paused = !status.enabled;
   const onFreshBadges = useCallback(
     (titles: string[]) =>
       setNote(`New badge${titles.length > 1 ? "s" : ""}: ${titles.join(", ")}!`),
@@ -267,17 +277,19 @@ export function MissionsView() {
       }
       if (live) setNoSession(false);
       try {
-        const [m, p, h, q] = await Promise.all([
+        const [m, p, h, q, st] = await Promise.all([
           fetchMissions(),
           fetchPoints(),
           fetchPointHistory(),
           fetchDailyQuiz(),
+          fetchPointsStatus(),
         ]);
         if (!live) return;
         setMissions(m);
         setPoints(p);
         setHistory(h);
         setQuiz(q);
+        setStatus(st);
         setError(null);
       } catch (e) {
         if (live) setError((e as Error).message);
@@ -371,6 +383,14 @@ export function MissionsView() {
 
       <LevelCard version={version} fil={fil} />
 
+      {paused ? (
+        <p role="status" className="rounded-card bg-surface p-4 text-sm text-ink-2">
+          {status.reason === "institution"
+            ? "Your school or office has paused points. You can still do the missions and quizzes."
+            : "Points are paused right now. You can still do the missions and quizzes."}
+        </p>
+      ) : null}
+
       {guest ? (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-card bg-brand-tint p-4 text-sm text-ink">
           <span className="flex items-center gap-2">
@@ -406,6 +426,7 @@ export function MissionsView() {
                 key={m.code}
                 m={m}
                 guest={guest}
+                paused={paused}
                 fil={fil}
                 onClaim={(x) => void claim(x)}
               />
@@ -427,6 +448,7 @@ export function MissionsView() {
                 key={m.code}
                 m={m}
                 guest={guest}
+                paused={paused}
                 fil={fil}
                 onClaim={(x) => void claim(x)}
               />

@@ -5,7 +5,7 @@ As of **21 October 2026**. Detailed plans live in [ROADMAP.md](ROADMAP.md) (v1, 
 
 **Done:** v1 (Phases 1–24), the pilot kit (25), the v2 library (27–30: 175 entries live and
 labelled "Not reviewed yet", D25), accounts v2 (31: email + password, no emails, D24) and
-points from daily and weekly missions (32, D26), levels, badges, streaks and leaderboards (33), and admin analytics and evaluation tools (34).
+points from daily and weekly missions (32, D26), levels, badges, streaks and leaderboards (33), admin analytics and evaluation tools (34), and the v2 release prep (35: flags, 2.0.0, staff guide).
 
 ## 1. Building (Claude can do these)
 
@@ -14,7 +14,7 @@ points from daily and weekly missions (32, D26), levels, badges, streaks and lea
 | 1 | **32 Points engine** | Daily and weekly missions, a server-side ledger, quizzes, anti-cheat, points history, admin reversal (D26, [docs/points.md](docs/points.md)) | **done** |
 | 2 | **33 Badges, levels, leaderboards** | Levels from lifetime points; badges (e.g. "Plastics expert", "7-day streak"); streaks with a grace day; opt-in weekly leaderboards per institution (adults only, handle and avatar only). Prizes only if an institution runs them | **done** |
 | 3 | **34 Admin and evaluation** | Admin: points by mission, active players, flags, "not found" searches as a content backlog. Evaluation tools: knowledge pre/post quiz, SUS for new screens. Privacy, RLS and security updates; QA and load test on the points functions | **done** (the evaluation itself runs with the pilot) |
-| 4 | **35 v2 release** | Feature flags per institution (points opt-in), CHANGELOG 1.1.0 / 2.0.0, release and rollback checklist, staff guide | **next** |
+| 4 | **35 v2 release** | Feature flags per institution (points opt-in), CHANGELOG 1.1.0 / 2.0.0, release and rollback checklist, staff guide | **done** (tag after the smoke test) |
 | 5 | Small follow-ups | Optional: rename "library" to "Disposal guide" in the UI | any time |
 
 Estimated effort: about 1–2 working sessions per phase. Phases 32 → 35 run in order.
@@ -23,6 +23,7 @@ Estimated effort: about 1–2 working sessions per phase. Phases 32 → 35 run i
 
 | What | Why | Where |
 |---|---|---|
+| **Release v2.0.0**: smoke test on production, then tag (checklist in [docs/release.md](docs/release.md)) | Phase 35 exit | terminal + GitHub |
 | **Supabase: turn off "Confirm email" and set minimum password length to 8** | Account sign-up doesn't work until then (D24) | Dashboard → Authentication → Sign In / Providers → Email |
 | **Review library entries** | Removes "Not reviewed yet" entry by entry; hazardous ones need 2 reviewers (D18) | `supabase/content/library/items/*.csv`, [docs/library/README.md](docs/library/README.md) |
 | Verify the 3 sources marked "verify" (DAO 2013-22, lamp JAO, DOH manual) | Clears the 32 warnings | `supabase/content/library/sources.csv` |
@@ -50,7 +51,7 @@ Claude can draft most of the written parts from the repo; the team edits and own
 ## Suggested order
 
 ```
-now      Supabase email setting (team, 2 minutes)  ·  Phase 35 (Claude)
+now      Supabase email setting (team, 2 minutes)  ·  production smoke test, then tag v2.0.0 (team)
 next     knowledge pre-tests at /evaluate before the pilot (team)  ·  library review + campus info (team, ongoing)
 then     pilot (team)
 finally  Phase 26 manuscript + defense (team, Claude drafts)

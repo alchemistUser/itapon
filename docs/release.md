@@ -61,7 +61,39 @@ release adds a section to [CHANGELOG.md](../CHANGELOG.md).
   and let `db.yml` apply it. Never edit production by hand. Supabase's daily backups (free
   tier: 7 days, restore via support/dashboard) are the last resort.
 
-## Monitoring
+## v2.0.0 release (ROADMAP-v2 Phase 35)
+
+v2 adds the library, accounts v2 and points. All database changes are additive migrations
+(new tables, columns with defaults, new functions), so an older web build keeps working
+against the new database. That's what makes the rollback below safe.
+
+**Before tagging `v2.0.0`:**
+- [ ] CI and `db.yml` green on `main` (role matrix 218/218 on the project)
+- [ ] Supabase → Authentication → Email: **Confirm email off**, minimum password length 8 (D24)
+- [ ] `/api/health` on production shows `"version": "2.0.0"`
+- [ ] Smoke test on production, in a private window:
+  - [ ] create an account (throwaway email); scans made as a guest are still in History
+  - [ ] scan a bottle → "Which one is yours?" → open the library entry
+  - [ ] Missions: answer today's question, claim a finished mission, see the points
+  - [ ] Account: export my data (JSON) opens
+  - [ ] `/admin` as an admin: Members (join code), Points, Campus notes, Knowledge test load
+  - [ ] the library works offline after one visit
+- [ ] At least one institution has an admin, members who joined with the code, and points on
+      (Phase 35 exit criterion)
+- [ ] Tag and release: `git tag -a v2.0.0 -m "iTapon 2.0.0" && git push origin v2.0.0`, then
+      create a GitHub release from the tag with the CHANGELOG section
+
+**Rollback (in this order):**
+1. **Turn points off** for everyone. Run in the Supabase SQL editor:
+   `update public.feature_flags set enabled = false where key = 'points';`
+   Claims and leaderboards stop at once. Missions, the library and scanning keep working.
+   Undo with `enabled = true`.
+2. If one institution has a problem, its admin turns **Points and leaderboard for members**
+   off in the Members panel instead.
+3. If the web app itself is broken: Vercel → Instant Rollback to the previous deployment (see
+   Rollback above). The new tables stay and are simply unused.
+4. Database: roll forward only (a new migration), never edit production by hand.
+
 
 | What | Where | Setup |
 |---|---|---|

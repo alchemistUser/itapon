@@ -136,6 +136,27 @@ export type Database = {
           },
         ]
       }
+      feature_flags: {
+        Row: {
+          enabled: boolean
+          key: string
+          note: string | null
+          updated_at: string
+        }
+        Insert: {
+          enabled: boolean
+          key: string
+          note?: string | null
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          key?: string
+          note?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       feedback: {
         Row: {
           consent: boolean
@@ -214,6 +235,7 @@ export type Database = {
           join_code_rotated_at: string | null
           location: string | null
           name: string
+          points_enabled: boolean
         }
         Insert: {
           created_at?: string
@@ -222,6 +244,7 @@ export type Database = {
           join_code_rotated_at?: string | null
           location?: string | null
           name: string
+          points_enabled?: boolean
         }
         Update: {
           created_at?: string
@@ -230,6 +253,7 @@ export type Database = {
           join_code_rotated_at?: string | null
           location?: string | null
           name?: string
+          points_enabled?: boolean
         }
         Relationships: []
       }
@@ -1317,6 +1341,10 @@ export type Database = {
         Args: { p_hidden: boolean; p_user: string }
         Returns: undefined
       }
+      admin_set_points_enabled: {
+        Args: { p_enabled: boolean }
+        Returns: undefined
+      }
       answer_quiz: {
         Args: { p_answer: string; p_key: string; p_slug: string }
         Returns: {
@@ -1456,6 +1484,13 @@ export type Database = {
           level: number
           streak: number
           total: number
+        }[]
+      }
+      points_status: {
+        Args: never
+        Returns: {
+          enabled: boolean
+          reason: string
         }[]
       }
       purge_client_errors: { Args: { p_days?: number }; Returns: number }

@@ -8,6 +8,55 @@ import { Button } from "@/components/ui/button";
 import { Card, Skeleton } from "@/components/ui/primitives";
 import { fetchMembership, removeMember, rotateJoinCode, type InstitutionMember } from "@/lib/admin";
 import { setLeaderboardHidden } from "@/lib/progress";
+import { getSupabase } from "@/lib/supabase/client";
+
+/** Points on/off for this institution (Phase 35 feature flag). */
+function PointsSwitch({ institutionId }: { institutionId: string }) {
+  const [on, setOn] = useState<boolean | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    void getSupabase().then(async (sb) => {
+      const { data } =
+        (await sb
+          ?.from("institutions")
+          .select("points_enabled")
+          .eq("id", institutionId)
+          .maybeSingle()) ?? {};
+      if (live) setOn(data?.points_enabled ?? true);
+    });
+    return () => {
+      live = false;
+    };
+  }, [institutionId]);
+  if (on === null) return null;
+  return (
+    <label className="flex min-h-11 items-center justify-between gap-3 rounded-tile bg-surface p-3 text-sm">
+      <span>
+        <span className="block font-medium text-ink">Points and leaderboard for members</span>
+        <span className="block text-ink-3">
+          {msg ??
+            (on ? "On: members can claim points." : "Paused: missions still work, claims don't.")}
+        </span>
+      </span>
+      <input
+        type="checkbox"
+        className="size-5 accent-brand-button"
+        checked={on}
+        onChange={async (e) => {
+          const next = e.target.checked;
+          const sb = await getSupabase();
+          const { error } = (await sb?.rpc("admin_set_points_enabled", { p_enabled: next })) ?? {};
+          if (error) setMsg(error.message);
+          else {
+            setOn(next);
+            setMsg(null);
+          }
+        }}
+      />
+    </label>
+  );
+}
 
 /** "ABCD2345" → "ABCD-2345" for reading aloud or writing on a board. */
 export const formatCode = (c: string) => `${c.slice(0, 4)}-${c.slice(4)}`;
@@ -40,6 +89,7 @@ export function MembersPanel({ institutionId }: { institutionId: string }) {
   return (
     <Card className="flex flex-col gap-4 p-5">
       <h2 className="text-base font-semibold text-ink">Members</h2>
+      <PointsSwitch institutionId={institutionId} />
       {error ? (
         <p role="alert" className="text-sm text-[#c4282d]">
           Couldn&apos;t load members: {error}

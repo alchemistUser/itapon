@@ -553,5 +553,46 @@ insert into rls_results values
   ('evaluation: users cannot write test rows directly', pg_temp.refused($q$insert into public.knowledge_tests (participant_code, form, score, answers) values ('P99', 'post', 12, '{}')$q$));
 reset role;
 
+-- ---------------------------------------------------------------- feature flags (v2 Phase 35)
+update public.profiles set leaderboard_hidden = false where id = '00000000-0000-4000-8000-00000000a001';
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a001'); -- user 1 (member of A)
+insert into rls_results values
+  ('flags: points on by default', (select enabled from public.points_status())),
+  ('flags: users cannot change flags', pg_temp.refused($q$update public.feature_flags set enabled = false$q$) and pg_temp.refused($q$select public.admin_set_points_enabled(false)$q$));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a005'); -- admin B
+select public.admin_set_points_enabled(false); -- only affects B
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a001');
+insert into rls_results values
+  ('flags: another institution''s switch doesn''t affect A', (select enabled from public.points_status()));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a004'); -- admin A pauses points
+select public.admin_set_points_enabled(false);
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a001');
+insert into rls_results values
+  ('flags: paused institution says why', (select not enabled and reason = 'institution' from public.points_status())),
+  ('flags: paused institution has no leaderboard', (select count(*) = 0 from public.institution_leaderboard('week'))),
+  ('flags: paused institution cannot claim', pg_temp.refused($q$select public.claim_mission('read_entry')$q$));
+reset role;
+
+update public.feature_flags set enabled = false where key = 'points'; -- team kill switch
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a007'); -- user 3, no institution
+insert into rls_results values
+  ('flags: the project switch pauses everyone', (select not enabled and reason = 'paused' from public.points_status()));
+reset role;
+
 select check_name, ok from rls_results order by ok, check_name;
 rollback;

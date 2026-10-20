@@ -56,8 +56,23 @@ export const MISSION_LINKS: Record<string, { href: string; label: string }> = {
 };
 
 /** "Claim" is possible when the server says the mission is complete (pure; tested). */
-export function claimable(m: Mission, guest: boolean): boolean {
-  return !guest && !m.claimed && !m.blocked && m.progress >= m.target;
+export function claimable(m: Mission, guest: boolean, paused = false): boolean {
+  return !guest && !paused && !m.claimed && !m.blocked && m.progress >= m.target;
+}
+
+/** Feature flags (Phase 35): points can be paused for everyone or by an institution. */
+export async function fetchPointsStatus(): Promise<{
+  enabled: boolean;
+  reason: "paused" | "institution" | null;
+}> {
+  const sb = await client();
+  const { data, error } = await sb.rpc("points_status");
+  if (error) throw new Error(friendlyError(error));
+  const r = data?.[0];
+  return {
+    enabled: r?.enabled ?? true,
+    reason: (r?.reason as "paused" | "institution" | null) ?? null,
+  };
 }
 
 async function client() {
