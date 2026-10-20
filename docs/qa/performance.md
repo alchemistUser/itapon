@@ -34,3 +34,23 @@ Heap is Chrome-only (`performance.memory`). Battery needs the Battery API (Chrom
 
 For comparison, Lighthouse page-load results are in ROADMAP Phase 21 (regular 4G: LCP 1.1 s,
 TBT 130–160 ms).
+
+## Points functions under load (v2 Phase 34)
+
+`supabase/tests/points-perf.sql` fills one institution with 300 public adult players (20 scans
+this week, 10 library entries read and a week of points each), times the busiest calls, and
+rolls everything back. Run it with
+`npx supabase db query --linked -o json -f supabase/tests/points-perf.sql`.
+
+| Call | ms per call (2026-10-22, free-tier project) |
+|---|---|
+| `mission_status()` (a member opening Missions) | 5.6 |
+| `my_progress()` | 0.4 |
+| `refresh_badges()` | 1.3 |
+| `institution_leaderboard('week')`, 300 players | 36.9 |
+| `institution_leaderboard('month')`, 300 players | 38.9 |
+| `admin_points_stats()` (7 days) | 21.5 |
+
+**Pass:** every call is well under 100 ms, so a class of 40 claiming at once is a few seconds
+of database time in total. The leaderboard is the heaviest call; if a larger institution
+needs it, cache it per period (it changes only on claims).

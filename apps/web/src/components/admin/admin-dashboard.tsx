@@ -8,6 +8,7 @@ import { DevicesPanel } from "@/components/admin/devices-panel";
 import { LibraryPanel } from "@/components/admin/library-panel";
 import { MembersPanel } from "@/components/admin/members-panel";
 import { PointsPanel } from "@/components/admin/points-panel";
+import { CampusPanel, EvaluationPanel, InsightsPanel } from "@/components/admin/v2-panels";
 import { ReviewQueue } from "@/components/admin/review-queue";
 import { DailyChart, Heatmap, HBarList, TrendLine } from "@/components/admin/charts";
 import { Button, ButtonLink } from "@/components/ui/button";
@@ -485,6 +486,8 @@ export function AdminDashboard() {
         </div>
       </Panel>
 
+      <InsightsPanel from={from} to={to} />
+
       <LibraryPanel from={from} to={to} />
 
       <ReviewQueue rows={filteredFeedback} onChange={reload} />
@@ -494,6 +497,10 @@ export function AdminDashboard() {
       {admin.institution ? <MembersPanel institutionId={admin.institution.id} /> : null}
 
       {admin.institution ? <PointsPanel institutionId={admin.institution.id} /> : null}
+
+      {admin.institution ? <CampusPanel institutionId={admin.institution.id} /> : null}
+
+      <EvaluationPanel />
     </div>
   );
 }

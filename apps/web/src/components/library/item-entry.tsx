@@ -31,6 +31,7 @@ import {
 import type { LibraryIndex, LibraryIndexItem, LibraryItem, PrepStep } from "@/lib/library/types";
 
 import { IdeaActions, ViewLogger } from "./actions";
+import { CampusNotes } from "./campus-notes";
 import { Bi, InLang, LangToggle, ReadEntryButton } from "./lang";
 
 export type LibraryContext = Pick<
@@ -240,6 +241,8 @@ export function ItemEntry({
           </ul>
         </Section>
       ) : null}
+
+      <CampusNotes slug={item.slug} material={item.material} />
 
       {rules.length ? (
         <Section title={<Bi en="Local rules" fil="Lokal na patakaran" />}>

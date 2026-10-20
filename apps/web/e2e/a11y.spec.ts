@@ -18,6 +18,7 @@ const PAGES = [
   "/library/item/aa-battery",
   "/library/dropoff",
   "/missions",
+  "/evaluate",
 ];
 
 for (const path of PAGES) {

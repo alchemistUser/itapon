@@ -277,6 +277,47 @@ export type Database = {
         }
         Relationships: []
       }
+      knowledge_tests: {
+        Row: {
+          answers: Json
+          created_at: string
+          form: string
+          id: number
+          institution_id: string | null
+          participant_code: string
+          score: number
+          total: number
+        }
+        Insert: {
+          answers: Json
+          created_at?: string
+          form: string
+          id?: never
+          institution_id?: string | null
+          participant_code: string
+          score: number
+          total?: number
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          form?: string
+          id?: never
+          institution_id?: string | null
+          participant_code?: string
+          score?: number
+          total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_tests_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       library_destinations: {
         Row: {
           code: string
@@ -671,6 +712,24 @@ export type Database = {
             referencedColumns: ["code"]
           },
         ]
+      }
+      library_search_misses: {
+        Row: {
+          created_at: string
+          id: number
+          query: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          query: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          query?: string
+        }
+        Relationships: []
       }
       library_sources: {
         Row: {
@@ -1186,6 +1245,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_points_stats: {
+        Args: { p_from: string; p_to: string }
+        Returns: Json
+      }
       admin_register_kiosk: {
         Args: {
           p_bin_order?: string[]
@@ -1242,6 +1305,14 @@ export type Database = {
         Returns: undefined
       }
       admin_rotate_join_code: { Args: never; Returns: string }
+      admin_search_misses: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          last_seen: string
+          query: string
+          searches: number
+        }[]
+      }
       admin_set_leaderboard_hidden: {
         Args: { p_hidden: boolean; p_user: string }
         Returns: undefined
@@ -1336,6 +1407,15 @@ export type Database = {
           last_seen: string
         }[]
       }
+      knowledge_test_items: {
+        Args: never
+        Returns: {
+          n: number
+          name_en: string
+          name_fil: string
+          slug: string
+        }[]
+      }
       leave_institution: { Args: never; Returns: undefined }
       library_event_counts: {
         Args: { p_from: string; p_to: string }
@@ -1346,6 +1426,7 @@ export type Database = {
           item_slug: string
         }[]
       }
+      log_search_miss: { Args: { p_query: string }; Returns: undefined }
       mission_status: {
         Args: never
         Returns: {
@@ -1383,6 +1464,10 @@ export type Database = {
         Returns: undefined
       }
       refresh_badges: { Args: never; Returns: string[] }
+      submit_knowledge_test: {
+        Args: { p_answers: Json; p_code: string; p_form: string }
+        Returns: number
+      }
       top_items: {
         Args: { p_from?: string; p_limit?: number; p_to?: string }
         Returns: {

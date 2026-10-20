@@ -507,5 +507,51 @@ insert into rls_results values
   ('leaderboard: the kiosk can show its board but never appears on it', (select count(*) = 0 from public.institution_leaderboard('week') where is_me));
 reset role;
 
+-- ---------------------------------------------------------------- admin analytics & evaluation (v2 Phase 34)
+create temp table right_answers (answers jsonb) on commit drop;
+grant all on right_answers to authenticated;
+insert into right_answers
+select jsonb_object_agg(i.slug, i.bin) from public.knowledge_test_items() k join public.library_items i on i.slug = k.slug;
+
+set local role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', true);
+select public.log_search_miss('rls zzz item');
+select public.log_search_miss('me@example.com');
+insert into rls_results values
+  ('evaluation: anyone sees the 12 test items', (select count(*) = 12 from public.knowledge_test_items())),
+  ('search misses: anon cannot read them', pg_temp.refused($q$select * from public.library_search_misses$q$)),
+  ('search misses: anon gets no backlog', pg_temp.refused($q$select * from public.admin_search_misses(current_date - 1, current_date + 1)$q$)),
+  ('evaluation: anon cannot submit tests', pg_temp.refused($q$select public.submit_knowledge_test('P01', 'pre', '{}'::jsonb)$q$));
+reset role;
+insert into rls_results values
+  ('search misses: personal-looking text is not stored', not exists (select 1 from public.library_search_misses where query like '%@%')
+     and exists (select 1 from public.library_search_misses where query = 'rls zzz item'));
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a004'); -- admin A (facilitator device)
+insert into rls_results values
+  ('evaluation: a test is scored on the server', (select public.submit_knowledge_test('P07', 'pre', (select answers from right_answers)) = 12));
+insert into rls_results values
+  ('evaluation: one test per code and form', pg_temp.refused(format('select public.submit_knowledge_test(%L, %L, %L::jsonb)', 'P07', 'pre', '{}'))),
+  ('evaluation: codes look like P07', pg_temp.refused($q$select public.submit_knowledge_test('Juan', 'pre', '{}'::jsonb)$q$)),
+  ('evaluation: admin A reads own tests', (select count(*) = 1 from public.knowledge_tests where participant_code = 'P07')),
+  ('search misses: admins see the backlog', (select count(*) = 1 from public.admin_search_misses(current_date - 1, current_date + 1) where query = 'rls zzz item')),
+  ('stats: admin A gets institution points stats', (select (s ->> 'players')::int >= 1 and jsonb_array_length(s -> 'by_mission') >= 1 from public.admin_points_stats(current_date - 6, current_date) s));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a005'); -- admin B
+insert into rls_results values
+  ('evaluation: admin B cannot read A tests', (select count(*) = 0 from public.knowledge_tests));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a001'); -- user 1
+insert into rls_results values
+  ('stats: users get no admin stats', pg_temp.refused($q$select public.admin_points_stats(current_date - 6, current_date)$q$)),
+  ('search misses: users get no backlog', (select count(*) = 0 from public.admin_search_misses(current_date - 1, current_date + 1))),
+  ('evaluation: users cannot write test rows directly', pg_temp.refused($q$insert into public.knowledge_tests (participant_code, form, score, answers) values ('P99', 'post', 12, '{}')$q$));
+reset role;
+
 select check_name, ok from rls_results order by ok, check_name;
 rollback;

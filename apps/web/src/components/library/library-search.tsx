@@ -2,10 +2,10 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 
 import { SearchInput } from "@/components/ui/misc";
-import { useLibraryIndex } from "@/lib/library/client";
+import { logSearchMiss, useLibraryIndex } from "@/lib/library/client";
 import { createLibrarySearch } from "@/lib/library/search";
 
 import { ItemList } from "./item-list";
@@ -30,6 +30,13 @@ export function LibrarySearch({
   );
   const [query, setQuery] = useState("");
   const result = useMemo(() => (search ? search(query) : { items: [] }), [search, query]);
+  // A search that still finds nothing after a pause goes to the content backlog (Phase 34).
+  const missing = !!search && query.trim().length >= 3 && !result.items.length;
+  useEffect(() => {
+    if (!missing) return;
+    const t = setTimeout(() => logSearchMiss(query), 1500);
+    return () => clearTimeout(t);
+  }, [missing, query]);
   const listId = useId();
 
   if (index && !index.items.length && fallback) return <>{fallback}</>;

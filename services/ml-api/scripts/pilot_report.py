@@ -8,6 +8,8 @@ pilot/templates/). Any file that is missing is skipped:
     tasks.csv          participant_id, group, task_id, success, time_s, errors
     iso.csv            participant_id, group, FS1, FS2, …, PE1, …  (1–5; prefix = characteristic)
     contamination.csv  phase (before|during), date, bin, items_total, items_wrong
+    knowledge.csv      participant_id, form (pre|post), score, total  (v2 Phase 34: download it
+                       from /admin → Knowledge test)
 
     uv run python -m scripts.pilot_report --data ../../pilot/data --out ../../pilot/data/report.md
 
@@ -181,6 +183,72 @@ def section_iso(rows: list[dict]) -> list[str]:
     return out
 
 
+def wilcoxon_p(diffs: list[float]) -> float:
+    """Two-sided Wilcoxon signed-rank test, normal approximation with tie correction.
+    Zero differences are dropped. Returns nan with fewer than 6 non-zero pairs."""
+    d = [x for x in diffs if x != 0]
+    n = len(d)
+    if n < 6:
+        return float("nan")
+    order = sorted(range(n), key=lambda i: abs(d[i]))
+    ranks = [0.0] * n
+    i = 0
+    ties = 0.0
+    while i < n:
+        j = i
+        while j + 1 < n and abs(d[order[j + 1]]) == abs(d[order[i]]):
+            j += 1
+        r = (i + j) / 2 + 1
+        for k in range(i, j + 1):
+            ranks[order[k]] = r
+        t = j - i + 1
+        ties += t**3 - t
+        i = j + 1
+    w_plus = sum(r for r, x in zip(ranks, d, strict=True) if x > 0)
+    mean = n * (n + 1) / 4
+    var = n * (n + 1) * (2 * n + 1) / 24 - ties / 48
+    if var <= 0:
+        return float("nan")
+    z = (abs(w_plus - mean) - 0.5) / math.sqrt(var)
+    return math.erfc(max(z, 0) / math.sqrt(2))
+
+
+def section_knowledge(rows: list[dict]) -> list[str]:
+    by: dict[str, dict[str, float]] = defaultdict(dict)
+    total = 12
+    for r in rows:
+        by[r["participant_id"]][r["form"]] = float(r["score"])
+        total = int(r.get("total") or total)
+    paired = [(v["pre"], v["post"]) for v in by.values() if "pre" in v and "post" in v]
+    out = ["## Knowledge test (pre/post, 12 items)", ""]
+    if not paired:
+        return out + ["_No participant has both a pre and a post test yet._", ""]
+    pre = [a for a, _ in paired]
+    post = [b for _, b in paired]
+    gains = [b - a for a, b in paired]
+    m1, s1 = mean_sd(pre)
+    m2, s2 = mean_sd(post)
+    mg, sg = mean_sd(gains)
+    p = wilcoxon_p(gains)
+    out += [
+        "| | Mean (SD) | % correct |",
+        "|---|---|---|",
+        f"| Pre | {m1:.2f} ({s1:.2f}) | {m1 / total:.0%} |",
+        f"| Post | {m2:.2f} ({s2:.2f}) | {m2 / total:.0%} |",
+        f"| Gain | {mg:+.2f} ({sg:.2f}) | {mg / total:+.0%} |",
+        "",
+        f"Paired participants: {len(paired)}. Wilcoxon signed-rank p = "
+        + (
+            "n/a (needs at least 6 changed scores)"
+            if math.isnan(p)
+            else ("< 0.001" if p < 0.001 else f"{p:.3f}")
+        )
+        + ".",
+        "",
+    ]
+    return out
+
+
 def section_contamination(rows: list[dict]) -> list[str]:
     agg: dict[tuple[str, str], list[int]] = defaultdict(lambda: [0, 0])
     for r in rows:
@@ -220,6 +288,7 @@ def main() -> int:
         ("tasks.csv", section_tasks),
         ("iso.csv", section_iso),
         ("contamination.csv", section_contamination),
+        ("knowledge.csv", section_knowledge),
     ]:
         rows = read(args.data / name)
         parts += fn(rows) if rows else [f"_{name}: no data yet._", ""]

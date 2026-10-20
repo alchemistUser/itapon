@@ -66,3 +66,24 @@ The script reports the weighted mean per characteristic and overall, interpreted
 
 Code the answers into themes (e.g. accuracy, speed, clarity, accessibility, trust) and count
 mentions per theme for Chapter 4.
+
+## Section D: v2 screens (library and missions), ROADMAP-v2 Phase 34
+
+Run the **same SUS items** (Section A) a second time, right after participants try the v2
+tasks below, and export them as `sus_v2.csv`. Rename it to `sus.csv` in a separate folder to
+score it with `pilot_report.py`, so the two scores are reported separately.
+
+Suggested v2 tasks (time each, as in the task sheet):
+1. Scan a plastic bottle, then use "Which one is yours?" to pick the shampoo bottle.
+2. Find "Where else it can go" for a dead phone battery in the library.
+3. Search the library for "#5" and open an item.
+4. Open Missions, answer today's question and claim a finished mission.
+
+### Knowledge test (pre/post)
+
+The facilitator signs in with the institution's admin account on the test device and opens
+**`/evaluate`**. Each participant takes the **pre** test before the pilot and the **post**
+test after it, under the same participant code (P07). It has 12 "which bin?" questions,
+scored on the server, and no answers are shown. Download `knowledge.csv` from **/admin →
+Knowledge test** into the data folder; `pilot_report.py` adds a pre/post table with a
+Wilcoxon signed-rank test.

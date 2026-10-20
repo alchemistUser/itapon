@@ -31,6 +31,7 @@ import { recordActivity } from "@/lib/points";
 import { usePrefs } from "@/lib/prefs";
 
 import { IdeaActions } from "./actions";
+import { CampusNotes } from "./campus-notes";
 
 /**
  * Post-scan card (Phase 30), under the bin result: "Which one is yours?" when the scanner
@@ -196,6 +197,8 @@ export function LibraryScanCard({
           ) : null}
         </>
       ) : null}
+
+      <CampusNotes slug={chosen.slug} material={chosen.material} compact />
 
       <Link
         href={itemPath(chosen.slug)}

@@ -63,3 +63,21 @@ def test_task_and_contamination_sections():
     ]
     text = "\n".join(section_contamination(cont))
     assert "| Blue | 30.0% (30/100) | 10.0% (10/100) | -20.0 pts |" in text
+
+
+def test_knowledge_section_pairs_pre_and_post():
+    from scripts.pilot_report import section_knowledge, wilcoxon_p
+
+    rows = []
+    for i, (a, b) in enumerate([(5, 9), (6, 10), (7, 9), (4, 8), (8, 11), (6, 9), (7, 7)]):
+        rows += [
+            {"participant_id": f"P{i:02d}", "form": "pre", "score": a, "total": 12},
+            {"participant_id": f"P{i:02d}", "form": "post", "score": b, "total": 12},
+        ]
+    rows.append({"participant_id": "P99", "form": "pre", "score": 3, "total": 12})  # no post
+    text = "\n".join(section_knowledge(rows))
+    assert "Paired participants: 7." in text
+    assert "| Gain | +2.86" in text  # gains 4,4,2,4,3,3,0 → 20/7
+    assert wilcoxon_p([3, 4, 2, 4, 3, 3]) < 0.05
+    assert math.isnan(wilcoxon_p([1, 2, 0]))
+    assert "No participant" in "\n".join(section_knowledge(rows[-1:]))

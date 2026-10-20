@@ -1,7 +1,7 @@
 # iTapon v2 roadmap: disposal library, accounts & points
 
 Planned features on top of v1.0 ([ROADMAP.md](ROADMAP.md), Phases 1–26). **Built so far:**
-Phases 27–33. The short list of what's left is in
+Phases 27–34. The short list of what's left is in
 [ROADMAP-remaining.md](ROADMAP-remaining.md). Phases continue the v1 numbering (27–35) and follow the same Definition of Done
 (ROADMAP §6: tests, RLS checks, accessibility, docs).
 
@@ -296,6 +296,8 @@ content quickly and safely.
 ---
 
 ## Phase 34: Admin, analytics & evaluation for v2
+
+> **Status (2026-10-22): Built; the evaluation itself runs with the pilot (team).** Migration `20261022090000_admin_evaluation.sql`. **Admin** (`/admin`): missions and search insights (active players, points, how many of the previous period's players came back, reversals, players per day, missions claimed); a **"not found" search backlog** (anonymous `log_search_miss`, refusing emails, long numbers and links; top queries plus CSV) to feed Phase 29 Wave 3; **campus notes and drop-off points** editor (draft/publish/delete; members see them as "Your campus" on item pages, the scan card and the drop-off finder); the Members, Points and Disposal library panels from Phases 30–33. **Evaluation:** `/evaluate` runs a pre/post **knowledge test** (12 fixed "which bin?" items, scored on the server, participant codes only, tagged with the facilitator's institution); admins see means and gain and download `knowledge.csv`; `pilot_report.py` adds a pre/post table with a Wilcoxon signed-rank test; `docs/pilot/questionnaires.md` adds SUS for the v2 screens and v2 tasks. Privacy notice, consent form and security checklist updated. **QA:** role matrix **210/210** (17 new checks); load check `supabase/tests/points-perf.sql` with 300 players: 0.4–39 ms per call (`docs/qa/performance.md`); 9 new unit tests and 1 pipeline test; axe on `/evaluate`. **Not done:** E2E of signed-in flows against a backend (CI has none; covered by the matrix); the evaluation results themselves (pilot).
 
 **Goal:** Institutions can run it, and we can show whether it works.
 

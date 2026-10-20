@@ -86,6 +86,11 @@ export default function PrivacyPage() {
             marked, your quiz answers and the points you earned, so the server can check your
             missions. Only you (and, for points, your institution&apos;s admins) can see them.
           </li>
+          <li>
+            <strong>Library searches that find nothing</strong>, without any account or device id,
+            so the team knows which items to add. Text that looks like an email, phone number or
+            link is not stored.
+          </li>
         </ul>
         <p>
           We don&apos;t collect your location, contacts or advertising ids, and there are no ads or

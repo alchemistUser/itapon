@@ -71,3 +71,21 @@ optional Supabase JWT check first.
 2. Upgrade Node to 22 LTS locally, then CI + Vitest 4 (clears the dev advisories).
 3. Name a privacy contact (team email) for the notice. It points to GitHub for now.
 4. Sign-off above.
+
+## v2 additions (ROADMAP-v2 Phases 28–34)
+
+- **Library** (28–30): global content is read-only for clients; usage counts are insert-only
+  with no ids (`library_events`). Unreviewed entries are shown labelled (D25).
+- **Accounts** (31): birth year in an owner-only table; consents insert-only; join codes
+  random (pgcrypto) and rotatable, with join attempts rate-limited; `delete_my_account()`;
+  sign out everywhere. Email + password with no emails sent (D24).
+- **Points** (32–33): clients never write points; awards only through `claim_mission()`
+  (unique per mission and period, caps, guests refused); quiz answers and activity through
+  checked functions; burst flags; admin reversals keep the ledger traceable. Leaderboards show
+  handle, avatar and points of public adult members only, to their own institution.
+- **Admin and evaluation** (34): the "not found" search log refuses emails, long numbers and
+  links and stores no identity; knowledge tests are stored under participant codes and readable
+  by that institution's admins only; campus notes and drop-off points can only be written by
+  the institution's admins.
+- **Role matrix:** `supabase/tests/rls-roles.sql`, 210 checks (102 at v1.1).
+- **Load:** `supabase/tests/points-perf.sql` (see docs/qa/performance.md).

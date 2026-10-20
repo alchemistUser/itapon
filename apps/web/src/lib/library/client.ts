@@ -93,3 +93,43 @@ export function logLibraryEvent(slug: string, event: LibraryEvent, source: Libra
     .then((sb) => sb?.from("library_events").insert({ item_slug: slug, event, source }))
     .catch(() => {});
 }
+
+const missed = new Set<string>();
+
+/**
+ * "Not found" loop (Phase 34): a search with no result is sent, without any id, so the team
+ * knows what to write next. The server drops emails, long numbers and links. Once per query
+ * and page load.
+ */
+export function logSearchMiss(query: string) {
+  const q = query.trim().toLowerCase();
+  if (!supabaseConfigured || q.length < 3 || missed.has(q) || missed.size > 50) return;
+  if (typeof navigator !== "undefined" && navigator.webdriver) return; // automated tests
+  missed.add(q);
+  void getSupabase()
+    .then((sb) => sb?.rpc("log_search_miss", { p_query: q }))
+    .catch(() => {});
+}
+
+export interface CampusNoteView {
+  noteEn: string;
+  noteFil: string | null;
+}
+
+/**
+ * The member's own institution's published notes for an item, its subgroup or its group
+ * (Phase 34). RLS returns only the caller's institution; nothing for guests without one.
+ */
+export async function fetchCampusNotes(slug: string, material: string): Promise<CampusNoteView[]> {
+  if (!supabaseConfigured) return [];
+  const sb = await getSupabase();
+  if (!sb || !(await sb.auth.getSession()).data.session) return [];
+  const group = groupOf(material);
+  const { data } = await sb
+    .from("library_local_rules")
+    .select("note_en, note_fil, item_slug, material_code")
+    .not("institution_id", "is", null)
+    .eq("status", "published")
+    .or(`item_slug.eq.${slug},material_code.in.(${material},${group})`);
+  return (data ?? []).map((r) => ({ noteEn: r.note_en, noteFil: r.note_fil }));
+}
