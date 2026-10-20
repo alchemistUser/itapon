@@ -19,7 +19,7 @@ account**.
 
 Scanning and the Bin Guide stay available **without** an account and without any of the new
 fields. Nothing in Phase 31 is shown to other users yet: public handles only matter once
-leaderboards exist (Phase 34).
+leaderboards exist (Phase 33).
 
 ## 2. Data inventory (new or changed)
 
@@ -97,7 +97,7 @@ and not under our control; say so in the notice.
 - RLS: profile rows stay readable only by the owner and that institution's admins (as today);
   admins see handle, avatar and membership columns. **Birth year lives in a separate
   owner-only table** (`profile_private`), so no admin policy reaches it; consents are owner-only
-  too. Phase 31 exposes **nothing** publicly. Leaderboards (Phase 34) will add a view that
+  too. Phase 31 exposes **nothing** publicly. Leaderboards (Phase 33) will add a view that
   returns only `handle` and `avatar` of public adult profiles.
 - Columns users can't write themselves: `role`, `institution_id` (only via join/leave
   functions) and `handle_changed_at`. A trigger sets them.
