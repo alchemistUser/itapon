@@ -6,7 +6,7 @@
 **Inputs:** Concept Proposal, Laboratory Activity 5.1 (UI/UX), Figma prototype (mobile, tablet/kiosk, desktop web, "What to do next" recommendation flow)
 **Status:** Final, v1.0 (October 17, 2026)
 **License:** Open source, AGPL-3.0
-**Next:** planned v2 features (post-scan suggestion library, accounts v2, points) are in [ROADMAP-v2.md](ROADMAP-v2.md) (Phases 27–34, not built yet).
+**Next:** planned v2 features (material-based disposal & suggestion library, accounts v2, points) are in [ROADMAP-v2.md](ROADMAP-v2.md) (Phases 27–35, not built yet).
 
 ---
 
