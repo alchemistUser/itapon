@@ -60,3 +60,54 @@ That's exactly what the missions pay, so the caps are a second safety net.
 | `point_flags` | reason (e.g. scan burst), day | the owner's institution admins |
 
 Deleting the account deletes all of it (cascade). These are listed in the privacy notice.
+
+## Levels, streaks, badges and leaderboards (Phase 33)
+
+**Levels** come from lifetime points (reversals count). The table is the same in the server
+(`private.level_for`) and the app (`src/lib/progress.ts`).
+
+| Level | Name | From |
+|---|---|---|
+| 1 | Seedling | 0 |
+| 2 | Sprout | 50 |
+| 3 | Sapling | 150 |
+| 4 | Sorter | 300 |
+| 5 | Recycler | 500 |
+| 6 | Composter | 800 |
+| 7 | Eco Guide | 1,200 |
+| 8 | Eco Champion | 1,700 |
+| 9 | Zero-Waste Hero | 2,300 |
+| 10 | Earth Keeper | 3,000 |
+
+**Streak:** the number of days in a row with at least one claimed mission. **One grace day**
+per streak: missing a single day doesn't break it (the missed day doesn't count). The streak
+is still alive if your last active day was yesterday, or the day before using the grace day.
+
+**Badges** are checked on the server (`refresh_badges()`) and kept once earned:
+
+| Badge | How |
+|---|---|
+| First points | Claim any mission |
+| 3-day streak / 7-day streak | Reach the streak |
+| Bin master | Claim "Scan items for all 4 bins" |
+| Full week | Claim all 3 weekly missions in one week |
+| Quiz whiz | Answer 10 daily questions correctly |
+| Plastics expert | Pass the Plastics material quiz |
+| Hazard handler | Read entries on batteries, lighting and household hazardous waste |
+| All 16 materials | Read an entry in every material group |
+| Idea doer | Mark 10 different ideas "Done it" |
+| Recycler | Reach level 5 |
+
+**Leaderboards** are per institution (weekly and monthly: top 10, plus your own rank). You
+appear only if **all** of these are true:
+- your profile is public (opt-in; only adults can turn it on, D22),
+- you have a handle,
+- you're a member of the institution,
+- your account is at least 3 days old (against throwaway accounts),
+- an admin hasn't hidden you.
+
+Only the handle, avatar and points are shown, to members of the same institution and on its
+kiosk's idle screen. Admins can hide abusive handles.
+
+**Rewards:** badges and levels only (D26). Institution-run prizes aren't built. An institution
+that wants them can run them outside the app, using the leaderboard.

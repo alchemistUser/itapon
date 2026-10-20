@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      badges: {
+        Row: {
+          code: string
+          how_en: string
+          how_fil: string
+          sort_order: number
+          title_en: string
+          title_fil: string
+        }
+        Insert: {
+          code: string
+          how_en: string
+          how_fil: string
+          sort_order?: number
+          title_en: string
+          title_fil: string
+        }
+        Update: {
+          code?: string
+          how_en?: string
+          how_fil?: string
+          sort_order?: number
+          title_en?: string
+          title_fil?: string
+        }
+        Relationships: []
+      }
       client_errors: {
         Row: {
           browser: string | null
@@ -844,6 +871,7 @@ export type Database = {
           institution_id: string | null
           institution_joined_at: string | null
           is_public: boolean
+          leaderboard_hidden: boolean
           prefs: Json
           role: Database["public"]["Enums"]["app_role"]
           updated_at: string
@@ -858,6 +886,7 @@ export type Database = {
           institution_id?: string | null
           institution_joined_at?: string | null
           is_public?: boolean
+          leaderboard_hidden?: boolean
           prefs?: Json
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
@@ -872,6 +901,7 @@ export type Database = {
           institution_id?: string | null
           institution_joined_at?: string | null
           is_public?: boolean
+          leaderboard_hidden?: boolean
           prefs?: Json
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
@@ -1024,6 +1054,32 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "institutions"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_badges: {
+        Row: {
+          badge_code: string
+          earned_at: string
+          user_id: string
+        }
+        Insert: {
+          badge_code: string
+          earned_at?: string
+          user_id: string
+        }
+        Update: {
+          badge_code?: string
+          earned_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_code_fkey"
+            columns: ["badge_code"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["code"]
           },
         ]
       }
@@ -1186,6 +1242,10 @@ export type Database = {
         Returns: undefined
       }
       admin_rotate_join_code: { Args: never; Returns: string }
+      admin_set_leaderboard_hidden: {
+        Args: { p_hidden: boolean; p_user: string }
+        Returns: undefined
+      }
       answer_quiz: {
         Args: { p_answer: string; p_key: string; p_slug: string }
         Returns: {
@@ -1242,6 +1302,16 @@ export type Database = {
         }[]
       }
       handle_available: { Args: { p_handle: string }; Returns: boolean }
+      institution_leaderboard: {
+        Args: { p_period: string }
+        Returns: {
+          avatar: string
+          handle: string
+          is_me: boolean
+          points: number
+          rank: number
+        }[]
+      }
       join_institution: {
         Args: { p_code: string }
         Returns: {
@@ -1299,11 +1369,20 @@ export type Database = {
           total: number
         }[]
       }
+      my_progress: {
+        Args: never
+        Returns: {
+          level: number
+          streak: number
+          total: number
+        }[]
+      }
       purge_client_errors: { Args: { p_days?: number }; Returns: number }
       record_activity: {
         Args: { p_detail?: string; p_kind: string; p_slug: string }
         Returns: undefined
       }
+      refresh_badges: { Args: never; Returns: string[] }
       top_items: {
         Args: { p_from?: string; p_limit?: number; p_to?: string }
         Returns: {

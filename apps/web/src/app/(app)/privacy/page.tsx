@@ -67,7 +67,9 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>Optional profile:</strong> a handle (not your real name), a preset avatar and
-            whether to show them publicly (off by default). Nothing is shown publicly yet.
+            whether to show them publicly (off by default; adults only). If you turn it on, your
+            handle, avatar and points appear on your school or office&apos;s leaderboard, seen by
+            its members and on its kiosk screen. Your badges, level and streak stay private.
           </li>
           <li>
             <strong>Birth year</strong> (not your birthday), only to keep accounts of people under

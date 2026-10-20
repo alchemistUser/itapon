@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 "use client";
 
-import { Copy, RefreshCw, UserMinus } from "lucide-react";
+import { Copy, Eye, EyeOff, RefreshCw, UserMinus } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, Skeleton } from "@/components/ui/primitives";
 import { fetchMembership, removeMember, rotateJoinCode, type InstitutionMember } from "@/lib/admin";
+import { setLeaderboardHidden } from "@/lib/progress";
 
 /** "ABCD2345" → "ABCD-2345" for reading aloud or writing on a board. */
 export const formatCode = (c: string) => `${c.slice(0, 4)}-${c.slice(4)}`;
@@ -133,13 +134,39 @@ export function MembersPanel({ institutionId }: { institutionId: string }) {
                       </Button>
                     </span>
                   ) : (
-                    <Button
-                      variant="outline"
-                      aria-label={`Remove ${m.label}`}
-                      onClick={() => setRemoving(m)}
-                    >
-                      <UserMinus aria-hidden className="size-4" />
-                    </Button>
+                    <span className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        aria-label={`${m.hidden ? "Show" : "Hide"} ${m.label} on the leaderboard`}
+                        aria-pressed={m.hidden}
+                        onClick={async () => {
+                          try {
+                            await setLeaderboardHidden(m.id, !m.hidden);
+                            setNote(
+                              m.hidden
+                                ? `${m.label} can appear on the leaderboard again.`
+                                : `${m.label} is hidden from the leaderboard.`,
+                            );
+                          } catch (e) {
+                            setNote((e as Error).message);
+                          }
+                          reload();
+                        }}
+                      >
+                        {m.hidden ? (
+                          <EyeOff aria-hidden className="size-4" />
+                        ) : (
+                          <Eye aria-hidden className="size-4" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        aria-label={`Remove ${m.label}`}
+                        onClick={() => setRemoving(m)}
+                      >
+                        <UserMinus aria-hidden className="size-4" />
+                      </Button>
+                    </span>
                   )}
                 </li>
               ))}

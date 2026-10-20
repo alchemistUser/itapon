@@ -34,6 +34,8 @@ import { usePrefs } from "@/lib/prefs";
 import { useAuth } from "@/lib/supabase/auth";
 import { ensureUserId, getSupabase, supabaseConfigured } from "@/lib/supabase/client";
 
+import { BadgesCard, LeaderboardCard, LevelCard } from "./progress-sections";
+
 function MissionCard({
   m,
   guest,
@@ -246,6 +248,11 @@ export function MissionsView() {
   const [noSession, setNoSession] = useState(false);
   const reload = useCallback(() => setVersion((v) => v + 1), []);
   const guest = auth.isAnonymous;
+  const onFreshBadges = useCallback(
+    (titles: string[]) =>
+      setNote(`New badge${titles.length > 1 ? "s" : ""}: ${titles.join(", ")}!`),
+    [],
+  );
 
   useEffect(() => {
     if (!supabaseConfigured) return;
@@ -362,6 +369,8 @@ export function MissionsView() {
         ))}
       </div>
 
+      <LevelCard version={version} fil={fil} />
+
       {guest ? (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-card bg-brand-tint p-4 text-sm text-ink">
           <span className="flex items-center gap-2">
@@ -441,6 +450,10 @@ export function MissionsView() {
       ) : null}
 
       <GroupQuiz fil={fil} onDone={reload} />
+
+      <BadgesCard version={version} fil={fil} onFresh={onFreshBadges} />
+
+      <LeaderboardCard version={version} />
 
       <Card className="flex flex-col gap-3 p-5">
         <h2 className="text-base font-semibold text-ink">Points history</h2>

@@ -1,7 +1,7 @@
 # iTapon v2 roadmap: disposal library, accounts & points
 
 Planned features on top of v1.0 ([ROADMAP.md](ROADMAP.md), Phases 1–26). **Built so far:**
-Phases 27–32. The short list of what's left is in
+Phases 27–33. The short list of what's left is in
 [ROADMAP-remaining.md](ROADMAP-remaining.md). Phases continue the v1 numbering (27–35) and follow the same Definition of Done
 (ROADMAP §6: tests, RLS checks, accessibility, docs).
 
@@ -274,6 +274,8 @@ content quickly and safely.
 ---
 
 ## Phase 33: Badges, levels, leaderboards & rewards
+
+> **Status (2026-10-21): Built (rewards = badges and levels, D26).** Migrations `20261021210000_progress_leaderboards.sql` (+ a one-line fix in `…210100`). **Levels** 1–10 from lifetime points (Seedling → Earth Keeper; the same table on the server and in the app). **Streak** = days in a row with a claimed mission, one grace day. **11 badges** checked on the server by `refresh_badges()` and kept once: first points, 3- and 7-day streaks, bin master, full week, quiz whiz, plastics expert, hazard handler, all 16 materials, idea doer, level 5. Guests keep none. **Leaderboards** (`institution_leaderboard('week'|'month')`): top 10 + your own row, handle, avatar and points only. You appear only if your profile is public (adults only), you have a handle, you're a member, your account is at least 3 days old and no admin has hidden you; kiosks never appear. Admins hide or show members from the Members panel. The **kiosk** idle screen shows the top 5 this week. App: the Missions tab adds a level and streak card, badges (earned and locked) and the leaderboard; a toast for new badges. Privacy notice and review updated. Role matrix **193/193** (18 new checks); unit tests for the level table. **Not built:** institution-run prizes (an institution can run them outside the app, D26).
 
 **Goal:** Motivation that lasts, without shaming anyone.
 

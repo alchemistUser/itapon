@@ -5,15 +5,15 @@ As of **21 October 2026**. Detailed plans live in [ROADMAP.md](ROADMAP.md) (v1, 
 
 **Done:** v1 (Phases 1–24), the pilot kit (25), the v2 library (27–30: 175 entries live and
 labelled "Not reviewed yet", D25), accounts v2 (31: email + password, no emails, D24) and
-points from daily and weekly missions (32, D26).
+points from daily and weekly missions (32, D26), and levels, badges, streaks and leaderboards (33).
 
 ## 1. Building (Claude can do these)
 
 | # | Phase | What | Status |
 |---|---|---|---|
 | 1 | **32 Points engine** | Daily and weekly missions, a server-side ledger, quizzes, anti-cheat, points history, admin reversal (D26, [docs/points.md](docs/points.md)) | **done** |
-| 2 | **33 Badges, levels, leaderboards** | Levels from lifetime points; badges (e.g. "Plastics expert", "7-day streak"); streaks with a grace day; opt-in weekly leaderboards per institution (adults only, handle and avatar only). Prizes only if an institution runs them | next |
-| 3 | **34 Admin and evaluation** | Admin: points by mission, active players, flags, "not found" searches as a content backlog. Evaluation tools: knowledge pre/post quiz, SUS for new screens. Privacy, RLS and security updates; QA and load test on the points functions | after 33 |
+| 2 | **33 Badges, levels, leaderboards** | Levels from lifetime points; badges (e.g. "Plastics expert", "7-day streak"); streaks with a grace day; opt-in weekly leaderboards per institution (adults only, handle and avatar only). Prizes only if an institution runs them | **done** |
+| 3 | **34 Admin and evaluation** | Admin: points by mission, active players, flags, "not found" searches as a content backlog. Evaluation tools: knowledge pre/post quiz, SUS for new screens. Privacy, RLS and security updates; QA and load test on the points functions | next |
 | 4 | **35 v2 release** | Feature flags per institution (points opt-in), CHANGELOG 1.1.0 / 2.0.0, release and rollback checklist, staff guide | last |
 | 5 | Small follow-ups | Admin editor for campus notes and drop-off points, and campus notes on item pages (proposed as its own session) · optional: rename "library" to "Disposal guide" in the UI | any time |
 
@@ -50,8 +50,8 @@ Claude can draft most of the written parts from the repo; the team edits and own
 ## Suggested order
 
 ```
-now      Supabase email setting (team, 2 minutes)  ·  Phase 33 (Claude)
-next     Phase 34 (Claude)  ·  library review + campus info (team, ongoing)
-then     pilot (team)  ·  Phase 35 release (Claude)
+now      Supabase email setting (team, 2 minutes)  ·  Phase 34 (Claude)
+next     Phase 35 (Claude)  ·  library review + campus info (team, ongoing)
+then     pilot (team)
 finally  Phase 26 manuscript + defense (team, Claude drafts)
 ```

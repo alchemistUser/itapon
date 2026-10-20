@@ -12,6 +12,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { BinTile } from "@/components/bins/bins";
 import { KioskLibraryLine, useKioskLines, type KioskLine } from "@/components/library/kiosk-line";
+import { LeaderboardList } from "@/components/missions/progress-sections";
 import { ResultPanel, type ResultView } from "@/components/scan/scan-views";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/misc";
@@ -33,6 +34,7 @@ import { getPrefs } from "@/lib/prefs";
 import { logScan } from "@/lib/scan/log-scan";
 import { useCamera } from "@/lib/scan/use-camera";
 import { useScanLoop, type ScanFrame } from "@/lib/scan/use-scan-loop";
+import { fetchLeaderboard, type BoardRow } from "@/lib/progress";
 import { partsFor, speak, stopSpeaking } from "@/lib/speech";
 
 const RESULT_MS = 6000;
@@ -62,6 +64,7 @@ export function KioskScreen() {
   const kioskLine = useKioskLines(); // Phase 30: "where else / idea" after the bin
   const [lockedAt, setLockedAt] = useState(0);
   const [idle, setIdle] = useState(false);
+  const [board, setBoard] = useState<BoardRow[]>([]); // Phase 33: idle "Top recyclers" slide
   const [now, setNow] = useState(0);
   const lastActivity = useRef(0);
   // Duplicate guard: after a result, the same item must leave the frame before it can
@@ -71,6 +74,18 @@ export function KioskScreen() {
   const scanStart = useRef(0);
 
   useContentSource();
+
+  // Top recyclers this week (opt-in adults of this kiosk's institution), refreshed when idle.
+  useEffect(() => {
+    if (!idle || !supabaseConfigured) return;
+    let live = true;
+    fetchLeaderboard("week")
+      .then((rows) => live && setBoard(rows.filter((r) => !r.isMe && r.rank <= 5)))
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [idle]);
   const { device, refresh: refreshDevice } = useKioskDevice();
   const online = useOnline();
   const det = useDetectorState();
@@ -243,6 +258,12 @@ export function KioskScreen() {
             <Hand aria-hidden className="size-16 animate-bounce" />
             <p className="text-3xl font-bold">Hold your trash up to the camera</p>
             <p className="text-lg text-white/85">iTapon will tell you which bin it goes in.</p>
+            {board.length ? (
+              <div className="mt-4 w-full max-w-sm rounded-card bg-white p-4 text-left text-ink">
+                <p className="mb-1 text-sm font-semibold">Top recyclers this week</p>
+                <LeaderboardList rows={board} compact />
+              </div>
+            ) : null}
           </div>
         ) : null}
 

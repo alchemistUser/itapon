@@ -452,5 +452,60 @@ insert into rls_results values
   ('points: reversal shows in the balance', (select total = 20 from public.my_points()));
 reset role;
 
+-- ---------------------------------------------------------------- levels, badges, leaderboards (v2 Phase 33)
+-- user 1: public adult member of institution A with 20 points this week; an old enough account.
+update auth.users set created_at = now() - interval '10 days' where id = '00000000-0000-4000-8000-00000000a001';
+-- user 4: also public, adult, in A, with points, but the account is brand new (3-day rule)
+insert into auth.users (id, instance_id, aud, role, email, is_anonymous, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+values ('00000000-0000-4000-8000-00000000a009', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'rls-new@test.invalid', false, '{}', '{}', now(), now());
+insert into public.profile_private (user_id, birth_year) values ('00000000-0000-4000-8000-00000000a009', 1990);
+update public.profiles set handle = 'rls_newbie', is_public = true, institution_id = '00000000-0000-4000-8000-0000000000b1'
+  where id = '00000000-0000-4000-8000-00000000a009';
+insert into public.point_events (user_id, kind, mission_code, period_key, points)
+  values ('00000000-0000-4000-8000-00000000a009', 'award', 'read_entry', 'rls-period', 999);
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a001'); -- user 1
+insert into rls_results values
+  ('progress: level and streak from the ledger', (select total = 20 and level = 1 and streak = 1 from public.my_progress())),
+  ('progress: first badge is earned', (select array_agg(b) = '{first_points}' from public.refresh_badges() b));
+insert into rls_results values
+  ('progress: a badge is kept once', (select count(*) = 0 from public.refresh_badges())),
+  ('progress: users cannot grant themselves badges', pg_temp.refused($q$insert into public.user_badges (user_id, badge_code) values ('00000000-0000-4000-8000-00000000a001', 'streak_7')$q$)),
+  ('progress: users cannot unhide themselves', pg_temp.refused($q$update public.profiles set leaderboard_hidden = false where id = '00000000-0000-4000-8000-00000000a001'$q$)),
+  ('leaderboard: a public adult member appears with their week points', (select count(*) = 1 from public.institution_leaderboard('week') where is_me and handle = 'rls_green' and points = 20 and rank = 1)),
+  ('leaderboard: accounts under 3 days old are left out', (select count(*) = 0 from public.institution_leaderboard('month') where handle = 'rls_newbie')),
+  ('leaderboard: only week or month', pg_temp.refused($q$select * from public.institution_leaderboard('forever')$q$));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a008'); -- guest
+insert into rls_results values
+  ('progress: guests keep no badges', (select count(*) = 0 from public.refresh_badges()) and (select count(*) = 0 from public.user_badges)),
+  ('leaderboard: no institution, no board', (select count(*) = 0 from public.institution_leaderboard('week')));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a005'); -- admin B
+insert into rls_results values
+  ('leaderboard: other institutions never see the board', (select count(*) = 0 from public.institution_leaderboard('week') where handle = 'rls_green')),
+  ('leaderboard: admin B cannot hide institution A members', pg_temp.refused($q$select public.admin_set_leaderboard_hidden('00000000-0000-4000-8000-00000000a001', true)$q$));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a004'); -- admin A
+insert into rls_results values
+  ('leaderboard: admin A sees the member', (select count(*) = 1 from public.institution_leaderboard('week') where handle = 'rls_green')),
+  ('leaderboard: admin A hides an abusive handle', not pg_temp.refused($q$select public.admin_set_leaderboard_hidden('00000000-0000-4000-8000-00000000a001', true)$q$));
+insert into rls_results values
+  ('leaderboard: hidden members are left out', (select count(*) = 0 from public.institution_leaderboard('week') where handle = 'rls_green'));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a003'); -- kiosk of institution A (idle slide)
+insert into rls_results values
+  ('leaderboard: the kiosk can show its board but never appears on it', (select count(*) = 0 from public.institution_leaderboard('week') where is_me));
+reset role;
+
 select check_name, ok from rls_results order by ok, check_name;
 rollback;

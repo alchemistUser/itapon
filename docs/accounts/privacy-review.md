@@ -18,8 +18,9 @@ first scan, and an email can be attached to keep history. Phase 31 adds an optio
 account**.
 
 Scanning and the Bin Guide stay available **without** an account and without any of the new
-fields. Nothing in Phase 31 is shown to other users yet: public handles only matter once
-leaderboards exist (Phase 33).
+fields. **Since Phase 33**, a public profile (opt-in, adults only) shows its handle, avatar and
+period points on the leaderboard of its own institution, to that institution's members and on
+its kiosk's idle screen. Nothing else is shown to other users.
 
 ## 2. Data inventory (new or changed)
 
@@ -102,8 +103,9 @@ and not under our control; say so in the notice.
 - RLS: profile rows stay readable only by the owner and that institution's admins (as today);
   admins see handle, avatar and membership columns. **Birth year lives in a separate
   owner-only table** (`profile_private`), so no admin policy reaches it; consents are owner-only
-  too. Phase 31 exposes **nothing** publicly. Leaderboards (Phase 33) will add a view that
-  returns only `handle` and `avatar` of public adult profiles.
+  too. The only thing shown to other users is the Phase 33 leaderboard
+  (`institution_leaderboard()`): handle, avatar and points of public, adult members of the
+  caller's own institution whose account is at least 3 days old and not hidden by an admin.
 - Columns users can't write themselves: `role`, `institution_id` (only via join/leave
   functions) and `handle_changed_at`. A trigger sets them.
 - Handle rules on the server: format, reserved words (admin, itapon, tip, support, …) and a

@@ -288,6 +288,8 @@ export interface InstitutionMember {
   id: string;
   label: string; // handle or display name; never the email (privacy review §5)
   joinedAt: string | null;
+  /** Hidden from the leaderboard by an admin (Phase 33). */
+  hidden: boolean;
 }
 
 /** Join code + members of the admin's institution (Phase 31; RLS: own institution only). */
@@ -304,7 +306,7 @@ export async function fetchMembership(
       .maybeSingle(),
     sb
       .from("profiles")
-      .select("id, handle, display_name, institution_joined_at")
+      .select("id, handle, display_name, institution_joined_at, leaderboard_hidden")
       .eq("institution_id", institutionId)
       .eq("role", "user")
       .order("institution_joined_at", { ascending: false }),
@@ -318,6 +320,7 @@ export async function fetchMembership(
       id: p.id,
       label: p.handle ? `@${p.handle}` : p.display_name || "Guest (no profile)",
       joinedAt: p.institution_joined_at,
+      hidden: p.leaderboard_hidden,
     })),
   };
 }
