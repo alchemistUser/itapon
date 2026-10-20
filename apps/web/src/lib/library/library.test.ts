@@ -37,10 +37,7 @@ const MATERIALS = [
   mat("GLA-HEAT", "Heat-resistant and drinking glass", "GLA"),
 ];
 
-const item = (
-  slug: string,
-  over: Partial<LibraryItem> = {},
-): LibraryItem => ({
+const item = (slug: string, over: Partial<LibraryItem> = {}): LibraryItem => ({
   slug,
   name_en: slug,
   name_fil: slug,
@@ -212,9 +209,33 @@ describe("entry helpers", () => {
 
   it("finds local rules for the item, its subgroup and its group", () => {
     const rules = [
-      { lgu: "QC", item: "plastic-bottle", material: null, note_en: "a", note_fil: null, sources: [], draft: false },
-      { lgu: "QC", item: null, material: "PLA", note_en: "b", note_fil: null, sources: [], draft: false },
-      { lgu: "QC", item: null, material: "GLA", note_en: "c", note_fil: null, sources: [], draft: false },
+      {
+        lgu: "QC",
+        item: "plastic-bottle",
+        material: null,
+        note_en: "a",
+        note_fil: null,
+        sources: [],
+        draft: false,
+      },
+      {
+        lgu: "QC",
+        item: null,
+        material: "PLA",
+        note_en: "b",
+        note_fil: null,
+        sources: [],
+        draft: false,
+      },
+      {
+        lgu: "QC",
+        item: null,
+        material: "GLA",
+        note_en: "c",
+        note_fil: null,
+        sources: [],
+        draft: false,
+      },
     ];
     expect(rulesFor(rules, ITEMS[0]).map((r) => r.note_en)).toEqual(["a", "b"]);
   });

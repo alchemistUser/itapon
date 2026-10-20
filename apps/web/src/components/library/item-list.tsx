@@ -18,13 +18,18 @@ export function ItemList({ items, className }: { items: LibraryIndexItem[]; clas
         const bin = BINS[item.bin];
         return (
           <li key={item.slug} className="border-b border-line last:border-0">
-            <Link href={itemPath(item.slug)} className="flex items-center gap-3 p-3 hover:bg-surface">
+            <Link
+              href={itemPath(item.slug)}
+              className="flex items-center gap-3 p-3 hover:bg-surface"
+            >
               <BinTile category={item.bin} size="sm" />
               <span className="min-w-0 flex-1">
                 <span className="block font-semibold text-ink">
                   <Bi en={item.name_en} fil={item.name_fil} />
                   {item.draft ? (
-                    <span className="ml-2 align-middle text-[11px] font-medium text-ink-3">draft</span>
+                    <span className="ml-2 align-middle text-[11px] font-medium text-ink-3">
+                      draft
+                    </span>
                   ) : null}
                 </span>
                 <span className={cn("block text-xs font-semibold", bin.text)}>

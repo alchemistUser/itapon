@@ -15,7 +15,9 @@ export function generateStaticParams() {
   return slugs.length ? slugs : [{ slug: NONE }];
 }
 
-export async function generateMetadata(props: PageProps<"/library/item/[slug]">): Promise<Metadata> {
+export async function generateMetadata(
+  props: PageProps<"/library/item/[slug]">,
+): Promise<Metadata> {
   const item = getLibraryItem((await props.params).slug);
   if (!item) return { title: "Disposal library" };
   return {

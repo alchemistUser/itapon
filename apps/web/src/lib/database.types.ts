@@ -47,6 +47,30 @@ export type Database = {
         }
         Relationships: []
       }
+      consents: {
+        Row: {
+          accepted_at: string
+          id: number
+          kind: string
+          user_id: string
+          version: string
+        }
+        Insert: {
+          accepted_at?: string
+          id?: never
+          kind: string
+          user_id?: string
+          version: string
+        }
+        Update: {
+          accepted_at?: string
+          id?: never
+          kind?: string
+          user_id?: string
+          version?: string
+        }
+        Relationships: []
+      }
       devices: {
         Row: {
           bin_order: string[]
@@ -159,18 +183,24 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          join_code: string | null
+          join_code_rotated_at: string | null
           location: string | null
           name: string
         }
         Insert: {
           created_at?: string
           id?: string
+          join_code?: string | null
+          join_code_rotated_at?: string | null
           location?: string | null
           name: string
         }
         Update: {
           created_at?: string
           id?: string
+          join_code?: string | null
+          join_code_rotated_at?: string | null
           location?: string | null
           name?: string
         }
@@ -639,30 +669,66 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_private: {
+        Row: {
+          birth_year: number | null
+          birth_year_edits: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          birth_year?: number | null
+          birth_year_edits?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          birth_year?: number | null
+          birth_year_edits?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          avatar: string | null
           created_at: string
           display_name: string | null
+          handle: string | null
+          handle_changed_at: string | null
           id: string
           institution_id: string | null
+          institution_joined_at: string | null
+          is_public: boolean
           prefs: Json
           role: Database["public"]["Enums"]["app_role"]
           updated_at: string
         }
         Insert: {
+          avatar?: string | null
           created_at?: string
           display_name?: string | null
+          handle?: string | null
+          handle_changed_at?: string | null
           id: string
           institution_id?: string | null
+          institution_joined_at?: string | null
+          is_public?: boolean
           prefs?: Json
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
         }
         Update: {
+          avatar?: string | null
           created_at?: string
           display_name?: string | null
+          handle?: string | null
+          handle_changed_at?: string | null
           id?: string
           institution_id?: string | null
+          institution_joined_at?: string | null
+          is_public?: boolean
           prefs?: Json
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
@@ -932,10 +998,12 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_remove_member: { Args: { p_user: string }; Returns: undefined }
       admin_review_feedback: {
         Args: { p_class_key?: string; p_id: string; p_status: string }
         Returns: undefined
       }
+      admin_rotate_join_code: { Args: never; Returns: string }
       daily_counts_by_category: {
         Args: { p_from?: string; p_to?: string }
         Returns: {
@@ -944,11 +1012,21 @@ export type Database = {
           detections: number
         }[]
       }
+      delete_my_account: { Args: never; Returns: undefined }
       delete_my_data: {
         Args: never
         Returns: {
           feedback_deleted: number
           scans_deleted: number
+        }[]
+      }
+      export_my_data: { Args: never; Returns: Json }
+      handle_available: { Args: { p_handle: string }; Returns: boolean }
+      join_institution: {
+        Args: { p_code: string }
+        Returns: {
+          institution_id: string
+          name: string
         }[]
       }
       kiosk_heartbeat: { Args: never; Returns: undefined }
@@ -968,6 +1046,7 @@ export type Database = {
           last_seen: string
         }[]
       }
+      leave_institution: { Args: never; Returns: undefined }
       library_event_counts: {
         Args: { p_from: string; p_to: string }
         Returns: {

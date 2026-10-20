@@ -1,0 +1,13 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<!-- "Save your history" attaches an email to a guest account (updateUser), which sends this
+     (Phase 31). Paste into Supabase → Authentication → Emails → Change email address. -->
+<div style="font-family: Arial, Helvetica, sans-serif; max-width: 480px; margin: 0 auto; color: #1d2433">
+  <p style="font-size: 20px; font-weight: bold; color: #0062cc">iTapon</p>
+  <p>Confirm <strong>{{ .NewEmail }}</strong> for your iTapon account. Your scans stay with you.</p>
+  <p lang="fil">Kumpirmahin ang <strong>{{ .NewEmail }}</strong> para sa iyong iTapon account. Mananatili sa iyo ang iyong mga scan.</p>
+  <p style="margin: 28px 0">
+    <a href="{{ .ConfirmationURL }}" style="background: #0070e0; color: #ffffff; padding: 12px 20px; border-radius: 10px; text-decoration: none; font-weight: bold">Confirm email · Kumpirmahin</a>
+  </p>
+  <p style="font-size: 13px; color: #5b6475">If you didn't ask for this, ignore this email. / Kung hindi ikaw ang humiling nito, huwag pansinin ang email na ito.</p>
+  <p style="font-size: 12px; color: #8a93a3">iTapon · TIP Quezon City CS 406 · <a href="https://itapon.vercel.app/privacy" style="color: #8a93a3">Privacy</a></p>
+</div>

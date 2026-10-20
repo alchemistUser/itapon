@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 const SOURCE = process.env.NEXT_PUBLIC_SOURCE_URL || "https://github.com/alchemistUser/itapon";
-const UPDATED = "18 October 2026";
+const UPDATED = "21 October 2026"; // keep in step with PRIVACY_VERSION (src/lib/accounts.ts)
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -63,15 +63,29 @@ export default function PrivacyPage() {
           <li>
             <strong>Preferences</strong> such as read-aloud, language and text size.
           </li>
+          <li>
+            <strong>Optional profile:</strong> a handle (not your real name), a preset avatar and
+            whether to show them publicly (off by default). Nothing is shown publicly yet.
+          </li>
+          <li>
+            <strong>Birth year</strong> (not your birthday), only to keep accounts of people under
+            18 private. Nobody else can see it, not even admins.
+          </li>
+          <li>
+            <strong>Consent records:</strong> which version of this notice you agreed to and when.
+          </li>
+          <li>
+            <strong>Institution membership</strong>, if you join a school or office with its code.
+          </li>
         </ul>
         <p>
           We don&apos;t collect your location, contacts or advertising ids, and there are no ads or
           third-party trackers. To keep the app working we log app errors without any account or
           device id. The disposal library counts how often each entry is read and how often its
-          ideas are marked &quot;I&apos;ll do this&quot; or &quot;Done it&quot;, without any account,
-          device or scan id; if you already belong to an institution, the count is tagged with it
-          so its admins see totals. Your browser keeps your session, preferences and offline copies of the app in
-          its own storage on your device.
+          ideas are marked &quot;I&apos;ll do this&quot; or &quot;Done it&quot;, without any
+          account, device or scan id; if you already belong to an institution, the count is tagged
+          with it so its admins see totals. Your browser keeps your session, preferences and offline
+          copies of the app in its own storage on your device.
         </p>
       </Section>
 
@@ -90,9 +104,10 @@ export default function PrivacyPage() {
         <ul>
           <li>You. Other users can&apos;t see your scans, answers or photos.</li>
           <li>
-            If your account belongs to an institution (for example, a school kiosk), that
-            institution&apos;s admins can see its scans and the feedback on them, but never your
-            email.
+            If your account belongs to an institution (you joined with its code, or it&apos;s a
+            school kiosk), that institution&apos;s admins can see its scans and the feedback on
+            them, your handle or display name and when you joined, but never your email, birth year
+            or consent records. You can leave at any time, and admins can remove members.
           </li>
           <li>
             The project team, to run and fix the service and to review shared photos for model
@@ -101,7 +116,9 @@ export default function PrivacyPage() {
         </ul>
         <p>
           Data is stored with Supabase (database and private file storage) and the app is served by
-          Vercel. The model files come from Hugging Face. We don&apos;t sell or share your data.
+          Vercel. Sign-in emails are sent through Brevo, which handles your email address only to
+          deliver them. The model files come from Hugging Face. We don&apos;t sell or share your
+          data.
         </p>
       </Section>
 
@@ -115,6 +132,15 @@ export default function PrivacyPage() {
         </p>
       </Section>
 
+      <Section title="Under 18">
+        <p>
+          Accounts of people under 18, and accounts without a birth year, are always private and
+          will never appear on leaderboards. We count someone as 18 only from 1 January of the year
+          after they turn 18, because we only ask for the year. We show a notice to share with a
+          parent or guardian.
+        </p>
+      </Section>
+
       <Section title="How long we keep it">
         <ul>
           <li>
@@ -124,6 +150,11 @@ export default function PrivacyPage() {
           <li>
             <strong>Scan records and answers:</strong> kept while your account exists, so your
             history and the institution totals work. Delete them any time.
+          </li>
+          <li>
+            <strong>Profile, birth year, consent records and membership:</strong> kept while your
+            account exists. Deleting your account removes them at once (short database backups are
+            kept by our provider and expire on their own).
           </li>
           <li>
             <strong>Exported training sets</strong> are kept only for an evaluation and then
@@ -153,7 +184,15 @@ export default function PrivacyPage() {
             .
           </li>
           <li>
-            Ask for a copy of your data or anything else through the project&apos;s{" "}
+            Download a copy of your data (JSON, and your scans as CSV), or delete your whole
+            account, on{" "}
+            <Link href="/account" className="text-brand-strong underline">
+              Account
+            </Link>
+            .
+          </li>
+          <li>
+            Ask anything else through the project&apos;s{" "}
             <a href={`${SOURCE}/issues`} className="text-brand-strong underline" rel="noreferrer">
               GitHub page
             </a>{" "}

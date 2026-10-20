@@ -15,7 +15,14 @@ describe("libraryRows", () => {
 
   it("totals per item, most viewed first, for the chosen scope", () => {
     expect(libraryRows(counts, "institution", names)).toEqual([
-      { slug: "plastic-bottle", name: "plastic-bottle", view: 5, chooser: 3, idea_plan: 0, idea_done: 0 },
+      {
+        slug: "plastic-bottle",
+        name: "plastic-bottle",
+        view: 5,
+        chooser: 3,
+        idea_plan: 0,
+        idea_done: 0,
+      },
       { slug: "battery", name: "Battery", view: 2, chooser: 0, idea_plan: 0, idea_done: 0 },
     ]);
     expect(libraryRows(counts, "everyone", names).map((r) => [r.slug, r.view])).toEqual([

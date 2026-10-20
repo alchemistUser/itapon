@@ -116,11 +116,21 @@ export function LibraryPanel({ from, to }: { from: string; to: string }) {
               <table className="w-full text-left text-sm">
                 <thead className="text-xs text-ink-3">
                   <tr>
-                    <th scope="col" className="py-2 font-medium">Item</th>
-                    <th scope="col" className="py-2 text-right font-medium">Views</th>
-                    <th scope="col" className="py-2 text-right font-medium">Which one?</th>
-                    <th scope="col" className="py-2 text-right font-medium">I&apos;ll do this</th>
-                    <th scope="col" className="py-2 text-right font-medium">Done</th>
+                    <th scope="col" className="py-2 font-medium">
+                      Item
+                    </th>
+                    <th scope="col" className="py-2 text-right font-medium">
+                      Views
+                    </th>
+                    <th scope="col" className="py-2 text-right font-medium">
+                      Which one?
+                    </th>
+                    <th scope="col" className="py-2 text-right font-medium">
+                      I&apos;ll do this
+                    </th>
+                    <th scope="col" className="py-2 text-right font-medium">
+                      Done
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="tabular-nums">

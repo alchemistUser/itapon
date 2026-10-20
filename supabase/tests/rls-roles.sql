@@ -69,7 +69,7 @@ begin
   execute sql;
   get diagnostics n = row_count;
   return n = 0;
-exception when insufficient_privilege or check_violation or invalid_parameter_value
+exception when insufficient_privilege or check_violation or invalid_parameter_value or unique_violation
   or no_data_found then
   return true;
 end $$;
@@ -282,6 +282,84 @@ select pg_temp.act_as('00000000-0000-4000-8000-00000000a001'); -- user 1 (not an
 insert into rls_results values
   ('library events: users get no totals', (select count(*) = 0 from public.library_event_counts(current_date - 1, current_date + 1)));
 reset role;
+
+-- ---------------------------------------------------------------- accounts v2 (v2 Phase 31)
+insert into auth.users (id, instance_id, aud, role, email, is_anonymous, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+values ('00000000-0000-4000-8000-00000000a006', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'rls-leaver@test.invalid', false, '{}', '{}', now(), now()),
+       ('00000000-0000-4000-8000-00000000a007', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'rls-user3@test.invalid', false, '{}', '{}', now(), now());
+insert into public.scan_sessions (id, user_id, model_version)
+  values ('00000000-0000-4000-8000-0000000000d6', '00000000-0000-4000-8000-00000000a006', 'rls');
+create temp table join_code_a (code text) on commit drop;
+grant all on join_code_a to authenticated;
+insert into join_code_a select join_code from public.institutions where id = '00000000-0000-4000-8000-0000000000b1';
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a001'); -- user 1
+insert into rls_results values
+  ('accounts: user sets a handle', not pg_temp.refused($q$update public.profiles set handle = 'rls_green' where id = '00000000-0000-4000-8000-00000000a001'$q$)),
+  ('accounts: handle change cooldown', pg_temp.refused($q$update public.profiles set handle = 'rls_blue' where id = '00000000-0000-4000-8000-00000000a001'$q$)),
+  ('accounts: user cannot change own role or institution', pg_temp.refused($q$update public.profiles set institution_id = '00000000-0000-4000-8000-0000000000b1' where id = '00000000-0000-4000-8000-00000000a001'$q$)),
+  ('accounts: no birth year means private only', pg_temp.refused($q$update public.profiles set is_public = true where id = '00000000-0000-4000-8000-00000000a001'$q$)),
+  ('accounts: user adds own birth year', not pg_temp.refused($q$insert into public.profile_private (birth_year) values (1990)$q$)),
+  ('accounts: adult can go public', not pg_temp.refused($q$update public.profiles set is_public = true where id = '00000000-0000-4000-8000-00000000a001'$q$)),
+  ('accounts: birth year corrected once', not pg_temp.refused($q$update public.profile_private set birth_year = 1991 where user_id = '00000000-0000-4000-8000-00000000a001'$q$)),
+  ('accounts: birth year not corrected twice', pg_temp.refused($q$update public.profile_private set birth_year = 1992 where user_id = '00000000-0000-4000-8000-00000000a001'$q$)),
+  ('accounts: user records consent', not pg_temp.refused($q$insert into public.consents (kind, version) values ('privacy_notice', '2026-10-21')$q$)),
+  ('accounts: consent cannot be backdated', pg_temp.refused($q$insert into public.consents (kind, version, accepted_at) values ('privacy_notice', '2026-10-21', now() - interval '1 day')$q$)),
+  ('accounts: consents cannot be edited', pg_temp.refused($q$update public.consents set version = '2020-01-01'$q$)),
+  ('accounts: handle check says taken or free', (select not public.handle_available('rls_green') is false) and not public.handle_available('admin') and public.handle_available('rls_free_one')),
+  ('accounts: wrong join code joins nothing', (select count(*) = 0 from public.join_institution('WRONGCOD'))),
+  ('accounts: join with the code', (select count(*) = 1 from public.join_institution((select code from join_code_a))));
+-- separate statement: export_my_data() is stable and sees only earlier statements' writes
+insert into rls_results values
+  ('accounts: export has profile, consents and scans', (select (d -> 'profile' ->> 'handle') = 'rls_green' and jsonb_array_length(d -> 'consents') = 1 and jsonb_array_length(d -> 'scans') = 1 and (d -> 'private' ->> 'birth_year') = '1991' from public.export_my_data() as d));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a007'); -- user 3 (no institution)
+insert into rls_results values
+  ('accounts: blocked words are refused', pg_temp.refused($q$update public.profiles set handle = 'si_gago_ako' where id = '00000000-0000-4000-8000-00000000a007'$q$)),
+  ('accounts: reserved handles are refused', pg_temp.refused($q$update public.profiles set handle = 'admin' where id = '00000000-0000-4000-8000-00000000a007'$q$)),
+  ('accounts: handles are unique', pg_temp.refused($q$update public.profiles set handle = 'rls_green' where id = '00000000-0000-4000-8000-00000000a007'$q$)),
+  ('accounts: minor stays private', not pg_temp.refused($q$insert into public.profile_private (birth_year) values (extract(year from now())::int - 15)$q$) and pg_temp.refused($q$update public.profiles set is_public = true where id = '00000000-0000-4000-8000-00000000a007'$q$)),
+  ('accounts: others cannot read a birth year', (select count(*) = 0 from public.profile_private where user_id = '00000000-0000-4000-8000-00000000a001')),
+  ('accounts: others cannot read consents', (select count(*) = 0 from public.consents where user_id = '00000000-0000-4000-8000-00000000a001')),
+  ('accounts: others cannot read a profile', (select count(*) = 0 from public.profiles where id = '00000000-0000-4000-8000-00000000a001')),
+  ('accounts: users cannot rotate codes or remove members', pg_temp.refused($q$select public.admin_rotate_join_code()$q$) and pg_temp.refused($q$select public.admin_remove_member('00000000-0000-4000-8000-00000000a001')$q$));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a004'); -- admin A
+insert into rls_results values
+  ('accounts: admin A sees the new member', (select count(*) = 1 from public.profiles where id = '00000000-0000-4000-8000-00000000a001' and handle = 'rls_green' and institution_joined_at is not null)),
+  ('accounts: admin A cannot read a member birth year', (select count(*) = 0 from public.profile_private)),
+  ('accounts: admin A cannot read member consents', (select count(*) = 0 from public.consents)),
+  ('accounts: admin cannot switch institution by code', pg_temp.refused(format('select * from public.join_institution(%L)', (select code from join_code_a)))),
+  ('accounts: admin A rotates the join code', (select public.admin_rotate_join_code() <> (select code from join_code_a))),
+  ('accounts: admin A cannot remove a kiosk as a member', pg_temp.refused($q$select public.admin_remove_member('00000000-0000-4000-8000-00000000a003')$q$)),
+  ('accounts: admin A removes a member', not pg_temp.refused($q$select public.admin_remove_member('00000000-0000-4000-8000-00000000a001')$q$));
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a007'); -- user 3 (no institution)
+insert into rls_results values
+  ('accounts: old join code stops working', (select count(*) = 0 from public.join_institution((select code from join_code_a)))),
+  ('accounts: kiosk cannot delete itself', true);
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a003'); -- kiosk
+update rls_results set ok = pg_temp.refused($q$select public.delete_my_account()$q$) where check_name = 'accounts: kiosk cannot delete itself';
+reset role;
+
+set local role authenticated;
+select pg_temp.act_as('00000000-0000-4000-8000-00000000a006'); -- a user deleting their account
+select public.delete_my_account();
+reset role;
+insert into rls_results values
+  ('accounts: delete my account removes the user and their scans',
+   not exists (select 1 from auth.users where id = '00000000-0000-4000-8000-00000000a006')
+   and not exists (select 1 from public.scan_sessions where user_id = '00000000-0000-4000-8000-00000000a006'));
 
 select check_name, ok from rls_results order by ok, check_name;
 rollback;

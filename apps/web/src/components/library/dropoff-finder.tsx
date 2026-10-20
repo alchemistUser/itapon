@@ -161,7 +161,9 @@ export function DropoffFinder({ initialType }: { initialType?: string }) {
         </ul>
       ) : (
         <div className="rounded-card bg-card p-4 shadow-card">
-          <p className="font-semibold text-ink">No verified {meta.label.toLowerCase()} points yet</p>
+          <p className="font-semibold text-ink">
+            No verified {meta.label.toLowerCase()} points yet
+          </p>
           <p className="mt-1 text-sm text-ink-3">{meta.howTo}</p>
         </div>
       )}

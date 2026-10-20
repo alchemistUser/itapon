@@ -212,6 +212,15 @@ content quickly and safely.
 
 ## Phase 31: Account system v2
 
+> **Status (2026-10-21): Built. Email sign-in waits for Brevo SMTP; the privacy review waits for team and adviser approval.** Decisions D20–D23 (build now, future work in the manuscript; Brevo + Google; age gate; one rotatable join code per institution). **Privacy review** drafted: [`docs/accounts/privacy-review.md`](docs/accounts/privacy-review.md) (data inventory, lawful basis, minors, membership, rights, risks); the privacy notice and pilot consent form are updated. Migration `20261021120000_accounts_v2.sql`:
+> - **Profile:** handle with format, reserved and blocked-word rules, unique, 30-day change cooldown; preset avatar; public toggle, off by default and locked for minors.
+> - **Birth year:** in an **owner-only** `profile_private` table, because admins can read institution profiles. Conservative age rule: adult from 1 January of birth year + 19. It can be corrected once.
+> - **Consents:** `consents` records (notice version and date; insert-only).
+> - **Membership:** a standing **join code** per institution, cryptographically random, 8 characters, rotatable; `join_institution` (10 failed tries per hour), `leave_institution`, `admin_remove_member`.
+> - **Your data:** `export_my_data()` and `delete_my_account()` (removes the sign-in identity and everything linked to it; shared photos first).
+>
+> App: on **Account**, an "About you" card (birth year, notice consent, guardian notice for under-18s), the public profile, "School or office" (join or leave), export as JSON or scans as CSV, sign out everywhere, and delete my account (type DELETE). On **Admin**, a Members panel (code, copy, rotate, member list, remove; handle or display name only). Bilingual sign-in email templates are in `supabase/templates/`, with Brevo steps in [`docs/accounts/email-setup.md`](docs/accounts/email-setup.md). Role matrix **147/147** (35 new checks); 17 new unit tests; E2E 54/54 with axe on `/account` and `/privacy`. **Not done or not verified:** the signed-in profile screens were not tried in a browser (no test account with email yet); there's no merge path when an email already has an account (v1's message stays); "email confirmed" is only needed once points exist (Phase 32); Supabase's built-in sign-in rate limits are unchanged.
+
 **Goal:** Real, safe accounts that points and leaderboards can rely on.
 
 **Tasks**

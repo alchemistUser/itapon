@@ -28,12 +28,7 @@ import {
   VALUE_LINE,
   whereElse,
 } from "@/lib/library/core";
-import type {
-  LibraryIndex,
-  LibraryIndexItem,
-  LibraryItem,
-  PrepStep,
-} from "@/lib/library/types";
+import type { LibraryIndex, LibraryIndexItem, LibraryItem, PrepStep } from "@/lib/library/types";
 
 import { IdeaActions, ViewLogger } from "./actions";
 import { Bi, InLang, LangToggle, ReadEntryButton } from "./lang";
@@ -291,7 +286,10 @@ export function ItemEntry({
         </div>
       ) : null}
 
-      <ItemLinks items={confused} label={<Bi en="Commonly confused with" fil="Madalas mapagkamalan" />} />
+      <ItemLinks
+        items={confused}
+        label={<Bi en="Commonly confused with" fil="Madalas mapagkamalan" />}
+      />
       <ItemLinks items={related} label={<Bi en="Related items" fil="Kaugnay" />} />
 
       {sources.length ? (

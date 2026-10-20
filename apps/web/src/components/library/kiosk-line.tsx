@@ -21,7 +21,9 @@ export function lineFor(
   const idea = topIdea(item);
   if (idea) return `Idea: ${idea.text}.`;
   const others = whereElse(item, dests);
-  return others.length ? `You can also bring it to: ${others.map((d) => d.name_en).join(", ")}.` : null;
+  return others.length
+    ? `You can also bring it to: ${others.map((d) => d.name_en).join(", ")}.`
+    : null;
 }
 
 /**

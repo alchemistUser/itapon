@@ -19,11 +19,16 @@ const RESIN_WORDS: Record<string, number> = {
 
 /** "#5", "5", "pp", "pp5", "#5 pp", "resin 2" → 5 / 2; otherwise null (pure; tested). */
 export function resinQuery(query: string): number | null {
-  const q = query.toLowerCase().replace(/\b(resin|code|number|plastic)\b/g, "").replace(/[\s#-]+/g, "");
+  const q = query
+    .toLowerCase()
+    .replace(/\b(resin|code|number|plastic)\b/g, "")
+    .replace(/[\s#-]+/g, "");
   if (!q) return null;
   const digit = q.match(/^([1-7])([a-z]*)$/) ?? q.match(/^([a-z]+)([1-7])$/);
   if (digit) {
-    const [n, word] = /\d/.test(digit[1]) ? [Number(digit[1]), digit[2]] : [Number(digit[2]), digit[1]];
+    const [n, word] = /\d/.test(digit[1])
+      ? [Number(digit[1]), digit[2]]
+      : [Number(digit[2]), digit[1]];
     if (!word || RESIN_WORDS[word] === n || (word === "other" && n === 7)) return n;
     return null;
   }

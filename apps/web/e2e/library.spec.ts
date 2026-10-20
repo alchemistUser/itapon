@@ -25,19 +25,27 @@ test("library home lists the material groups and searches in English, Filipino a
 
 test("group and item pages show the full entry, in Filipino too", async ({ page }) => {
   await page.goto("/library/bat");
-  await expect(page.getByRole("heading", { level: 1, name: "Batteries", exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Batteries", exact: true }),
+  ).toBeVisible();
   await page.getByRole("link", { name: /AA or AAA battery/ }).click();
   await expect(page).toHaveURL(/\/library\/item\/aa-battery$/);
-  await expect(page.getByRole("heading", { level: 1, name: "AA or AAA battery", exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "AA or AAA battery", exact: true }),
+  ).toBeVisible();
   await expect(page.getByRole("heading", { name: "How to prepare it" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Sources" })).toBeVisible();
   await expect(page.getByRole("note").filter({ hasText: /Draft/ })).toBeVisible();
 
   await page.getByRole("button", { name: "Filipino" }).click();
-  await expect(page.getByRole("heading", { level: 1, name: "AA o AAA na baterya", exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "AA o AAA na baterya", exact: true }),
+  ).toBeVisible();
   await expect(page.getByRole("heading", { name: "Paano ihanda" })).toBeVisible();
   await page.getByRole("button", { name: "English" }).click(); // the preference persists
-  await expect(page.getByRole("heading", { level: 1, name: "AA or AAA battery", exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "AA or AAA battery", exact: true }),
+  ).toBeVisible();
 });
 
 test("an entry shows commonly confused items and remembers ideas", async ({ page }) => {

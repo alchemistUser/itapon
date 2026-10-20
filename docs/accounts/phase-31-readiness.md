@@ -43,13 +43,13 @@ The original questions:
 
 ## Prerequisites to do first
 
-- [ ] **Accounts privacy review** (deferred from Phase 27). List the new fields (handle, avatar,
+- [x] **Accounts privacy review** drafted: [privacy-review.md](privacy-review.md), awaiting approval. (deferred from Phase 27). List the new fields (handle, avatar,
       birth year, consent records, memberships) with purpose, retention and who can read them.
       Update the privacy notice and the consent forms. Claude can draft it; the team and adviser
       approve it.
-- [ ] **SMTP set up and tested.** One test sign-in email arrives at a non-team address and isn't
+- [ ] **SMTP set up and tested** ([email-setup.md](email-setup.md)). One test sign-in email arrives at a non-team address and isn't
       in spam. Then raise `auth.rate_limit.email_sent` from the built-in default.
-- [ ] **Email templates.** Branded confirmation, magic-link and email-change templates in EN and
+- [x] **Email templates** written (`supabase/templates/`); paste them per [email-setup.md](email-setup.md). Branded confirmation, magic-link and email-change templates in EN and
       FIL (Supabase → Authentication → Email templates), then copy them into `supabase/templates/`
       so they're versioned.
 - [ ] **Library publishing** (Phase 29 review) can run in parallel. It doesn't block Phase 31.

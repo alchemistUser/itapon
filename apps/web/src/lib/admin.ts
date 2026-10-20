@@ -283,3 +283,56 @@ export async function fetchLibraryCounts(fromDay: string, toDay: string): Promis
     everyone: Number(r.everyone),
   }));
 }
+
+export interface InstitutionMember {
+  id: string;
+  label: string; // handle or display name; never the email (privacy review §5)
+  joinedAt: string | null;
+}
+
+/** Join code + members of the admin's institution (Phase 31; RLS: own institution only). */
+export async function fetchMembership(
+  institutionId: string,
+): Promise<{ joinCode: string | null; rotatedAt: string | null; members: InstitutionMember[] }> {
+  const sb = await getSupabase();
+  if (!sb) return { joinCode: null, rotatedAt: null, members: [] };
+  const [inst, people] = await Promise.all([
+    sb
+      .from("institutions")
+      .select("join_code, join_code_rotated_at")
+      .eq("id", institutionId)
+      .maybeSingle(),
+    sb
+      .from("profiles")
+      .select("id, handle, display_name, institution_joined_at")
+      .eq("institution_id", institutionId)
+      .eq("role", "user")
+      .order("institution_joined_at", { ascending: false }),
+  ]);
+  if (inst.error) throw inst.error;
+  if (people.error) throw people.error;
+  return {
+    joinCode: inst.data?.join_code ?? null,
+    rotatedAt: inst.data?.join_code_rotated_at ?? null,
+    members: (people.data ?? []).map((p) => ({
+      id: p.id,
+      label: p.handle ? `@${p.handle}` : p.display_name || "Guest (no profile)",
+      joinedAt: p.institution_joined_at,
+    })),
+  };
+}
+
+export async function rotateJoinCode(): Promise<string> {
+  const sb = await getSupabase();
+  if (!sb) throw new Error("Not available");
+  const { data, error } = await sb.rpc("admin_rotate_join_code");
+  if (error) throw error;
+  return data;
+}
+
+export async function removeMember(userId: string): Promise<void> {
+  const sb = await getSupabase();
+  if (!sb) throw new Error("Not available");
+  const { error } = await sb.rpc("admin_remove_member", { p_user: userId });
+  if (error) throw error;
+}

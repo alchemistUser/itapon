@@ -27,9 +27,7 @@ export async function generateMetadata(
 }
 
 // Subgroup (Phase 30), e.g. "#5 PP" or "Fluorescent tubes and CFLs".
-export default async function LibrarySubgroupPage(
-  props: PageProps<"/library/[group]/[subgroup]">,
-) {
+export default async function LibrarySubgroupPage(props: PageProps<"/library/[group]/[subgroup]">) {
   const params = await props.params;
   const group = groupFromPath(params.group);
   const sub = subgroupFromPath(params.group, params.subgroup);

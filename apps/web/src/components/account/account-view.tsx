@@ -4,6 +4,7 @@
 import { CheckCircle2, Mail, ShieldCheck, Trash2, UserRound } from "lucide-react";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 
+import { AccountV2 } from "@/components/account/account-v2";
 import { Button } from "@/components/ui/button";
 import { Card, PageTitle } from "@/components/ui/primitives";
 import { deleteMyData } from "@/lib/history";
@@ -245,6 +246,8 @@ export function AccountView() {
         </Section>
       )}
 
+      <AccountV2 userId={userId} guest={guest} slot="top" />
+
       <Section title="Preferences">
         <label className="flex min-h-11 items-center justify-between gap-3 text-sm">
           <span>
@@ -329,6 +332,7 @@ export function AccountView() {
             {deleteError}
           </p>
         ) : null}
+        <AccountV2 userId={userId} guest={guest} slot="data" />
       </Section>
     </div>
   );

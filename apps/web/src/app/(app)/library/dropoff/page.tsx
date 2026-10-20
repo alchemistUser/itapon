@@ -13,7 +13,11 @@ export const metadata: Metadata = {
     "Where to bring e-waste, batteries, hazardous waste and recyclables: junk shops, health centres, take-back and city programmes.",
 };
 
-async function Finder({ searchParams }: { searchParams: PageProps<"/library/dropoff">["searchParams"] }) {
+async function Finder({
+  searchParams,
+}: {
+  searchParams: PageProps<"/library/dropoff">["searchParams"];
+}) {
   const { type } = await searchParams;
   return <DropoffFinder initialType={typeof type === "string" ? type : undefined} />;
 }

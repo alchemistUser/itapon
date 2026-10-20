@@ -54,7 +54,10 @@ export function IdeaActions({
   return (
     <div className={cn("flex flex-wrap gap-2", className)}>
       {state === "done" ? (
-        <span role="status" className={cn(base, "border-transparent bg-bin-green-tint text-[#1a7f37]")}>
+        <span
+          role="status"
+          className={cn(base, "border-transparent bg-bin-green-tint text-[#1a7f37]")}
+        >
           <Check aria-hidden className="size-3.5" /> Done. Nice work!
         </span>
       ) : (

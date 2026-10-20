@@ -20,6 +20,8 @@ take notes. **We will not record video or audio of you.**
 name. If you use your own phone, the app works without an account. Scan records (item,
 bin, time) are stored as described in the app's privacy notice (itapon.vercel.app/privacy).
 Photos are shared only if you tick the photo-sharing box in the app, and you don't need to.
+A profile (handle, avatar, birth year) is optional. Profiles of people under 18 are always
+private.
 
 **Voluntary.** You may skip any task or question and stop at any time without giving a reason.
 This will not affect your grades, work or any service.

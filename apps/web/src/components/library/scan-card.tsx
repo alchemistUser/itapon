@@ -52,7 +52,10 @@ export function LibraryScanCard({
 }) {
   const index = useLibraryIndex();
   const lang = usePrefs().language ?? "en";
-  const cands = useMemo(() => (index ? candidatesFor(index.items, classKey) : []), [index, classKey]);
+  const cands = useMemo(
+    () => (index ? candidatesFor(index.items, classKey) : []),
+    [index, classKey],
+  );
   const [picked, setPicked] = useState<{ classKey: string; slug: string } | null>(null);
   const chosenSlug =
     picked?.classKey === classKey && cands.some((c) => c.slug === picked.slug)
@@ -125,7 +128,10 @@ export function LibraryScanCard({
       ) : null}
 
       {otherBin ? (
-        <p role="status" className="flex items-start gap-2 rounded-tile bg-bin-red-tint/60 p-2.5 text-sm">
+        <p
+          role="status"
+          className="flex items-start gap-2 rounded-tile bg-bin-red-tint/60 p-2.5 text-sm"
+        >
           <TriangleAlert aria-hidden className="mt-0.5 size-4 shrink-0 text-[#c4282d]" />
           <span>
             <span className="font-semibold">{nameOf(chosen, lang)}</span> goes in the{" "}
@@ -159,7 +165,9 @@ export function LibraryScanCard({
               <p className="flex items-start gap-2 text-sm">
                 <Repeat2 aria-hidden className="mt-0.5 size-4 shrink-0 text-brand-strong" />
                 <span>
-                  <span className="text-ink-3">{idea.kind === "reuse" ? "Reuse: " : "Reduce: "}</span>
+                  <span className="text-ink-3">
+                    {idea.kind === "reuse" ? "Reuse: " : "Reduce: "}
+                  </span>
                   {idea.text}
                 </span>
               </p>
