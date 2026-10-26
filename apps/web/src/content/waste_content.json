@@ -1021,6 +1021,341 @@
     "ink"
    ],
    "source": "RA (spec §3.3)"
+  },
+  {
+   "class_key": "biological",
+   "display_name": "Food and garden waste",
+   "display_name_fil": "Nabubulok na basura",
+   "category": "biodegradable",
+   "detectable": false,
+   "short_instruction": "Keep it separate from plastic and drop it in the green bin, or compost it.",
+   "reuse_tip": "Compost it at home or in a school garden.",
+   "prep_steps": [
+    {
+     "title": "Remove packaging",
+     "detail": "Take out plastic, rubber bands and stickers."
+    },
+    {
+     "title": "Drain liquids",
+     "detail": "Let liquids drain so the bin stays clean."
+    },
+    {
+     "title": "Use the green bin",
+     "detail": "Or add it to a compost pile."
+    }
+   ],
+   "why_text": "Food scraps, peels and leaves rot into compost. Mixed with plastic they can't be composted.",
+   "contamination_note": "Cooked food with plastic wrap or foam goes in the black bin.",
+   "aliases": [
+    "food",
+    "scraps",
+    "leaves",
+    "vegetables",
+    "peels",
+    "nabubulok",
+    "tirang pagkain"
+   ],
+   "source": "RA"
+  },
+  {
+   "class_key": "brown_glass",
+   "display_name": "Brown glass",
+   "display_name_fil": "Kayumangging salamin",
+   "category": "recyclable",
+   "detectable": false,
+   "short_instruction": "Empty and rinse it, take off the cap, and place it in the blue bin.",
+   "reuse_tip": "Reuse jars and bottles for storage, or return deposit bottles.",
+   "prep_steps": [
+    {
+     "title": "Empty it",
+     "detail": "Pour out anything left inside."
+    },
+    {
+     "title": "Take off the cap",
+     "detail": "Metal and plastic caps are different materials."
+    },
+    {
+     "title": "Use the blue bin",
+     "detail": "Place it in carefully so it doesn't break."
+    }
+   ],
+   "why_text": "Clean glass bottles and jars are recycled by colour. Brown glass is often a beer or medicine bottle.",
+   "contamination_note": "Broken glass, mirrors, window glass and ceramics don't go with bottles: wrap broken glass in paper, label it, and use the black bin.",
+   "aliases": [
+    "brown bottle",
+    "beer bottle",
+    "amber glass",
+    "bote",
+    "serbesa"
+   ],
+   "source": "RA"
+  },
+  {
+   "class_key": "green_glass",
+   "display_name": "Green glass",
+   "display_name_fil": "Berdeng salamin",
+   "category": "recyclable",
+   "detectable": false,
+   "short_instruction": "Empty and rinse it, take off the cap, and place it in the blue bin.",
+   "reuse_tip": "Reuse bottles for water or sauces, or return deposit bottles.",
+   "prep_steps": [
+    {
+     "title": "Empty it",
+     "detail": "Pour out anything left inside."
+    },
+    {
+     "title": "Take off the cap",
+     "detail": "Metal and plastic caps are different materials."
+    },
+    {
+     "title": "Use the blue bin",
+     "detail": "Place it in carefully so it doesn't break."
+    }
+   ],
+   "why_text": "Clean glass bottles and jars are recycled by colour. Green glass is common in wine and soda bottles.",
+   "contamination_note": "Broken glass, mirrors, window glass and ceramics don't go with bottles: wrap broken glass in paper, label it, and use the black bin.",
+   "aliases": [
+    "green bottle",
+    "wine bottle",
+    "bote",
+    "berdeng bote"
+   ],
+   "source": "RA"
+  },
+  {
+   "class_key": "white_glass",
+   "display_name": "Clear glass",
+   "display_name_fil": "Malinaw na salamin",
+   "category": "recyclable",
+   "detectable": false,
+   "short_instruction": "Empty and rinse it, take off the cap, and place it in the blue bin.",
+   "reuse_tip": "Reuse jars for storage, or keep them for pickling and leftovers.",
+   "prep_steps": [
+    {
+     "title": "Empty it",
+     "detail": "Pour out anything left inside."
+    },
+    {
+     "title": "Take off the cap",
+     "detail": "Metal and plastic caps are different materials."
+    },
+    {
+     "title": "Use the blue bin",
+     "detail": "Place it in carefully so it doesn't break."
+    }
+   ],
+   "why_text": "Clear glass is the most valuable to recycle when it is clean and not mixed with other colours.",
+   "contamination_note": "Broken glass, mirrors, window glass and ceramics don't go with bottles: wrap broken glass in paper, label it, and use the black bin.",
+   "aliases": [
+    "clear bottle",
+    "white glass",
+    "jar",
+    "garapon",
+    "malinaw na bote"
+   ],
+   "source": "RA"
+  },
+  {
+   "class_key": "metal",
+   "display_name": "Metal",
+   "display_name_fil": "Metal",
+   "category": "recyclable",
+   "detectable": false,
+   "short_instruction": "Empty and rinse it, then place it in the blue bin. Scrap metal can go to a junk shop.",
+   "reuse_tip": "Sell clean scrap metal to a junk shop.",
+   "prep_steps": [
+    {
+     "title": "Empty it",
+     "detail": "Pour out food or drink and rinse it."
+    },
+    {
+     "title": "Flatten if easy",
+     "detail": "Squash drink cans to save space."
+    },
+    {
+     "title": "Use the blue bin",
+     "detail": "Or take bulky scrap to a junk shop."
+    }
+   ],
+   "why_text": "Metal keeps its value and is recycled again and again, so junk shops buy it.",
+   "contamination_note": "Spray cans with gas or paint left inside are hazardous: check the Bin Guide for spray cans.",
+   "aliases": [
+    "can",
+    "tin can",
+    "scrap",
+    "aluminum",
+    "steel",
+    "lata",
+    "bakal"
+   ],
+   "source": "RA"
+  },
+  {
+   "class_key": "paper",
+   "display_name": "Paper",
+   "display_name_fil": "Papel",
+   "category": "recyclable",
+   "detectable": false,
+   "short_instruction": "Keep it clean and dry, and place it in the blue bin.",
+   "reuse_tip": "Use the blank side for notes before recycling.",
+   "prep_steps": [
+    {
+     "title": "Keep it dry",
+     "detail": "Wet paper can't be recycled."
+    },
+    {
+     "title": "Remove extras",
+     "detail": "Take off plastic covers, staples and tape if easy."
+    },
+    {
+     "title": "Use the blue bin",
+     "detail": "Stack it flat."
+    }
+   ],
+   "why_text": "Clean, dry paper is recycled into new paper. Wet or greasy paper spoils the batch.",
+   "contamination_note": "Used tissue goes in the green bin, and greasy or waxed paper goes in the black bin.",
+   "aliases": [
+    "newspaper",
+    "notebook",
+    "magazine",
+    "bond paper",
+    "papel",
+    "diyaryo"
+   ],
+   "source": "RA"
+  },
+  {
+   "class_key": "plastic",
+   "display_name": "Plastic",
+   "display_name_fil": "Plastik",
+   "category": "recyclable",
+   "detectable": false,
+   "short_instruction": "Rinse hard plastic bottles and containers and place them in the blue bin. Soft wrappers and sachets go in the black bin.",
+   "reuse_tip": "Reuse containers for storage before recycling them.",
+   "prep_steps": [
+    {
+     "title": "Empty and rinse it",
+     "detail": "Leftover food or drink spoils recycling."
+    },
+    {
+     "title": "Check the type",
+     "detail": "Hard bottles and tubs (numbers 1, 2 and 5) are the easiest to recycle."
+    },
+    {
+     "title": "Sort it",
+     "detail": "Blue bin for clean hard plastic; black bin for wrappers, sachets and styrofoam."
+    }
+   ],
+   "why_text": "Hard plastic bottles and containers are widely recycled when clean. Soft and mixed plastic usually isn't.",
+   "contamination_note": "Look for the number in the triangle: the library lists each plastic type.",
+   "aliases": [
+    "plastic",
+    "container",
+    "tub",
+    "bag",
+    "plastik",
+    "plastic bag"
+   ],
+   "source": "RA"
+  },
+  {
+   "class_key": "clothes",
+   "display_name": "Clothes",
+   "display_name_fil": "Damit",
+   "category": "residual",
+   "detectable": false,
+   "short_instruction": "Donate or reuse clothes that are still wearable. Worn-out clothes go in the black bin.",
+   "reuse_tip": "Cut old clothes into cleaning rags.",
+   "prep_steps": [
+    {
+     "title": "Check the condition",
+     "detail": "Wearable clothes can be donated or given away."
+    },
+    {
+     "title": "Wash and dry them",
+     "detail": "Wet or mouldy clothes can't be donated."
+    },
+    {
+     "title": "Sort it",
+     "detail": "Worn-out clothes go in the black bin."
+    }
+   ],
+   "why_text": "Textiles aren't recycled in most Philippine barangays, so reuse and donation keep them out of the bin.",
+   "contamination_note": "Clothes contaminated with oil, paint or chemicals shouldn't be donated.",
+   "aliases": [
+    "shirt",
+    "pants",
+    "jeans",
+    "dress",
+    "cloth",
+    "damit",
+    "tela",
+    "ukay"
+   ],
+   "source": "RA"
+  },
+  {
+   "class_key": "shoes",
+   "display_name": "Shoes",
+   "display_name_fil": "Sapatos",
+   "category": "residual",
+   "detectable": false,
+   "short_instruction": "Donate or repair shoes that are still usable. Worn-out shoes go in the black bin.",
+   "reuse_tip": "Have a shoe repair shop fix worn soles.",
+   "prep_steps": [
+    {
+     "title": "Check the condition",
+     "detail": "Usable shoes can be donated or repaired."
+    },
+    {
+     "title": "Clean them",
+     "detail": "Remove dirt and dry them."
+    },
+    {
+     "title": "Sort it",
+     "detail": "Worn-out shoes go in the black bin."
+    }
+   ],
+   "why_text": "Shoes mix rubber, fabric and glue, so they aren't recycled here. Repair and donation extend their life.",
+   "contamination_note": "Slippers and sandals follow the same rules as shoes.",
+   "aliases": [
+    "sneakers",
+    "slippers",
+    "sandals",
+    "tsinelas",
+    "sapatos",
+    "boots"
+   ],
+   "source": "RA"
+  },
+  {
+   "class_key": "trash",
+   "display_name": "General trash",
+   "display_name_fil": "Basura",
+   "category": "residual",
+   "detectable": false,
+   "short_instruction": "Place it in the black bin. If you think part of it can be recycled, check the Bin Guide.",
+   "reuse_tip": "Think of whether it can be reused before you throw it.",
+   "prep_steps": [
+    {
+     "title": "Check the Bin Guide",
+     "detail": "Part of it might be recyclable or hazardous."
+    },
+    {
+     "title": "Use the black bin",
+     "detail": "Bag loose items so they don't scatter."
+    }
+   ],
+   "why_text": "Items that can't be composted or recycled go to the black bin for residual waste.",
+   "contamination_note": "Batteries, bulbs and medicine never go in the black bin.",
+   "aliases": [
+    "garbage",
+    "rubbish",
+    "waste",
+    "basura",
+    "residual"
+   ],
+   "source": "RA"
   }
  ]
 }

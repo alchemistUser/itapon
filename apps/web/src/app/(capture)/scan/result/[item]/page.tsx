@@ -11,10 +11,10 @@ import { ButtonLink } from "@/components/ui/button";
 import { ReadAloudButton } from "@/components/ui/read-aloud-button";
 import { BINS } from "@/lib/bins";
 import { cn } from "@/lib/cn";
-import { DETECTABLE_KEYS, getItem } from "@/lib/content";
+import { SCANNABLE_KEYS, getItem } from "@/lib/content";
 
 export function generateStaticParams() {
-  return DETECTABLE_KEYS.map((item) => ({ item }));
+  return SCANNABLE_KEYS.map((item) => ({ item }));
 }
 
 export async function generateMetadata(props: PageProps<"/scan/result/[item]">): Promise<Metadata> {

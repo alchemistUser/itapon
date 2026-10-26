@@ -5,6 +5,7 @@ import { ArrowRight, Info, MapPin, Repeat2, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
+import { ARCHIVE_BY_KEY } from "@/lib/archive-classifier/classes";
 import { BINS } from "@/lib/bins";
 import { cn } from "@/lib/cn";
 import type { Category } from "@/lib/detector/types";
@@ -12,6 +13,7 @@ import {
   candidatesFor,
   chooserTip,
   itemPath,
+  materialPath,
   LGU_NAMES,
   nameOf,
   pick,
@@ -79,7 +81,36 @@ export function LibraryScanCard({
     };
   }, [chosenSlug, source]);
 
-  if (!index || !cands.length) return null;
+  if (!index) return null;
+  if (!cands.length) {
+    // Archive-classifier classes (plastic, metal, glass…) are broad: point to the material group.
+    const groupCode = ARCHIVE_BY_KEY.get(classKey)?.libraryGroup;
+    const group = index.materials.find((m) => m.code === groupCode);
+    if (!group) return null;
+    return (
+      <section
+        aria-label="More about this item"
+        className={cn(
+          "flex flex-col gap-1.5 rounded-tile border border-line bg-white text-left text-ink",
+          compact ? "p-3" : "p-4",
+          className,
+        )}
+      >
+        {group.code === "PLA" ? (
+          <p className="text-sm text-ink-2">
+            Check the number in the triangle on the bottom: it tells you the type of plastic.
+          </p>
+        ) : null}
+        <Link
+          href={materialPath(group.code)}
+          className="inline-flex min-h-9 items-center gap-1 self-start text-sm font-semibold text-brand-strong underline"
+        >
+          Find your exact item in the library: {nameOf(group, lang)}
+          <ArrowRight aria-hidden className="size-3.5" />
+        </Link>
+      </section>
+    );
+  }
   const chosen = cands.find((c) => c.slug === chosenSlug)!;
   const otherBin = chosen.bin !== category ? BINS[chosen.bin] : null;
   const value = item?.value ? VALUE_LINE[item.value] : undefined;

@@ -7,7 +7,7 @@ import { useEffect } from "react";
 
 import "@/lib/install"; // starts listening for beforeinstallprompt on every page
 import { BIN_ORDER } from "@/lib/bins";
-import { DETECTABLE_KEYS } from "@/lib/content";
+import { SCANNABLE_KEYS } from "@/lib/content";
 import { installErrorReporting } from "@/lib/monitoring";
 import { flushScanLogs } from "@/lib/scan/log-scan";
 
@@ -19,7 +19,7 @@ const OFFLINE_PAGES = [
   ...BIN_ORDER.map((c) => `/guide/${c}`),
   "/scan",
   "/scan/plan",
-  ...DETECTABLE_KEYS.map((k) => `/scan/result/${k}`),
+  ...SCANNABLE_KEYS.map((k) => `/scan/result/${k}`),
   "/history",
   "/missions",
   "/account",

@@ -7,7 +7,8 @@ import { reportError } from "@/lib/monitoring";
 import { useSyncExternalStore } from "react";
 
 import { BrowserDetector } from "./client";
-import type { DetectResult, LoadProgress, ReadyInfo } from "./types";
+import { DEFAULT_MODEL_ID } from "./models";
+import type { DetectResult, Engine, LoadProgress, ReadyInfo } from "./types";
 
 export interface DetectorState {
   status: "idle" | "loading" | "ready" | "error";
@@ -15,6 +16,10 @@ export interface DetectorState {
   info: ReadyInfo | null;
   error: string | null;
   startedAt: number | null;
+  /** The model being loaded or running. */
+  engine: Engine | null;
+  /** True when the archive classifier couldn't load and YOLO-World took over. */
+  fellBack: boolean;
 }
 
 const IDLE: DetectorState = {
@@ -23,6 +28,8 @@ const IDLE: DetectorState = {
   info: null,
   error: null,
   startedAt: null,
+  engine: null,
+  fellBack: false,
 };
 
 let detector: BrowserDetector | null = null;
@@ -34,22 +41,39 @@ function set(patch: Partial<DetectorState>) {
   for (const l of listeners) l();
 }
 
-/** Start loading (no-op if already loading or ready). */
-export function ensureDetector(): void {
-  if (typeof window === "undefined" || state.status === "loading" || state.status === "ready") {
-    return;
-  }
+/**
+ * Load a model. The archive classifier is the main scanner; if it can't load (download,
+ * integrity check, unsupported browser) YOLO-World takes over, and only then.
+ */
+function start(engine: Engine, fellBack: boolean) {
   detector?.dispose();
-  const d = new BrowserDetector();
+  const d = new BrowserDetector(DEFAULT_MODEL_ID, engine);
   detector = d;
-  set({ status: "loading", progress: null, info: null, error: null, startedAt: Date.now() });
+  set({
+    status: "loading",
+    progress: null,
+    info: null,
+    error: null,
+    startedAt: fellBack ? (state.startedAt ?? Date.now()) : Date.now(),
+    engine,
+    fellBack,
+  });
   d.load((progress) => detector === d && set({ progress }))
     .then((info) => detector === d && set({ status: "ready", info }))
     .catch((e: Error) => {
       if (detector !== d) return;
       reportError("detector", e); // Phase 24: real-device load failures (e.g. old iOS, low memory)
+      if (engine === "archive") return start("yolo", true);
       set({ status: "error", error: e.message });
     });
+}
+
+/** Start loading (no-op if already loading or ready). */
+export function ensureDetector(): void {
+  if (typeof window === "undefined" || state.status === "loading" || state.status === "ready") {
+    return;
+  }
+  start("archive", false);
 }
 
 /** Throw away a failed/stuck detector and start again. */

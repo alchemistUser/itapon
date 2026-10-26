@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Model pin check (Phase 24): whenever the pinned model revision or its hashes change,
-# download the exact files the browser will load, verify them against PINNED_SHA256, and run
-# the regression set (ml/regression-set) on them.
+# download the exact files the browser will load, verify them against PINNED_SHA256 and
+# ARCHIVE_PINNED_SHA256, and run the YOLO regression set (ml/regression-set) on the YOLO files.
 name: Model regression
 
 on:
@@ -29,6 +29,8 @@ jobs:
         working-directory: services/ml-api
         run: |
           uv sync --locked --group build
-          for f in ../../pinned/*.onnx; do
+          # YOLO-World files only: the archive classifier (D28) is a different model type; its
+          # hashes are verified above and its tests are in apps/web.
+          for f in ../../pinned/itapon-world-*.onnx; do
             uv run --no-sync python -m scripts.model_regression --set ../../ml/regression-set --model "$f"
           done

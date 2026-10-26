@@ -47,7 +47,11 @@ export interface LoadProgress {
   total?: number;
 }
 
+/** Which model answers: the archive classifier (main) or YOLO-World (fallback). */
+export type Engine = "archive" | "yolo";
+
 export interface ReadyInfo {
+  engine: Engine;
   modelVersion: string;
   modelId: string;
   backend: "wasm";

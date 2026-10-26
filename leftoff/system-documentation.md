@@ -49,7 +49,7 @@ For end users, see the [user manual](user-manual.md). For what's left to do, see
 | Levels, streaks, badges, leaderboards | **Live** | Phase 33 |
 | Admin analytics, campus content editor, evaluation tools | **Live** | Phase 34 |
 | Feature flags, v2 release docs, staff guide | **Done** | Phase 35; v2.0.0 tag waits for the smoke test |
-| Trained model (custom YOLO) | **Not done** | v1 runs zero-shot YOLO-World (D11) |
+| Main scanner model | **Archive classifier** (12 classes) with YOLO-World as fallback | D28; trained by the team; field accuracy not yet measured ([docs/archive-classifier.md](../docs/archive-classifier.md)) |
 | Manuscript and defense | **Not started** | Phase 26 |
 | Thesis scope | Library in; accounts and points are **future work** in the manuscript | D16, D20 |
 
@@ -63,10 +63,11 @@ and dependency audit.
 ## 2. Features
 
 ### For everyone (no account needed)
-- **Scanner** (`/scan`): live camera or photo upload; detects up to several items, locks on a
-  stable result, shows the bin, a short instruction and confidence, reads it aloud (English or
-  Filipino), and asks "Was this right?". Multi-item scans get a **"What to do next" plan**
-  (`/scan/plan`).
+- **Scanner** (`/scan`): live camera or photo upload; the **archive classifier** names what is
+  in the frame (12 categories such as plastic, metal, glass, paper, battery), locks on a stable
+  result, shows the bin, a short instruction and confidence, reads it aloud (English or
+  Filipino), and asks "Was this right?". If the classifier can't load, YOLO-World takes over:
+  it also draws boxes and offers a **"What to do next" plan** (`/scan/plan`) for several items.
 - **Post-scan library card**: "Which one is yours?" chooser (for example PET water bottle vs
   HDPE shampoo bottle, with a resin-code tip), where else it can go, a reuse or reduce idea, the
   Quezon City rule and a link to the full entry.
@@ -131,7 +132,7 @@ pairing to an institution with a 6-digit code.
 flowchart LR
   subgraph Browser["Browser (phone, laptop, kiosk tablet)"]
     UI["Next.js app (React 19)"]
-    W["Web Worker: YOLO-World ONNX<br/>onnxruntime-web (WebGPU / WASM)"]
+    W["Web Worker: archive classifier (main)<br/>or YOLO-World (fallback)<br/>onnxruntime-web (WASM)"]
     SW["Service worker (sw.js)<br/>pages, library files, scan-log queue"]
     UI <--> W
     UI <--> SW
@@ -168,7 +169,7 @@ flowchart LR
 
 ### Main flows
 
-**Scan.** The camera frame goes to the Web Worker's YOLO-World model. The stability gate locks a
+**Scan.** The camera frame goes to the Web Worker's archive classifier (or YOLO-World if the classifier couldn't load). The stability gate locks a
 result once the same class wins for several frames. The item maps to its bin (from the content
 store, refreshed from `waste_items`), and the result shows with read aloud. The scan is logged
 to `scan_sessions` / `scan_detections`; a trigger sets the bin and kiosk/institution context.
@@ -233,7 +234,20 @@ supabase-js (loaded on first use).
 | `prefs.ts`, `speech.ts` | Preferences; read aloud (EN/FIL voices) |
 | `monitoring.ts` | First-party error reporting (`client_errors`) |
 
-### 4.2 On-device detector
+### 4.2 On-device models
+
+Two models run in the browser, both through `onnxruntime-web` in a Web Worker and both hosted on
+Hugging Face (`alchemistUserhf/itapon-yolo`) with pinned SHA-256 hashes. Full details of the
+main one: [docs/archive-classifier.md](../docs/archive-classifier.md).
+
+**Archive image classifier (main scanner, D28).** MobileNetV2, 192 px, ONNX 9 MB, tag
+`archive-v1`; 12 whole-image classes mapped to the four bins (`src/lib/archive-classifier/`).
+It outputs one detection per frame and has no "nothing here" class, so the worker skips flat
+frames and the scanner needs a probability of at least 0.7 and the same class on 3 of 4 frames
+before locking. In-dataset accuracy 95.3% (package metrics); field accuracy is **not yet
+measured**. If it fails to load, the store starts YOLO-World.
+
+**YOLO-World (fallback).**
 
 - **Model:** zero-shot **YOLO-World** with the 23 spec classes baked in as text prompts (D11),
   exported to ONNX, int8, 480 px input. Files are hosted on Hugging Face
@@ -500,7 +514,7 @@ Full text in [ROADMAP.md](../ROADMAP.md) §1.
 | D8 | 23 v1 classes |
 | D9 | Dirty vs clean shown as a caveat, not classes |
 | D10 | Tool versions (Node 20, pnpm 9, Next 16.4, Tailwind 4, Python 3.12, uv) |
-| D11 | Zero-shot YOLO-World for v0 |
+| D11 | Zero-shot YOLO-World for v0 (now the fallback, D28) |
 | D12 | Inference in the browser (ONNX, Web Worker) |
 | D13 | Feedback review and model promotion rule |
 | D14 | Hand-written service worker |
@@ -523,8 +537,10 @@ Full text in [ROADMAP.md](../ROADMAP.md) §1.
 ## 14. Known limitations and open items
 
 **Product and technical**
-- Zero-shot model: accuracy on real Philippine waste isn't measured yet; a trained model is
-  deferred. Low-light and cluttered scenes reduce confidence.
+- Scanner accuracy on real Philippine waste isn't measured yet (the classifier's 95% is on its
+  own dataset). It gives one answer per photo (no multi-item plan unless the YOLO fallback runs),
+  and a textured background can still lock on a wrong class. Run the field test in
+  docs/archive-classifier.md.
 - Library entries are AI-drafted and not yet reviewed (D25). The drop-off finder has no
   verified places until admins add them.
 - No emails: no account confirmation, magic links or password reset (D24). Extra accounts are
@@ -573,6 +589,7 @@ pilot/                 pilot data folder (templates, report output)
 | [retraining.md](../docs/retraining.md) | Feedback → retraining → promotion |
 | [setup-accounts.md](../docs/setup-accounts.md) | One-time service setup |
 | [points.md](../docs/points.md) | Missions, points, levels, badges, leaderboards |
+| [../docs/archive-classifier.md](../docs/archive-classifier.md) | The main scanner model: how it works, guards, hosting, replacing it, field test |
 | [library/](../docs/library/README.md) | Library taxonomy, template, style guide, sources, coverage |
 | [accounts/](../docs/accounts/privacy-review.md) | Privacy review, readiness, email setup |
 | [pilot/](../docs/pilot/README.md) | Pilot protocol, consent, questionnaires, audit |

@@ -3,7 +3,7 @@
 // create the ONNX Runtime session, then letterbox → infer → decode for each frame.
 import * as ort from "onnxruntime-web/wasm";
 
-import { MODEL_CACHE } from "./models";
+import { evictOtherModels, fetchJsonCached, fetchWithCache, verify } from "./model-files";
 import { decodeDetections, letterboxGeometry, rgbaToChw } from "./processing";
 import type { FromWorker, Label, LabelsFile, ModelSpec, ToWorker } from "./types";
 
@@ -18,92 +18,6 @@ let canvas: OffscreenCanvas | null = null;
 let ctx: OffscreenCanvasRenderingContext2D | null = null;
 let input: Float32Array | null = null;
 
-async function fetchWithCache(url: string, onProgress?: (loaded: number, total?: number) => void) {
-  let cache: Cache | null = null;
-  try {
-    cache = await caches.open(MODEL_CACHE);
-    const hit = await cache.match(url);
-    if (hit) return { buffer: await hit.arrayBuffer(), fromCache: true };
-  } catch {
-    cache = null; // Cache API unavailable (private mode, http): just download
-  }
-
-  const res = await fetch(url);
-  if (!res.ok || !res.body) throw new Error(`Download failed (${res.status}) for ${url}`);
-  const total = Number(res.headers.get("content-length")) || undefined;
-  const reader = res.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let loaded = 0;
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(value);
-    loaded += value.byteLength;
-    onProgress?.(loaded, total);
-  }
-  const bytes = new Uint8Array(loaded);
-  let offset = 0;
-  for (const c of chunks) {
-    bytes.set(c, offset);
-    offset += c.byteLength;
-  }
-  if (cache) {
-    await cache.put(url, new Response(bytes, { headers: res.headers })).catch(() => {});
-  }
-  return { buffer: bytes.buffer, fromCache: false };
-}
-
-async function sha256Hex(data: ArrayBuffer): Promise<string> {
-  const d = new Uint8Array(await crypto.subtle.digest("SHA-256", data));
-  return Array.from(d, (b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-/** Phase 22: refuse files that don't match the hash pinned in the app (and drop the cache copy). */
-async function verify(url: string, data: ArrayBuffer, expected: string | null) {
-  if (expected === null) return; // dev / preview tag: not pinned
-  if ((await sha256Hex(data)) === expected) return;
-  try {
-    await (await caches.open(MODEL_CACHE)).delete(url);
-  } catch {
-    /* no cache */
-  }
-  throw new Error("The scanner model failed its integrity check. Reload to download it again.");
-}
-
-/** Labels: network first (small), cached copy when offline (Phase 21). */
-async function fetchLabels(url: string, sha256: string | null): Promise<LabelsFile> {
-  let cache: Cache | null = null;
-  try {
-    cache = await caches.open(MODEL_CACHE);
-  } catch {
-    cache = null;
-  }
-  let res: Response | undefined;
-  try {
-    res = await fetch(url);
-    if (!res.ok) throw new Error(`Labels download failed (${res.status})`);
-    await cache?.put(url, res.clone()).catch(() => {});
-  } catch (e) {
-    res = await cache?.match(url);
-    if (!res) throw e;
-  }
-  const bytes = await res.arrayBuffer();
-  await verify(url, bytes, sha256);
-  return JSON.parse(new TextDecoder().decode(bytes)) as LabelsFile;
-}
-
-/** Drop cached files of other model versions/sizes once the pinned one is loaded (D12). */
-async function evictOtherModels(keep: string[]) {
-  try {
-    const cache = await caches.open(MODEL_CACHE);
-    for (const req of await cache.keys()) {
-      if (!keep.includes(req.url)) await cache.delete(req);
-    }
-  } catch {
-    /* Cache API unavailable */
-  }
-}
-
 async function load(msg: Extract<ToWorker, { type: "load" }>) {
   const start = performance.now();
   spec = msg.model;
@@ -114,7 +28,7 @@ async function load(msg: Extract<ToWorker, { type: "load" }>) {
   const threads = self.crossOriginIsolated ? Math.min(4, navigator.hardwareConcurrency || 1) : 1;
   ort.env.wasm.numThreads = threads;
 
-  const labelsFile = await fetchLabels(msg.labelsUrl, msg.labelsSha256);
+  const labelsFile = await fetchJsonCached<LabelsFile>(msg.labelsUrl, msg.labelsSha256);
   labels = labelsFile.labels;
 
   const { buffer, fromCache } = await fetchWithCache(msg.modelUrl, (loaded, total) =>
@@ -142,11 +56,12 @@ async function load(msg: Extract<ToWorker, { type: "load" }>) {
   await infer(new Float32Array(3 * size * size)); // first run builds kernels; do it before "ready"
   const tReady = performance.now();
   const abs = (u: string) => new URL(u, self.location.href).href;
-  void evictOtherModels([abs(msg.modelUrl), abs(msg.labelsUrl)]);
+  void evictOtherModels([abs(msg.modelUrl), abs(msg.labelsUrl)], "itapon-world-");
 
   post({
     type: "ready",
     info: {
+      engine: "yolo",
       modelVersion: labelsFile.model_version,
       modelId: spec.id,
       backend: "wasm",

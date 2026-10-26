@@ -25,7 +25,7 @@ Live app: **itapon.vercel.app**
 - [ ] Volume up, silent mode off, screen brightness up, battery charged.
 
 **Props on the table**
-- [ ] A **plastic bottle**, an **AA battery**, a **banana peel** (or any fruit peel).
+- [ ] A **plastic bottle**, an **AA battery**, a **banana peel** (or any fruit peel). Try each once beforehand on the demo device with good light and a plain background; the scanner skips blank walls and needs a clear view.
 
 **Tabs to have open (in order)**
 1. `/scan` (phone)
@@ -50,11 +50,14 @@ Show the home screen and the four bin colours: green, blue, black, red.
 2. Point out: **Recyclable** (blue bin), the instruction, "92% sure", and **Read aloud** (tap
    it).
    > "Recognition runs on the phone itself. The camera image never leaves the device."
-3. Under the result, the **"Which one is yours?"** card: tap **Shampoo or detergent bottle #2**.
-   > "The camera can't tell PET from HDPE, so we ask, with a tip: check the number in the
-   > triangle."
-4. Show **Where else it can go** ("Junk shops buy this") and the **reuse idea**.
-5. Quickly scan the **battery** → **Hazardous waste** (red bin).
+3. Under the result, the library card points to the **Plastics** group with the tip "check the
+   number in the triangle". Tap it to jump into the library.
+   > "The camera knows it's plastic; the library tells you exactly which type and how to
+   > prepare it."
+4. Scan the **battery** → **Hazardous waste** (red bin). Here the card shows **"Which one is
+   yours?"**: tap **AA or AAA battery**, then show **Where else it can go**.
+5. Hold up the **banana peel** → **Biodegradable** (green bin).
+   > "One item at a time: the scanner names what is in the frame."
 
 ### 1:45 – 2:30 · Disposal library
 1. Open **Library**: 175 items in 16 materials, from plastics by resin code to e-waste and

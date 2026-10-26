@@ -29,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${inter.variable} h-full`}>
       <head>
-        {/* The model (13 MB) comes from the Hugging Face CDN (D12): open the connection early. */}
+        {/* The models (archive classifier 9 MB, YOLO fallback 13 MB) come from the Hugging Face CDN (D12): open the connection early. */}
         <link rel="preconnect" href="https://huggingface.co" crossOrigin="anonymous" />
       </head>
       <body className="flex min-h-full flex-col">

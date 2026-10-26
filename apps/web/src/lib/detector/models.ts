@@ -55,6 +55,58 @@ export const MIN_CONFIDENCE = 0.1;
 export const CONFIDENT_THRESHOLD = 0.35;
 export const POSSIBLE_THRESHOLD = 0.15;
 
+// --- Archive image classifier: the main scanner (12 whole-image classes) ---------------------
+// Same Hugging Face repo and integrity rules as the YOLO files above, under its own tag.
+// YOLO-World stays as the fallback when this model can't load (src/lib/detector/store.ts).
+
+export const ARCHIVE_PINNED_BASE_URL =
+  "https://huggingface.co/alchemistUserhf/itapon-yolo/resolve/archive-v1";
+
+/** NEXT_PUBLIC_ARCHIVE_MODEL_BASE_URL overrides it (e.g. to try a new tag on a preview). */
+export const ARCHIVE_BASE_URL = (
+  process.env.NEXT_PUBLIC_ARCHIVE_MODEL_BASE_URL || ARCHIVE_PINNED_BASE_URL
+).replace(/\/$/, "");
+
+export const ARCHIVE_MODEL_FILE = "itapon-archive-classifier.onnx";
+export const ARCHIVE_LABELS_FILE = "itapon-archive-classifier.labels.json";
+
+/** SHA-256 of every file under ARCHIVE_PINNED_BASE_URL (same rule as PINNED_SHA256). */
+export const ARCHIVE_PINNED_SHA256: Record<string, string> = {
+  [ARCHIVE_MODEL_FILE]: "72a3e236045f9a9158ca4d6236a5cfa5959e76914f52b361b4dac6d282f96fbf",
+  [ARCHIVE_LABELS_FILE]: "107176c7a6881c53445f20d1aefa9220cf51f2eab444e669537b5e41a6b1e7d2",
+};
+
+export function expectedArchiveSha256(file: string): string | null {
+  return ARCHIVE_BASE_URL === ARCHIVE_PINNED_BASE_URL
+    ? (ARCHIVE_PINNED_SHA256[file] ?? "missing")
+    : null;
+}
+
+export const ARCHIVE_MODEL: ModelSpec = {
+  id: "archive-192",
+  file: ARCHIVE_MODEL_FILE,
+  imgsz: 192,
+  approxMB: 9,
+};
+
+/**
+ * The classifier always names one of its 12 classes, even for an empty scene, so a frame
+ * only counts when its top probability is at least this. Measured 2026-10-26 through the real
+ * camera pipeline: at 0.85 three of 17 correct dataset photos were refused (scores 0.83, 0.71,
+ * 0.58); synthetic blank frames reach 0.78. Flat frames are skipped separately
+ * (isNearlyUniform) and the scan loop needs the same class on 3 of 4 frames, so 0.7 trades a
+ * few borderline refusals for fewer misses. Tune it against the field test.
+ */
+export const ARCHIVE_MIN_CONFIDENCE = 0.7;
+
+export function archiveModelUrl(): string {
+  return `${ARCHIVE_BASE_URL}/${ARCHIVE_MODEL_FILE}`;
+}
+
+export function archiveLabelsUrl(): string {
+  return `${ARCHIVE_BASE_URL}/${ARCHIVE_LABELS_FILE}`;
+}
+
 export const WASM_PATH = "/ort/";
 export const MODEL_CACHE = "itapon-models-v1";
 

@@ -9,7 +9,7 @@ import { HashHighlight } from "@/components/guide/hash-highlight";
 import { ButtonLink } from "@/components/ui/button";
 import { Note } from "@/components/ui/primitives";
 import { BIN_ORDER, BINS } from "@/lib/bins";
-import { ITEMS } from "@/lib/content";
+import { GUIDE_ITEMS } from "@/lib/content";
 import { itemPath } from "@/lib/library/core";
 import { LIBRARY } from "@/lib/library/server";
 import type { Category } from "@/lib/detector/types";
@@ -39,7 +39,7 @@ export default async function GuideCategoryPage(props: PageProps<"/guide/[catego
   const more = LIBRARY.items
     .filter((i) => i.bin === category)
     .sort((a, b) => a.name_en.localeCompare(b.name_en));
-  const items = ITEMS.filter((i) => i.category === category).sort(
+  const items = GUIDE_ITEMS.filter((i) => i.category === category).sort(
     (a, b) => Number(b.detectable) - Number(a.detectable) || a.name.localeCompare(b.name),
   );
 

@@ -4,16 +4,30 @@
 //   await d.load(progress => …);
 //   const { detections } = await d.detect(videoOrImage);
 import {
+  ARCHIVE_LABELS_FILE,
+  ARCHIVE_MIN_CONFIDENCE,
+  ARCHIVE_MODEL,
   DEFAULT_MODEL_ID,
   LABELS_FILE,
   MIN_CONFIDENCE,
   MODELS,
   WASM_PATH,
+  archiveLabelsUrl,
+  archiveModelUrl,
+  expectedArchiveSha256,
   expectedSha256,
   labelsUrl,
   modelUrl,
 } from "./models";
-import type { DetectResult, FromWorker, LoadProgress, ReadyInfo, ToWorker } from "./types";
+import type {
+  DetectResult,
+  Engine,
+  FromWorker,
+  LoadProgress,
+  ModelSpec,
+  ReadyInfo,
+  ToWorker,
+} from "./types";
 
 type Pending = { resolve: (r: DetectResult) => void; reject: (e: Error) => void };
 
@@ -25,9 +39,19 @@ export class BrowserDetector {
   private onProgress?: (p: LoadProgress) => void;
   private loadHandlers?: { resolve: (i: ReadyInfo) => void; reject: (e: Error) => void };
 
-  constructor(private readonly modelId: string = DEFAULT_MODEL_ID) {
-    if (!MODELS[modelId]) throw new Error(`Unknown model ${modelId}`);
-    this.worker = new Worker(new URL("./detector.worker.ts", import.meta.url), { type: "module" });
+  /**
+   * `engine` "archive" runs the archive image classifier (the main scanner); "yolo" runs
+   * YOLO-World (the fallback, and what the dev tools use). `modelId` picks the YOLO variant.
+   */
+  constructor(
+    private readonly modelId: string = DEFAULT_MODEL_ID,
+    readonly engine: Engine = "yolo",
+  ) {
+    if (engine === "yolo" && !MODELS[modelId]) throw new Error(`Unknown model ${modelId}`);
+    this.worker =
+      engine === "archive"
+        ? new Worker(new URL("./archive-classifier.worker.ts", import.meta.url), { type: "module" })
+        : new Worker(new URL("./detector.worker.ts", import.meta.url), { type: "module" });
     this.worker.onmessage = (e: MessageEvent<FromWorker>) => this.handle(e.data);
     this.worker.onerror = (e) => this.failAll(new Error(e.message || "Detector worker crashed"));
   }
@@ -36,19 +60,36 @@ export class BrowserDetector {
     this.onProgress = onProgress;
     this.loadPromise ??= new Promise<ReadyInfo>((resolve, reject) => {
       this.loadHandlers = { resolve, reject };
-      const model = MODELS[this.modelId];
-      this.send({
-        type: "load",
-        model,
-        modelUrl: modelUrl(model),
-        labelsUrl: labelsUrl(),
-        modelSha256: expectedSha256(model.file),
-        labelsSha256: expectedSha256(LABELS_FILE),
-        wasmPath: WASM_PATH,
-        minConfidence: MIN_CONFIDENCE,
-      });
+      this.send(this.loadMessage());
     });
     return this.loadPromise;
+  }
+
+  private loadMessage(): Extract<ToWorker, { type: "load" }> {
+    if (this.engine === "archive") {
+      const model: ModelSpec = ARCHIVE_MODEL;
+      return {
+        type: "load",
+        model,
+        modelUrl: archiveModelUrl(),
+        labelsUrl: archiveLabelsUrl(),
+        modelSha256: expectedArchiveSha256(model.file),
+        labelsSha256: expectedArchiveSha256(ARCHIVE_LABELS_FILE),
+        wasmPath: WASM_PATH,
+        minConfidence: ARCHIVE_MIN_CONFIDENCE,
+      };
+    }
+    const model = MODELS[this.modelId];
+    return {
+      type: "load",
+      model,
+      modelUrl: modelUrl(model),
+      labelsUrl: labelsUrl(),
+      modelSha256: expectedSha256(model.file),
+      labelsSha256: expectedSha256(LABELS_FILE),
+      wasmPath: WASM_PATH,
+      minConfidence: MIN_CONFIDENCE,
+    };
   }
 
   async detect(source: ImageBitmapSource): Promise<DetectResult> {

@@ -3,3 +3,6 @@ src/content/
 src/lib/database.types.ts
 public/ort/
 public/models/
+
+# Byte-identical copy of the model labels file; its SHA-256 is pinned in models.ts (tested)
+src/lib/archive-classifier/labels.json

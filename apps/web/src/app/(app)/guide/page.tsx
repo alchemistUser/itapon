@@ -9,7 +9,7 @@ import { LibrarySearch } from "@/components/library/library-search";
 import { ButtonLink } from "@/components/ui/button";
 import { PageTitle } from "@/components/ui/primitives";
 import { BIN_ORDER, BINS } from "@/lib/bins";
-import { ITEMS } from "@/lib/content";
+import { GUIDE_ITEMS } from "@/lib/content";
 import { groupsOf, materialPath } from "@/lib/library/core";
 import { LIBRARY } from "@/lib/library/server";
 
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 // Prerendered from the bundled content; search refreshes from Supabase in the browser.
 export default function GuidePage() {
   const counts = Object.fromEntries(
-    BIN_ORDER.map((k) => [k, ITEMS.filter((i) => i.category === k).length]),
+    BIN_ORDER.map((k) => [k, GUIDE_ITEMS.filter((i) => i.category === k).length]),
   );
   return (
     <div className="flex flex-col gap-6">

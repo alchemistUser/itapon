@@ -51,7 +51,7 @@ scan, so your scans are saved on this device.
 ### 1.2 Scan an item
 
 1. Tap **Scan**. The first time, your browser asks to use the camera: choose **Allow**.
-2. The first scan downloads the scanner (a few MB) and shows a warming-up screen. After that
+2. The first scan downloads the scanner (about 9 MB) and shows a warming-up screen. After that
    it starts quickly, even offline.
 3. Hold **one item** in the frame, about 30–50 cm away, in good light. Hold it steady.
 4. When iTapon is sure, it locks the result:
@@ -69,8 +69,10 @@ scan, so your scans are saved on this device.
 **When iTapon isn't sure**, it says "We think this is…" with the percentage and what else it
 could be. Check the **Bin Guide** if in doubt.
 
-**Several items at once?** iTapon detects them all and offers **What to do next**: a short
-plan that tells you, item by item, what to reuse, prepare and where each one goes.
+**Several items at once?** Show **one item at a time**. iTapon names what it sees in the whole
+photo, so a mix of items can give a wrong answer. (If the main scanner can't load on your
+device, iTapon switches to a backup scanner that finds several items and offers **What to do
+next**: a short plan for each item.)
 
 ### 1.3 "Which one is yours?" and the library card
 

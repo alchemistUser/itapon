@@ -398,7 +398,8 @@ export function ScanScreen() {
         // eslint-disable-next-line @next/next/no-img-element -- local blob preview
         <img src={photo.url} alt="Your photo" className="absolute inset-0 size-full object-cover" />
       ) : null}
-      {shownFrame ? (
+      {shownFrame && det.info?.engine !== "archive" ? (
+        // The archive classifier has no boxes (its detections cover the whole frame): none drawn.
         <BoxOverlay
           detections={shownFrame.detections}
           frameW={shownFrame.width}
@@ -463,7 +464,7 @@ export function ScanScreen() {
             ) : null
           ) : (
             <p className="max-w-xs text-sm text-white/80">
-              The scanner needs to be online once to download (about 13 MB). Browse the Bin Guide
+              The scanner needs to be online once to download (about 9 MB). Browse the Bin Guide
               instead. It works offline.
             </p>
           )}
@@ -577,7 +578,12 @@ export function ScanScreen() {
   return (
     <>
       {photoInput}
-      <span hidden data-testid="scan-log" data-scan-id={logged?.scanId ?? ""} />
+      <span
+        hidden
+        data-testid="scan-log"
+        data-scan-id={logged?.scanId ?? ""}
+        data-engine={det.info?.engine ?? ""}
+      />
       <p className="sr-only" role="status" aria-live="polite">
         {locked ? `${locked.view.name}. ${BINS[locked.view.category].binLabel}.` : ""}
       </p>

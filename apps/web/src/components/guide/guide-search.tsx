@@ -8,12 +8,14 @@ import { useId, useMemo, useState } from "react";
 import { BinTile } from "@/components/bins/bins";
 import { SearchInput } from "@/components/ui/misc";
 import { BINS } from "@/lib/bins";
+import { ARCHIVE_ONLY_KEYS } from "@/lib/archive-classifier/classes";
 import { useItems } from "@/lib/content-store";
 import { createItemSearch } from "@/lib/search";
 
 /** Search box + results (Phase 15). Results link to the item on its bin's guide page. */
 export function GuideSearch({ className }: { className?: string }) {
-  const items = useItems();
+  const all = useItems();
+  const items = useMemo(() => all.filter((i) => !ARCHIVE_ONLY_KEYS.has(i.classKey)), [all]);
   const search = useMemo(() => createItemSearch(items), [items]);
   const [query, setQuery] = useState("");
   const results = useMemo(() => search(query), [search, query]);
