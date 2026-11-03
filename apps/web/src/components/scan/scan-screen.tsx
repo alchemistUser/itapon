@@ -318,6 +318,19 @@ export function ScanScreen() {
     setPhoto(null);
   }
 
+  // Escape leaves a result (or the "not sure" / photo views) and goes back to scanning.
+  const nextRef = useRef(next);
+  useEffect(() => {
+    nextRef.current = next;
+  });
+  const leaveResult = Boolean(locked || unknown || photo || photoError);
+  useEffect(() => {
+    if (!leaveResult) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && nextRef.current();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [leaveResult]);
+
   async function onPhoto(file: File | undefined) {
     if (!file) return;
     setPhotoError(null);
@@ -609,7 +622,7 @@ export function ScanScreen() {
               }
             />
           ) : (
-            <SheetShell label="Scanner status">
+            <SheetShell label="Scanner status" onDismiss={unknown || photoError ? next : undefined}>
               {statusContent}
               {!photoError ? photoLink : null}
             </SheetShell>

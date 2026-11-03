@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Scanner / result building blocks shared by the live scanner (Phase 12), the result
 // page and the kiosk mock. Phase 13 adds scan logging and Supabase content.
-import { ChevronLeft, ListChecks } from "lucide-react";
+"use client";
+
+import { ChevronLeft, ListChecks, X } from "lucide-react";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { type ReactNode, type TouchEvent, useRef } from "react";
 
 import { BinRow, BinTile, Instruction } from "@/components/bins/bins";
 import { Button, ButtonLink } from "@/components/ui/button";
@@ -136,6 +138,23 @@ export function CameraMock({ className, title }: { className?: string; title?: s
   );
 }
 
+/** One-tap way out of a result, back to the camera (the same action as "Scan again"). */
+function CloseResult({ onClose, className }: { onClose: () => void; className?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClose}
+      aria-label="Close and scan again"
+      className={cn(
+        "flex size-11 shrink-0 items-center justify-center rounded-full text-ink-3 hover:bg-surface hover:text-ink",
+        className,
+      )}
+    >
+      <X aria-hidden className="size-5" />
+    </button>
+  );
+}
+
 function NextScan({ onNext }: { onNext?: () => void }) {
   return onNext ? (
     <Button variant="dark" onClick={onNext}>
@@ -181,9 +200,12 @@ export function ResultPanel({
             {bin.name}
           </h2>
         </div>
-        {item.confidence !== undefined ? (
-          <ConfidenceBadge value={item.confidence} className="mt-6 px-4 py-1.5 text-sm" />
-        ) : null}
+        <div className="flex items-start gap-2">
+          {item.confidence !== undefined ? (
+            <ConfidenceBadge value={item.confidence} className="mt-6 px-4 py-1.5 text-sm" />
+          ) : null}
+          {onNext ? <CloseResult onClose={onNext} className="mt-4" /> : null}
+        </div>
       </div>
       <Instruction text={item.instruction} category={item.category} className="text-xl text-ink" />
       {isUnsure(item) ? <UnsureNote item={item} /> : null}
@@ -213,8 +235,11 @@ export function ResultSheet({
 }) {
   const bin = BINS[item.category];
   return (
-    <SheetShell labelledBy="sheet-heading">
-      <p className="text-xs font-medium text-ink-3">{item.name}</p>
+    <SheetShell labelledBy="sheet-heading" onDismiss={onNext}>
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-xs font-medium text-ink-3">{item.name}</p>
+        {onNext ? <CloseResult onClose={onNext} className="-mt-2 -mr-2.5 -mb-3" /> : null}
+      </div>
       <div className="flex items-center justify-between gap-3">
         <h2 id="sheet-heading" className={cn("text-xl font-bold", bin.text)}>
           {bin.name}
@@ -237,7 +262,8 @@ export function ResultSheet({
       {library ? <div className="mt-3">{library}</div> : null}
       <PlanLink item={item} className="mt-4 w-full" />
       {feedback ? <div className="mt-4">{feedback}</div> : null}
-      <div className="mt-4 mb-3 grid grid-cols-[auto_1fr] gap-3">
+      {/* Pinned, so "Scan again" is always on screen however long the sheet is. */}
+      <div className="sticky bottom-0 z-10 -mx-5 mt-4 grid grid-cols-[auto_1fr] gap-3 bg-white px-5 pt-3 pb-3">
         {onNext ? (
           <Button variant="outline" onClick={onNext}>
             Scan again
@@ -251,19 +277,39 @@ export function ResultSheet({
   );
 }
 
+const SWIPE_MIN_PX = 80;
+
 export function SheetShell({
   children,
   labelledBy,
   label,
+  onDismiss,
 }: {
   children: ReactNode;
   labelledBy?: string;
   label?: string;
+  /** Swiping the sheet down (from the top of the page) calls this. */
+  onDismiss?: () => void;
 }) {
+  const start = useRef<{ x: number; y: number } | null>(null);
+  const onTouchStart = (e: TouchEvent) => {
+    const t = e.touches[0];
+    // Only a pull from the top of the page: a scroll through a long sheet must not dismiss it.
+    start.current = t && window.scrollY <= 0 ? { x: t.clientX, y: t.clientY } : null;
+  };
+  const onTouchEnd = (e: TouchEvent) => {
+    const s = start.current;
+    const t = e.changedTouches[0];
+    start.current = null;
+    if (!onDismiss || !s || !t) return;
+    if (t.clientY - s.y > SWIPE_MIN_PX && Math.abs(t.clientX - s.x) < SWIPE_MIN_PX) onDismiss();
+  };
   return (
     <section
       aria-labelledby={labelledBy}
       aria-label={label}
+      onTouchStart={onDismiss ? onTouchStart : undefined}
+      onTouchEnd={onDismiss ? onTouchEnd : undefined}
       className="pb-safe relative z-30 -mt-6 rounded-t-3xl bg-white px-5 pt-3 shadow-[0_-8px_24px_rgb(0_0_0/0.12)]"
     >
       <div aria-hidden className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-line" />
