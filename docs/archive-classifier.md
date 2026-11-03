@@ -139,8 +139,11 @@ often YOLO recognises them is unknown (the zero-shot model is weak: see the batt
 rule limits the damage; the field test below must include those items. The thresholds are in
 `hybrid.ts` and tested.
 
-**Cost.** Both models run on each frame (in parallel), so the frame rate follows YOLO's (about
-3 fps on a desktop), and the first visit downloads about 22 MB (9 MB first, 13 MB after).
+**Cost.** The classifier answers every frame and sets the frame rate. The YOLO helper runs in the
+background on whichever frame finds it idle (about 3 per second on a desktop); its latest look is
+used if it is under 1.5 s old, so the scan loop never waits for it. The helper (13 MB) and its CPU
+are only used on the scanner and kiosk screens; the idle preload on other pages loads the 9 MB
+classifier alone, and the classifier worker uses 2 threads so the helper gets the other cores.
 Multi-item "What to do next" is still not offered on the main path (one answer per scan).
 
 ## The two guards against false answers

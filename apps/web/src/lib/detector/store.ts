@@ -14,7 +14,7 @@ import { useSyncExternalStore } from "react";
 
 import { BrowserDetector } from "./client";
 import { DEFAULT_MODEL_ID } from "./models";
-import type { DetectResult, Engine, LoadProgress, ReadyInfo } from "./types";
+import type { DetectResult, Detection, Engine, LoadProgress, ReadyInfo } from "./types";
 
 export interface DetectorState {
   status: "idle" | "loading" | "ready" | "error";
@@ -73,7 +73,7 @@ function start(engine: Engine, fellBack: boolean) {
     .then((info) => {
       if (detector !== d) return;
       set({ status: "ready", info });
-      if (engine === "archive") startHelper(d);
+      if (engine === "archive" && wantHelper) startHelper(d);
     })
     .catch((e: Error) => {
       if (detector !== d) return;
@@ -108,6 +108,18 @@ function startHelper(main: BrowserDetector) {
     });
 }
 
+/**
+ * The helper is only worth its 13 MB and CPU on the scanner itself: the idle preload from other
+ * pages loads the classifier alone, and the scanner screens ask for the helper here.
+ */
+let wantHelper = false;
+export function ensureHelper(): void {
+  wantHelper = true;
+  if (detector && state.status === "ready" && state.engine === "archive" && !helper) {
+    startHelper(detector);
+  }
+}
+
 /** Start loading (no-op if already loading or ready). */
 export function ensureDetector(): void {
   if (typeof window === "undefined" || state.status === "loading" || state.status === "ready") {
@@ -122,32 +134,44 @@ export function retryDetector(): void {
   helper?.dispose();
   detector = null;
   helper = null;
+  helperLatest = null;
   state = IDLE;
   ensureDetector();
 }
 
+/** How old the helper's latest look may be and still count for the current frame. */
+const HELPER_MAX_AGE_MS = 1500;
+let helperLatest: { detections: Detection[]; at: number } | null = null;
+let helperBusy = false;
+
 /**
- * One frame. With the helper ready, both models look at it and `combineDetections` picks one
- * answer; otherwise the main model answers alone.
+ * One frame. The classifier (fast) answers every frame. The YOLO helper (several times slower)
+ * runs in the background on whichever frame finds it idle, and `combineDetections` uses its
+ * latest look if it is recent: the scan loop never waits for it.
  */
 export async function detect(source: ImageBitmapSource): Promise<DetectResult> {
   ensureDetector();
   const main = detector!;
   const h = state.engine === "archive" && state.specific === "ready" ? helper : null;
   if (!h) return main.detect(source);
-  const [a, y] = await Promise.all([main.detect(source), h.detect(source).catch(() => null)]);
-  const chosen = combineDetections(a.detections[0] ?? null, y?.detections ?? []);
-  return {
-    detections: chosen ? [chosen] : [],
-    inferenceMs: Math.max(a.inferenceMs, y?.inferenceMs ?? 0),
-  };
+  if (!helperBusy) {
+    helperBusy = true;
+    h.detect(source)
+      .then((r) => (helperLatest = { detections: r.detections, at: performance.now() }))
+      .catch(() => (helperLatest = null)) // the classifier alone keeps answering
+      .finally(() => (helperBusy = false));
+  }
+  const a = await main.detect(source);
+  const recent = helperLatest && performance.now() - helperLatest.at < HELPER_MAX_AGE_MS;
+  const chosen = combineDetections(a.detections[0] ?? null, recent ? helperLatest!.detections : []);
+  return { detections: chosen ? [chosen] : [], inferenceMs: a.inferenceMs };
 }
 
 /** Preload on idle from any page, unless the user asked to save data. */
 export function preloadDetectorWhenIdle(): () => void {
   // Network-aware (Phase 21): inference is on-device (D12), so the network only matters for
-  // the one-time download (9 MB classifier + 13 MB helper). Don't start it unasked on Data
-  // Saver or 2G; /scan still loads the classifier.
+  // the one-time download (9 MB classifier here; the 13 MB helper only loads on the scanner).
+  // Don't start it unasked on Data Saver or 2G; /scan still loads the classifier.
   if (saveData()) return () => {};
   const w = window as Window & {
     requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;

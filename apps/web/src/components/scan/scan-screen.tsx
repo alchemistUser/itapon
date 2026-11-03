@@ -29,7 +29,13 @@ import { getPrefs } from "@/lib/prefs";
 import { partsFor, speak, stopSpeaking } from "@/lib/speech";
 import { aggregateDetections } from "@/lib/scan/plan";
 import { CONFIDENT_THRESHOLD, POSSIBLE_THRESHOLD } from "@/lib/detector/models";
-import { detect, ensureDetector, retryDetector, useDetectorState } from "@/lib/detector/store";
+import {
+  detect,
+  ensureDetector,
+  ensureHelper,
+  retryDetector,
+  useDetectorState,
+} from "@/lib/detector/store";
 import type { Detection } from "@/lib/detector/types";
 import { topOf } from "@/lib/scan/stability";
 import { useCamera, type CameraStatus } from "@/lib/scan/use-camera";
@@ -222,7 +228,10 @@ export function ScanScreen() {
   const lockSeq = useRef(0); // ignores late results from a previous lock
   useContentSource(); // re-render when fresher item copy arrives from Supabase
 
-  useEffect(() => ensureDetector(), []);
+  useEffect(() => {
+    ensureDetector();
+    ensureHelper(); // the specific-item helper loads on the scanner only
+  }, []);
 
   const ready = det.status === "ready";
   const scanning = ready && camera.status === "live" && !locked && !photo && !photoBusy && !unknown;

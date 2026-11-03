@@ -19,7 +19,12 @@ import { Logo } from "@/components/ui/misc";
 import { WarmingUpOverlay } from "@/components/ui/warming-up-overlay";
 import { BINS } from "@/lib/bins";
 import { getItemLive, useContentSource } from "@/lib/content-store";
-import { ensureDetector, retryDetector, useDetectorState } from "@/lib/detector/store";
+import {
+  ensureDetector,
+  ensureHelper,
+  retryDetector,
+  useDetectorState,
+} from "@/lib/detector/store";
 import {
   loadKioskSettings,
   saveKioskSettings,
@@ -104,6 +109,7 @@ export function KioskScreen() {
   useEffect(() => {
     const t = window.setTimeout(() => setSettings(loadKioskSettings()), 0);
     ensureDetector();
+    ensureHelper();
     return () => window.clearTimeout(t);
   }, []);
 

@@ -33,7 +33,8 @@ async function load(msg: Extract<ToWorker, { type: "load" }>) {
 
   ort.env.wasm.wasmPaths = msg.wasmPath;
   // Threads need cross-origin isolation (site-wide COOP/COEP, see next.config.ts).
-  const threads = self.crossOriginIsolated ? Math.min(4, navigator.hardwareConcurrency || 1) : 1;
+  // The classifier is small, so 2 threads is plenty; the rest of the cores go to the YOLO helper.
+  const threads = self.crossOriginIsolated ? Math.min(2, navigator.hardwareConcurrency || 1) : 1;
   ort.env.wasm.numThreads = threads;
 
   labels = await fetchJsonCached<ArchiveLabels>(msg.labelsUrl, msg.labelsSha256);
