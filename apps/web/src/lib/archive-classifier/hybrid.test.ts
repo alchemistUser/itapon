@@ -51,12 +51,9 @@ describe("the tables", () => {
       [
         "expired_medicine",
         "light_bulb",
-        "plastic_utensil",
         "sanitary_napkin",
         "soiled_food_container",
         "spray_can",
-        "straw",
-        "styrofoam",
         "used_tissue",
       ].sort(),
     );
@@ -76,9 +73,11 @@ describe("combineDetections with a classifier answer", () => {
   });
 
   it("lets YOLO name a specific item the classifier files under a broader class", () => {
-    expect(combineDetections(arch("plastic"), [yolo("straw", 0.5)])?.class_key).toBe("straw");
-    expect(combineDetections(arch("paper"), [yolo("styrofoam", 0.46)])?.class_key).toBe(
-      "styrofoam",
+    expect(
+      combineDetections(arch("plastic"), [yolo("soiled_food_container", 0.5)])?.class_key,
+    ).toBe("soiled_food_container");
+    expect(combineDetections(arch("paper"), [yolo("used_tissue", 0.46)])?.class_key).toBe(
+      "used_tissue",
     );
     expect(combineDetections(arch("trash"), [yolo("sanitary_napkin", 0.6)])?.class_key).toBe(
       "sanitary_napkin",
@@ -86,7 +85,9 @@ describe("combineDetections with a classifier answer", () => {
   });
 
   it("needs YOLO to be sure enough", () => {
-    expect(combineDetections(arch("plastic"), [yolo("straw", 0.44)])?.class_key).toBe("plastic");
+    expect(
+      combineDetections(arch("plastic"), [yolo("soiled_food_container", 0.44)])?.class_key,
+    ).toBe("plastic");
   });
 
   it("catches hazardous items at the lower threshold (no bulb in the blue bin)", () => {
@@ -100,13 +101,17 @@ describe("combineDetections with a classifier answer", () => {
       "expired_medicine",
     );
     // but a non-hazardous item at the same score is not enough
-    expect(combineDetections(arch("plastic"), [yolo("straw", 0.41)])?.class_key).toBe("plastic");
+    expect(
+      combineDetections(arch("plastic"), [yolo("soiled_food_container", 0.41)])?.class_key,
+    ).toBe("plastic");
   });
 
   it("never lets YOLO override with an implausible mix-up (a battery photo stays a battery)", () => {
     expect(combineDetections(arch("battery"), [yolo("spray_can", 0.9)])?.class_key).toBe("battery");
     expect(combineDetections(arch("shoes"), [yolo("light_bulb", 0.9)])?.class_key).toBe("shoes");
-    expect(combineDetections(arch("clothes"), [yolo("straw", 0.9)])?.class_key).toBe("clothes");
+    expect(combineDetections(arch("clothes"), [yolo("used_tissue", 0.9)])?.class_key).toBe(
+      "clothes",
+    );
   });
 
   it("does not let YOLO overrule the classifier on items the classifier handles", () => {
@@ -137,11 +142,11 @@ describe("combineDetections with a classifier answer", () => {
   });
 
   it("prefers the most confident qualifying YOLO detection", () => {
-    const d = combineDetections(arch("plastic"), [
-      yolo("straw", 0.5),
-      yolo("plastic_utensil", 0.7),
+    const d = combineDetections(arch("trash"), [
+      yolo("used_tissue", 0.5),
+      yolo("sanitary_napkin", 0.7),
     ]);
-    expect(d?.class_key).toBe("plastic_utensil");
+    expect(d?.class_key).toBe("sanitary_napkin");
   });
 });
 
@@ -150,9 +155,9 @@ describe("combineDetections without a classifier answer (unsure or odd view)", (
     expect(combineDetections(null, [])).toBeNull();
     expect(combineDetections(null, [yolo("plastic_cup", 0.34)])).toBeNull();
     expect(combineDetections(null, [yolo("plastic_cup", 0.36)])?.class_key).toBe("plastic_cup");
-    expect(combineDetections(null, [yolo("straw", 0.5)])?.class_key).toBe("straw");
+    expect(combineDetections(null, [yolo("used_tissue", 0.5)])?.class_key).toBe("used_tissue");
     expect(combineDetections(null, [yolo("light_bulb", 0.31)])?.class_key).toBe("light_bulb");
-    expect(combineDetections(null, [yolo("straw", 0.31)])).toBeNull();
+    expect(combineDetections(null, [yolo("used_tissue", 0.31)])).toBeNull();
   });
 
   it("picks the most confident detection", () => {

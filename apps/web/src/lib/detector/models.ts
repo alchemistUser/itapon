@@ -60,7 +60,7 @@ export const POSSIBLE_THRESHOLD = 0.15;
 // YOLO-World stays as the fallback when this model can't load (src/lib/detector/store.ts).
 
 export const ARCHIVE_PINNED_BASE_URL =
-  "https://huggingface.co/alchemistUserhf/itapon-yolo/resolve/archive-v2.1";
+  "https://huggingface.co/alchemistUserhf/itapon-yolo/resolve/archive-v3";
 
 /** NEXT_PUBLIC_ARCHIVE_MODEL_BASE_URL overrides it (e.g. to try a new tag on a preview). */
 export const ARCHIVE_BASE_URL = (
@@ -72,8 +72,8 @@ export const ARCHIVE_LABELS_FILE = "itapon-archive-classifier.labels.json";
 
 /** SHA-256 of every file under ARCHIVE_PINNED_BASE_URL (same rule as PINNED_SHA256). */
 export const ARCHIVE_PINNED_SHA256: Record<string, string> = {
-  [ARCHIVE_MODEL_FILE]: "e9d7a85e2118e29adb9f6780a0cc075e4d76e9c335a173485ed616da22229392",
-  [ARCHIVE_LABELS_FILE]: "526dfa2c44142a7b49cc5d616e54c58c7985aaa487fd63a6198abd7778283a31",
+  [ARCHIVE_MODEL_FILE]: "89a6c5c112a24ef90a99278772f67d41f805279ba3af308c7d0055cbf956259e",
+  [ARCHIVE_LABELS_FILE]: "04c426a30f159ac4c719ee806eeb6afc222924a8b965b87cf474923f5990c97f",
 };
 
 export function expectedArchiveSha256(file: string): string | null {

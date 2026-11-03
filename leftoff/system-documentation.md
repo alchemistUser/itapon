@@ -49,7 +49,7 @@ For end users, see the [user manual](user-manual.md). For what's left to do, see
 | Levels, streaks, badges, leaderboards | **Live** | Phase 33 |
 | Admin analytics, campus content editor, evaluation tools | **Live** | Phase 34 |
 | Feature flags, v2 release docs, staff guide | **Done** | Phase 35; v2.0.0 tag waits for the smoke test |
-| Main scanner model | **Archive classifier** (17 classes, v2) + YOLO-World helper for 7 specific items (hybrid, 2026-11-03); YOLO is also the fallback | D28; trained by the team; field accuracy not yet measured ([docs/archive-classifier.md](../docs/archive-classifier.md)) |
+| Main scanner model | **Archive classifier** (20 classes, v3) + YOLO-World helper for 4 specific items (hybrid, 2026-11-03); YOLO is also the fallback | D28; trained by the team; field accuracy not yet measured ([docs/archive-classifier.md](../docs/archive-classifier.md)) |
 | Manuscript and defense | **Not started** | Phase 26 |
 | Thesis scope | Library in; accounts and points are **future work** in the manuscript | D16, D20 |
 
@@ -243,7 +243,7 @@ Hugging Face (`alchemistUserhf/itapon-yolo`) with pinned SHA-256 hashes. Full de
 main one: [docs/archive-classifier.md](../docs/archive-classifier.md).
 
 **Archive image classifier (main scanner, D28).** MobileNetV2, 192 px, ONNX 9 MB, tag
-`archive-v2.1`; 17 whole-image classes mapped to the four bins (`src/lib/archive-classifier/`).
+`archive-v3`; 20 whole-image classes mapped to the four bins (`src/lib/archive-classifier/`).
 It outputs one detection per frame and has no "nothing here" class, so the worker skips flat
 frames and the scanner needs a probability of at least 0.7 and the same class on 3 of 4 frames
 before locking. In-dataset accuracy 95.3% (package metrics); field accuracy is **not yet

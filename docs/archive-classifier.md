@@ -37,7 +37,7 @@ show how it does on phone photos in real bins.
 
 ## How it works in the app
 
-- **Hosting (D12 rules):** Hugging Face repo `alchemistUserhf/itapon-yolo`, tag **`archive-v2.1`** (`archive-v1`, the 12-class package model, stays as the rollback)
+- **Hosting (D12 rules):** Hugging Face repo `alchemistUserhf/itapon-yolo`, tag **`archive-v3`** (`archive-v1`, the 12-class package model, stays as the rollback)
   (separate from the YOLO tag `v0.1`). SHA-256 of both files is pinned in
   `apps/web/src/lib/detector/models.ts` and checked in the worker before use; a mismatch is
   refused and cached copies are dropped.
@@ -72,32 +72,45 @@ show how it does on phone photos in real bins.
   adds "check the number in the triangle"). For battery and cardboard the specific library
   chooser still applies.
 
-## archive-v2: 17 classes (2026-11-03)
+## archive-v3: 20 classes (2026-11-03)
 
 Retrained in PyTorch (MobileNetV2, ImageNet weights, 192 px; `ml/scripts/archive_v2/prepare.py` and
-`train.py`) on the package's 12 classes (up to 700 photos each) plus five specific items:
+`train.py`) on the package's 12 classes (up to 700 photos each) plus eight specific items:
 
 | Item             | Photos | Source                                                                                                      |
 | ---------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
 | tetra pack       | 680    | GlobalWasteData `tetra_pak` (CC BY 4.0) + TACO drink/meal cartons                                           |
 | expired medicine | 1,032  | GlobalWasteData `medicine_and_strip`                                                                        |
 | face mask        | 319    | GlobalWasteData `masks`                                                                                     |
-| spray can        | 314    | GlobalWasteData `spray_cans` + TACO aerosol                                                                 |
+| spray can        | 667    | GlobalWasteData `spray_cans` + TACO aerosol + Kaggle `aerosol_cans`                                         |
+| straw            | 473    | Kaggle "Recyclable and Household Waste" `plastic_straws` (MIT; non-commercial per its text)                 |
+| plastic utensil  | 375    | Kaggle `disposable_plastic_cutlery`                                                                         |
+| styrofoam        | 752    | Kaggle `styrofoam_cups` + `styrofoam_food_containers`                                                       |
 | snack wrapper    | 115    | TACO crisp packet / plastic wrapper (bounding-box crops; only 466 of 1,500 TACO images could be downloaded) |
 
-Not enough public data (under 100 photos, or none): straw, plastic utensil, styrofoam, soiled food
-container, used tissue, sanitary napkin, light bulb. YOLO-World still covers those.
+Not enough public data (under 100 photos, or none): soiled food container, used tissue, sanitary
+napkin, light bulb. YOLO-World still covers those. They need the team's own phone photos
+(about 100 each, `ml/data/raw/own/<item>/`).
 
-Hold-out (same sources, split by source photo, 1601 photos): **94.4% accuracy, 93.3% macro F1**.
-New items (recall/precision %): medicine 92.6/98.6, tetra pack 92.2/97.9, spray can 85.4/97.2, face mask 86.7/92.9, snack wrapper 84.2/72.7 (few test photos).
-Training images are shrunk with anti-aliasing (Lanczos) because the browser does the same; a first run with plain bilinear shrinking scored 95.3% on the hold-out but failed to lock on 6 of 24 browser photos, so it was replaced (tag `archive-v2` is unused; use `archive-v2.1`).
-Browser check (training-set photos, so it checks wiring only): 8 of 8 new-class photos locked on the right bin with the first run. The final model (v2.1) has **not** been re-run through the 24-photo browser regression; do that, then the phone field test, before relying on it.
+Hold-out (same sources, split by source photo, 1,884 photos): **94.2% accuracy, 92.5% macro F1**.
+New items (recall/precision %): medicine 92.1/98.6, tetra pack 94.1/96.9, spray can 87.8/90.5,
+face mask 89.4/93.3, straw 88.2/89.3, plastic utensil 92.0/90.2, styrofoam 95.1/96.0, snack
+wrapper 60.0/64.3 (only 15 test photos: the weakest, treat with care).
+Training images are shrunk with anti-aliasing (Lanczos) because the browser does the same; an
+earlier run with plain bilinear shrinking scored higher on the hold-out but failed to lock on 6 of 24
+browser photos. Tags `archive-v2` and `archive-v2.1` were earlier 17-class runs and are unused.
+Browser check: the 17-class run locked 8 of 8 new-class photos (training-set photos, so wiring
+only). **archive-v3 has not been run through the browser regression** (24 photos); do that, then the
+phone field test, before relying on it.
 These are in-dataset numbers, not field
 accuracy. Licences: GlobalWasteData and TACO are CC BY 4.0 (attribution needed); GlobalWasteData's
 paper says the dataset may not be modified and commercial use follows each source's licence, so the
 team should confirm with the adviser (images are not redistributed; only the model is).
 
 ## Hybrid: classifier + YOLO-World (2026-11-03)
+
+(Written for the 12-class model. v3 learned eight of these items; YOLO now only matters for the four
+left: soiled food container, used tissue, sanitary napkin, light bulb, plus the hazardous safety net.)
 
 **Why.** The classifier has 12 categories; the app has 23 specific items. Twelve of them have no
 matching class: straw, plastic utensil, snack wrapper, styrofoam, soiled food container, tetra

@@ -41,18 +41,21 @@ const MODEL_CLASSES = [
   "metal",
   "paper",
   "plastic",
+  "plastic_utensil",
   "shoes",
   "snack_wrapper",
   "spray_can",
+  "straw",
+  "styrofoam",
   "tetra_pack",
   "trash",
   "white-glass",
 ];
 
 describe("archive classes", () => {
-  it("cover exactly the model's 17 classes, each once", () => {
+  it("cover exactly the model's 20 classes, each once", () => {
     expect(ARCHIVE_CLASSES.map((c) => c.name).sort()).toEqual([...MODEL_CLASSES].sort());
-    expect(new Set(ARCHIVE_CLASSES.map((c) => c.classKey)).size).toBe(17);
+    expect(new Set(ARCHIVE_CLASSES.map((c) => c.classKey)).size).toBe(20);
   });
 
   it("map to the approved RA 9003 bins", () => {
@@ -69,22 +72,35 @@ describe("archive classes", () => {
       "plastic",
     ])
       expect(bin(n), n).toBe("recyclable");
-    for (const n of ["clothes", "shoes", "trash", "tetra_pack", "face_mask", "snack_wrapper"])
+    for (const n of [
+      "clothes",
+      "shoes",
+      "trash",
+      "tetra_pack",
+      "face_mask",
+      "snack_wrapper",
+      "straw",
+      "plastic_utensil",
+      "styrofoam",
+    ])
       expect(bin(n), n).toBe("residual");
     for (const n of ["battery", "expired_medicine", "spray_can"])
       expect(bin(n), n).toBe("hazardous");
     for (const c of ARCHIVE_CLASSES) expect(BIN_ORDER).toContain(c.category);
   });
 
-  it("reuse the existing v1 items for battery, cardboard and the five specific items", () => {
+  it("reuse the existing v1 items for battery, cardboard and the eight specific items", () => {
     expect([...SHARED_WITH_V1].sort()).toEqual(
       [
         "battery",
         "cardboard",
         "expired_medicine",
         "face_mask",
+        "plastic_utensil",
         "snack_wrapper",
         "spray_can",
+        "straw",
+        "styrofoam",
         "tetra_pack",
       ].sort(),
     );
@@ -156,7 +172,7 @@ describe("processing", () => {
 
   it("reports nothing below the minimum, so an empty scene isn't an answer", () => {
     expect(topDetection(scores("trash", 0.5), MODEL_CLASSES, 0.6)).toBeNull();
-    expect(topDetection(new Array(17).fill(1 / 17), MODEL_CLASSES, 0.6)).toBeNull();
+    expect(topDetection(new Array(20).fill(1 / 20), MODEL_CLASSES, 0.6)).toBeNull();
   });
 
   it("skips flat frames (covered lens, plain wall) but not real photos", () => {

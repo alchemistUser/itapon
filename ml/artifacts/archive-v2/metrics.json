@@ -1,97 +1,112 @@
 {
-  "test_accuracy": 0.9444097439100562,
-  "test_macro_f1": 0.9333060127143087,
+  "test_accuracy": 0.9416135881104034,
+  "test_macro_f1": 0.9251355508074536,
   "per_class": {
     "battery": {
-      "n": 97,
-      "recall": 0.9691,
-      "precision": 0.9216
+      "n": 109,
+      "recall": 0.9358,
+      "precision": 0.9714
     },
     "biological": {
-      "n": 108,
-      "recall": 0.9722,
-      "precision": 0.9545
+      "n": 121,
+      "recall": 0.9917,
+      "precision": 0.9756
     },
     "brown-glass": {
-      "n": 85,
-      "recall": 0.9529,
-      "precision": 0.9643
+      "n": 93,
+      "recall": 0.9462,
+      "precision": 0.9778
     },
     "cardboard": {
-      "n": 106,
-      "recall": 0.9811,
-      "precision": 0.9541
+      "n": 103,
+      "recall": 0.9806,
+      "precision": 0.9712
     },
     "clothes": {
-      "n": 117,
-      "recall": 0.9744,
-      "precision": 1.0
+      "n": 108,
+      "recall": 0.9907,
+      "precision": 0.9907
     },
     "expired_medicine": {
-      "n": 149,
-      "recall": 0.9262,
-      "precision": 0.9857
+      "n": 151,
+      "recall": 0.9205,
+      "precision": 0.9858
     },
     "face_mask": {
-      "n": 45,
-      "recall": 0.8667,
-      "precision": 0.9286
+      "n": 47,
+      "recall": 0.8936,
+      "precision": 0.9333
     },
     "green-glass": {
-      "n": 92,
-      "recall": 0.9891,
-      "precision": 0.9192
+      "n": 95,
+      "recall": 0.9895,
+      "precision": 0.9495
     },
     "metal": {
-      "n": 113,
-      "recall": 0.9381,
-      "precision": 0.9381
+      "n": 105,
+      "recall": 0.9429,
+      "precision": 0.8684
     },
     "paper": {
-      "n": 104,
-      "recall": 0.9519,
-      "precision": 0.8839
+      "n": 101,
+      "recall": 0.9802,
+      "precision": 0.9
     },
     "plastic": {
-      "n": 106,
-      "recall": 0.8396,
-      "precision": 0.9271
+      "n": 98,
+      "recall": 0.8878,
+      "precision": 0.9255
+    },
+    "plastic_utensil": {
+      "n": 50,
+      "recall": 0.92,
+      "precision": 0.902
     },
     "shoes": {
-      "n": 110,
-      "recall": 0.9727,
-      "precision": 0.9469
+      "n": 112,
+      "recall": 0.9643,
+      "precision": 0.9076
     },
     "snack_wrapper": {
-      "n": 19,
-      "recall": 0.8421,
-      "precision": 0.7273
+      "n": 15,
+      "recall": 0.6,
+      "precision": 0.6429
     },
     "spray_can": {
-      "n": 41,
-      "recall": 0.8537,
-      "precision": 0.9722
+      "n": 98,
+      "recall": 0.8776,
+      "precision": 0.9053
+    },
+    "straw": {
+      "n": 76,
+      "recall": 0.8816,
+      "precision": 0.8933
+    },
+    "styrofoam": {
+      "n": 101,
+      "recall": 0.9505,
+      "precision": 0.96
     },
     "tetra_pack": {
-      "n": 102,
-      "recall": 0.9216,
-      "precision": 0.9792
+      "n": 101,
+      "recall": 0.9406,
+      "precision": 0.9694
     },
     "trash": {
-      "n": 98,
-      "recall": 0.9796,
-      "precision": 0.9505
+      "n": 88,
+      "recall": 0.9886,
+      "precision": 0.956
     },
     "white-glass": {
-      "n": 109,
-      "recall": 0.9541,
-      "precision": 0.9286
+      "n": 112,
+      "recall": 0.9107,
+      "precision": 0.9444
     }
   },
   "split_counts": {
-    "train": 7479,
-    "val": 1596,
-    "test": 1601
+    "train": 8835,
+    "val": 1910,
+    "test": 1884
   },
   "classes": [
     "battery",
@@ -105,9 +120,12 @@
     "metal",
     "paper",
     "plastic",
+    "plastic_utensil",
     "shoes",
     "snack_wrapper",
     "spray_can",
+    "straw",
+    "styrofoam",
     "tetra_pack",
     "trash",
     "white-glass"

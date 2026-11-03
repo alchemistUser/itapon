@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-// Combines the archive classifier (17 classes, the main scanner) with YOLO-World
+// Combines the archive classifier (20 classes, the main scanner) with YOLO-World
 // (23 specific items) for one answer per frame (D28, amended 2026-11-03).
 //
-// Why: the classifier has no category for 7 of the specific items (straw, plastic utensil,
-// styrofoam, soiled food container, used tissue, light bulb, sanitary napkin; v2 learned tetra
-// pack, face mask, medicine, spray can and snack wrapper), so it files them under plastic, paper,
+// Why: the classifier has no category for 4 of the specific items (soiled food container, used
+// tissue, light bulb, sanitary napkin; it learned tetra pack, face mask, medicine, spray can,
+// snack wrapper, straw, plastic utensil and styrofoam), so it files them under plastic, paper,
 // glass or trash. A plain "YOLO wins when it's sure" rule would break correct answers (measured
 // on 300 dataset photos: 8% at 0.35), so YOLO may only:
 //   1. name one of those items, when the classifier's answer is a plausible mix-up for it
@@ -33,9 +33,6 @@ export const HAZARDOUS_SPECIFIC = new Set(["light_bulb", "spray_can", "expired_m
  * classes.ts) it gives for them. YOLO may only override one of these answers.
  */
 export const CONFUSABLE: Record<string, string[]> = {
-  straw: ["plastic", "trash"],
-  plastic_utensil: ["plastic", "trash"],
-  styrofoam: ["plastic", "trash", "paper", "white_glass"],
   soiled_food_container: ["plastic", "paper", "cardboard", "trash"],
   used_tissue: ["paper", "biological", "trash"],
   light_bulb: ["white_glass", "plastic", "trash"],

@@ -17,9 +17,12 @@
     "metal",
     "paper",
     "plastic",
+    "plastic_utensil",
     "shoes",
     "snack_wrapper",
     "spray_can",
+    "straw",
+    "styrofoam",
     "tetra_pack",
     "trash",
     "white-glass"

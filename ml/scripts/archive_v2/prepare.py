@@ -4,6 +4,7 @@
 Sources (all under ml/data/raw, git-ignored; see docs/archive-classifier.md for licences):
   - package dataset   12 broad classes (path passed with --package)
   - gwd/x_<item>/     GlobalWasteData folders, CC BY 4.0
+  - kaggle-household/ Kaggle "Recyclable and Household Waste" (MIT; studio + real-world photos)
   - taco/             TACO litter photos, CC BY 4.0; bounding boxes are cropped per item
   - own/<item>/       the team's own phone photos (optional)
 
@@ -31,6 +32,9 @@ OLD_CAP = 700  # per broad class; the specific items are what is new, the old on
 # GlobalWasteData folder -> item key (app keys, see archive-classifier/hybrid.ts)
 GWD = {"tetra_pak": "tetra_pack", "masks": "face_mask", "medicine_and_strip": "expired_medicine",
        "spray_cans": "spray_can"}
+# Kaggle household-waste folder -> item key
+KAGGLE = {"plastic_straws": "straw", "disposable_plastic_cutlery": "plastic_utensil",
+          "styrofoam_cups": "styrofoam", "styrofoam_food_containers": "styrofoam", "aerosol_cans": "spray_can"}
 # TACO category -> item key
 TACO = {"Plastic straw": "straw", "Paper straw": "straw", "Plastic utensils": "plastic_utensil",
         "Crisp packet": "snack_wrapper", "Other plastic wrapper": "snack_wrapper",
@@ -80,6 +84,14 @@ def main() -> None:
                 im = open_ok(f)
                 if im:
                     rows.append((load(im), item, f"gwd:{folder}:{f.name}"))
+
+    kag = a.raw / "kaggle-household" / "images" / "images"
+    for folder, item in KAGGLE.items():
+        for f in sorted((kag / folder).rglob("*")):
+            if f.suffix.lower() in EXT:
+                im = open_ok(f)
+                if im:
+                    rows.append((load(im), item, f"kaggle:{folder}:{f.parent.name}:{f.name}"))
 
     taco = a.raw / "taco"
     if (taco / "annotations.json").exists():

@@ -42,6 +42,14 @@ export const ARCHIVE_CLASSES: ArchiveClass[] = [
   },
   { name: "spray_can", classKey: "spray_can", category: "hazardous", libraryGroup: null },
   { name: "snack_wrapper", classKey: "snack_wrapper", category: "residual", libraryGroup: null },
+  { name: "straw", classKey: "straw", category: "residual", libraryGroup: null },
+  {
+    name: "plastic_utensil",
+    classKey: "plastic_utensil",
+    category: "residual",
+    libraryGroup: null,
+  },
+  { name: "styrofoam", classKey: "styrofoam", category: "residual", libraryGroup: null },
 ];
 
 export const ARCHIVE_BY_NAME = new Map(ARCHIVE_CLASSES.map((c) => [c.name, c]));
@@ -59,6 +67,9 @@ export const SHARED_WITH_V1 = new Set([
   "expired_medicine",
   "spray_can",
   "snack_wrapper",
+  "straw",
+  "plastic_utensil",
+  "styrofoam",
 ]);
 
 /**
