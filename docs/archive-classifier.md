@@ -1,9 +1,11 @@
 # Archive image classifier (main scanner)
 
-Since D28 (2026-10-26) the **main scanner** is a 12-class whole-image classifier. YOLO-World
-(D11/D12) stays in the app as the **fallback**: it takes over only when the classifier can't load.
+Since D28 (2026-10-26) the **main scanner** is a 12-class whole-image classifier. Since
+2026-11-03 it works **together with YOLO-World** (D11/D12): the classifier answers first, YOLO-World
+loads in the background and names the specific items the classifier has no category for, and
+YOLO-World becomes the main scanner if the classifier can't load. See "Hybrid" below.
 
-| | Archive classifier (main) | YOLO-World (fallback) |
+| | Archive classifier (main) | YOLO-World (helper, and fallback) |
 |---|---|---|
 | Task | One label for the whole image | Boxes and item-level labels |
 | Classes | 12: battery, biological, brown-glass, cardboard, clothes, green-glass, metal, paper, plastic, shoes, trash, white-glass | 23 item classes |
@@ -42,9 +44,10 @@ show how it does on phone photos in real bins.
   protocol as the YOLO worker, so the scan loop, stability gate, result screens, history,
   missions and kiosk work unchanged. Shared download/cache/verify code lives in
   `model-files.ts`.
-- **Engine choice:** `store.ts` tries the archive classifier first and starts YOLO-World only if
-  the classifier fails to load (download, integrity check, unsupported browser). Low confidence
-  and multi-item photos do **not** trigger the fallback.
+- **Engine choice:** `store.ts` loads the archive classifier first. When it is ready, YOLO-World
+  loads in the background as a **helper** (skipped on Data Saver / 2G) and each frame goes to both
+  models, combined by `hybrid.ts`. If the classifier fails to load (download, integrity check,
+  unsupported browser), YOLO-World becomes the main scanner and there is no helper.
 - **One detection per frame:** a full-frame "box" for the top class. The app shows no boxes in
   this mode.
 - **Bin mapping (approved 2026-10-26, RA 9003):** `apps/web/src/lib/archive-classifier/classes.ts`.
@@ -66,6 +69,39 @@ show how it does on phone photos in real bins.
 - **Library card:** for broad classes it links to the matching material group (for plastic it
   adds "check the number in the triangle"). For battery and cardboard the specific library
   chooser still applies.
+
+## Hybrid: classifier + YOLO-World (2026-11-03)
+
+**Why.** The classifier has 12 categories; the app has 23 specific items. Twelve of them have no
+matching class: straw, plastic utensil, snack wrapper, styrofoam, soiled food container, tetra
+pack, used tissue, sanitary napkin, face mask, and three **hazardous** ones: light bulb, expired
+medicine, spray can. The classifier files them under plastic, paper, glass, metal or trash, so it
+could send a bulb or medicine to the blue bin.
+
+**The rule** (`apps/web/src/lib/archive-classifier/hybrid.ts`, one answer per frame):
+
+| Situation | Answer |
+|---|---|
+| The classifier is sure, and YOLO sees one of the 12 items above that the classifier's answer could plausibly be (e.g. straw vs plastic) | The YOLO item, if YOLO ≥ 0.45 (**≥ 0.40 for light bulb, medicine, spray can**) |
+| The classifier is sure and YOLO names a specific item of the **same bin** (plastic → plastic bottle, metal → aluminum can, glass → glass bottle, paper → paper sheet/bag, biological → banana peel/food scraps/leaves) at ≥ 0.45 | The specific item (same bin; the classifier's confidence is kept) |
+| Anything else | The classifier |
+| The classifier has no confident answer (odd angle, small item) | YOLO, if ≥ 0.35 (≥ 0.30 hazardous) |
+
+**Why not just "YOLO wins when it's sure"?** Measured on 300 dataset photos (25 per class), through
+the deployed files: the classifier alone gets the right bin on **100%** (in-dataset); YOLO alone
+on **30%**, fires on 25% of photos at 0.35 and finds only 1 of 25 batteries. A plain override
+would change 8% of correct classifier answers (24 of 300 at 0.35), and raise a false hazardous
+alarm on 3.6% of non-battery photos. The restricted rule above changes **1.0%** (3 of 300) at
+the defaults, and never lets YOLO override a battery, shoe or clothes answer.
+
+**What is not measured.** There are no labelled photos of the 12 specific items on hand, so how
+often YOLO recognises them is unknown (the zero-shot model is weak: see the battery figure). The
+rule limits the damage; the field test below must include those items. The thresholds are in
+`hybrid.ts` and tested.
+
+**Cost.** Both models run on each frame (in parallel), so the frame rate follows YOLO's (about
+3 fps on a desktop), and the first visit downloads about 22 MB (9 MB first, 13 MB after).
+Multi-item "What to do next" is still not offered on the main path (one answer per scan).
 
 ## The two guards against false answers
 
@@ -114,7 +150,25 @@ whether it locked. Report per-class accuracy, the no-lock rate and the wrong-loc
 scenes. If empty scenes lock, raise `ARCHIVE_MIN_CONFIDENCE`; if real items often don't lock,
 lower it or improve training data.
 
-## Browser pipeline results (2026-10-26)
+## Browser pipeline results
+
+### Hybrid (2026-11-03)
+
+| Test | Result |
+|---|---|
+| Sample photo of a plastic cup (`bag_cup.jpg`, small image): classifier alone | does **not** lock (scores it "shoes") |
+| Same photo with the YOLO helper | **locks** (YOLO: plastic cup 0.45) |
+| Empty scenes with both models running (white, beige, dark, gradient) | **4 / 4** stay in "searching" |
+
+| 2 random photos per class, all 12 classes (24 runs), helper ready, scanned again | **22 / 24** correct bin, **0 wrong bins**; the 2 misses did not lock (see below) |
+
+The two misses are not the hybrid's doing: a metal photo the classifier itself calls "plastic"
+at 0.55 (below the gate, YOLO sees nothing), and a 194 × 259 portrait photo that the fake camera
+squeezes between black bars (it fails the same way with the classifier alone). Real phone frames
+are not letterboxed like that. Without the helper the same kind of sample was 24 / 24, a
+different draw of photos, so treat the two figures as "similar", not as a change.
+
+### Classifier alone (2026-10-26)
 
 Chrome's fake camera played dataset photos into the production build (`e2e/scan.spec.ts`, the
 `scan` project, run locally with `E2E_SAMPLE_IMAGE` and `E2E_EXPECT_BIN`). The test checks the

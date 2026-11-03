@@ -51,7 +51,7 @@ scan, so your scans are saved on this device.
 ### 1.2 Scan an item
 
 1. Tap **Scan**. The first time, your browser asks to use the camera: choose **Allow**.
-2. The first scan downloads the scanner (about 9 MB) and shows a warming-up screen. After that
+2. The first scan downloads the scanner (about 9 MB, then about 13 MB more in the background) and shows a warming-up screen. After that
    it starts quickly, even offline.
 3. Hold **one item** in the frame, about 30–50 cm away, in good light. Hold it steady.
 4. When iTapon is sure, it locks the result:
@@ -73,6 +73,11 @@ could be. Check the **Bin Guide** if in doubt.
 photo, so a mix of items can give a wrong answer. (If the main scanner can't load on your
 device, iTapon switches to a backup scanner that finds several items and offers **What to do
 next**: a short plan for each item.)
+
+**Small or unusual items** (a straw, styrofoam, a light bulb, a tetra pack…) are recognised by a
+second scanner that starts a few seconds after the first. If a scan says something broad like
+"Plastic", wait a moment and scan again, or answer **No** under "Was this right?" and pick the
+right item.
 
 ### 1.3 "Which one is yours?" and the library card
 

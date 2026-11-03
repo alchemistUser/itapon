@@ -583,6 +583,7 @@ export function ScanScreen() {
         data-testid="scan-log"
         data-scan-id={logged?.scanId ?? ""}
         data-engine={det.info?.engine ?? ""}
+        data-specific={det.specific}
       />
       <p className="sr-only" role="status" aria-live="polite">
         {locked ? `${locked.view.name}. ${BINS[locked.view.category].binLabel}.` : ""}

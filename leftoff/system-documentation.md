@@ -49,7 +49,7 @@ For end users, see the [user manual](user-manual.md). For what's left to do, see
 | Levels, streaks, badges, leaderboards | **Live** | Phase 33 |
 | Admin analytics, campus content editor, evaluation tools | **Live** | Phase 34 |
 | Feature flags, v2 release docs, staff guide | **Done** | Phase 35; v2.0.0 tag waits for the smoke test |
-| Main scanner model | **Archive classifier** (12 classes) with YOLO-World as fallback | D28; trained by the team; field accuracy not yet measured ([docs/archive-classifier.md](../docs/archive-classifier.md)) |
+| Main scanner model | **Archive classifier** (12 classes) + YOLO-World helper for 12 specific items (hybrid, 2026-11-03); YOLO is also the fallback | D28; trained by the team; field accuracy not yet measured ([docs/archive-classifier.md](../docs/archive-classifier.md)) |
 | Manuscript and defense | **Not started** | Phase 26 |
 | Thesis scope | Library in; accounts and points are **future work** in the manuscript | D16, D20 |
 
@@ -66,8 +66,10 @@ and dependency audit.
 - **Scanner** (`/scan`): live camera or photo upload; the **archive classifier** names what is
   in the frame (12 categories such as plastic, metal, glass, paper, battery), locks on a stable
   result, shows the bin, a short instruction and confidence, reads it aloud (English or
-  Filipino), and asks "Was this right?". If the classifier can't load, YOLO-World takes over:
-  it also draws boxes and offers a **"What to do next" plan** (`/scan/plan`) for several items.
+  Filipino), and asks "Was this right?". YOLO-World runs alongside it to name specific items
+  the classifier has no category for (straw, styrofoam, tetra pack, light bulb, medicine, spray can
+  and more). If the classifier can't load, YOLO-World becomes the main scanner: it also draws
+  boxes and offers a **"What to do next" plan** (`/scan/plan`) for several items.
 - **Post-scan library card**: "Which one is yours?" chooser (for example PET water bottle vs
   HDPE shampoo bottle, with a resin-code tip), where else it can go, a reuse or reduce idea, the
   Quezon City rule and a link to the full entry.
@@ -132,7 +134,7 @@ pairing to an institution with a 6-digit code.
 flowchart LR
   subgraph Browser["Browser (phone, laptop, kiosk tablet)"]
     UI["Next.js app (React 19)"]
-    W["Web Worker: archive classifier (main)<br/>or YOLO-World (fallback)<br/>onnxruntime-web (WASM)"]
+    W["Web Workers: archive classifier (main)<br/>+ YOLO-World (helper, fallback)<br/>onnxruntime-web (WASM)"]
     SW["Service worker (sw.js)<br/>pages, library files, scan-log queue"]
     UI <--> W
     UI <--> SW
@@ -169,7 +171,7 @@ flowchart LR
 
 ### Main flows
 
-**Scan.** The camera frame goes to the Web Worker's archive classifier (or YOLO-World if the classifier couldn't load). The stability gate locks a
+**Scan.** The camera frame goes to the archive classifier and, once it has loaded, also to YOLO-World; `hybrid.ts` picks one answer (or YOLO-World alone if the classifier couldn't load). The stability gate locks a
 result once the same class wins for several frames. The item maps to its bin (from the content
 store, refreshed from `waste_items`), and the result shows with read aloud. The scan is logged
 to `scan_sessions` / `scan_detections`; a trigger sets the bin and kiosk/institution context.
@@ -245,9 +247,11 @@ main one: [docs/archive-classifier.md](../docs/archive-classifier.md).
 It outputs one detection per frame and has no "nothing here" class, so the worker skips flat
 frames and the scanner needs a probability of at least 0.7 and the same class on 3 of 4 frames
 before locking. In-dataset accuracy 95.3% (package metrics); field accuracy is **not yet
-measured**. If it fails to load, the store starts YOLO-World.
+measured**. YOLO-World loads after it and may name the 12 specific items the classifier cannot
+(`src/lib/archive-classifier/hybrid.ts`); if the classifier fails to load, YOLO-World is the main
+scanner.
 
-**YOLO-World (fallback).**
+**YOLO-World (helper and fallback).**
 
 - **Model:** zero-shot **YOLO-World** with the 23 spec classes baked in as text prompts (D11),
   exported to ONNX, int8, 480 px input. Files are hosted on Hugging Face
@@ -538,8 +542,9 @@ Full text in [ROADMAP.md](../ROADMAP.md) §1.
 
 **Product and technical**
 - Scanner accuracy on real Philippine waste isn't measured yet (the classifier's 95% is on its
-  own dataset). It gives one answer per photo (no multi-item plan unless the YOLO fallback runs),
-  and a textured background can still lock on a wrong class. Run the field test in
+  own dataset). It gives one answer per photo (no multi-item plan unless YOLO is the main scanner),
+  how well YOLO recognises the 12 specific items is not measured, and a textured background can
+  still lock on a wrong class. Run the field test in
   docs/archive-classifier.md.
 - Library entries are AI-drafted and not yet reviewed (D25). The drop-off finder has no
   verified places until admins add them.
