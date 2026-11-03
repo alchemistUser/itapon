@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-// The archive image classifier's 12 whole-image classes (model itapon-archive-mobilenetv2-v1)
+// The archive image classifier's 17 whole-image classes (model itapon-archive-mobilenetv2-v2)
 // and how each maps to an app item and an RA 9003 bin. Pure data, shared by the worker, the
 // content, the library card and the tests.
 import type { Category } from "@/lib/detector/types";
@@ -31,6 +31,17 @@ export const ARCHIVE_CLASSES: ArchiveClass[] = [
   { name: "shoes", classKey: "shoes", category: "residual", libraryGroup: "TEX" },
   { name: "trash", classKey: "trash", category: "residual", libraryGroup: null },
   { name: "white-glass", classKey: "white_glass", category: "recyclable", libraryGroup: "GLA" },
+  // Added in v2 (D28, 2026-11-03): specific items that already exist as v1 items.
+  { name: "tetra_pack", classKey: "tetra_pack", category: "residual", libraryGroup: null },
+  { name: "face_mask", classKey: "face_mask", category: "residual", libraryGroup: null },
+  {
+    name: "expired_medicine",
+    classKey: "expired_medicine",
+    category: "hazardous",
+    libraryGroup: null,
+  },
+  { name: "spray_can", classKey: "spray_can", category: "hazardous", libraryGroup: null },
+  { name: "snack_wrapper", classKey: "snack_wrapper", category: "residual", libraryGroup: null },
 ];
 
 export const ARCHIVE_BY_NAME = new Map(ARCHIVE_CLASSES.map((c) => [c.name, c]));
@@ -40,7 +51,15 @@ export const ARCHIVE_BY_KEY = new Map(ARCHIVE_CLASSES.map((c) => [c.classKey, c]
 export const ARCHIVE_KEYS: string[] = ARCHIVE_CLASSES.map((c) => c.classKey);
 
 /** Archive items that already exist as v1 (YOLO) items and keep their existing copy. */
-export const SHARED_WITH_V1 = new Set(["battery", "cardboard"]);
+export const SHARED_WITH_V1 = new Set([
+  "battery",
+  "cardboard",
+  "tetra_pack",
+  "face_mask",
+  "expired_medicine",
+  "spray_can",
+  "snack_wrapper",
+]);
 
 /**
  * Items only the archive scanner returns. They have `waste_items` rows (so scans can be

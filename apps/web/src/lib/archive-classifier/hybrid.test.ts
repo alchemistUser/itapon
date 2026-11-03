@@ -46,21 +46,18 @@ describe("the tables", () => {
     }
   });
 
-  it("cover every specific item the classifier cannot name (the 12 with no class)", () => {
+  it("cover the specific items the classifier still cannot name", () => {
     expect(Object.keys(CONFUSABLE).sort()).toEqual(
       [
-        "face_mask",
-        "light_bulb",
         "expired_medicine",
+        "light_bulb",
+        "plastic_utensil",
         "sanitary_napkin",
-        "snack_wrapper",
         "soiled_food_container",
         "spray_can",
         "straw",
         "styrofoam",
-        "tetra_pack",
         "used_tissue",
-        "plastic_utensil",
       ].sort(),
     );
     for (const h of HAZARDOUS_SPECIFIC) expect(getItem(h)?.category).toBe("hazardous");
@@ -80,8 +77,8 @@ describe("combineDetections with a classifier answer", () => {
 
   it("lets YOLO name a specific item the classifier files under a broader class", () => {
     expect(combineDetections(arch("plastic"), [yolo("straw", 0.5)])?.class_key).toBe("straw");
-    expect(combineDetections(arch("paper"), [yolo("tetra_pack", 0.46)])?.class_key).toBe(
-      "tetra_pack",
+    expect(combineDetections(arch("paper"), [yolo("styrofoam", 0.46)])?.class_key).toBe(
+      "styrofoam",
     );
     expect(combineDetections(arch("trash"), [yolo("sanitary_napkin", 0.6)])?.class_key).toBe(
       "sanitary_napkin",

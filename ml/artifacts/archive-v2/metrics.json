@@ -1,0 +1,116 @@
+{
+  "test_accuracy": 0.9444097439100562,
+  "test_macro_f1": 0.9333060127143087,
+  "per_class": {
+    "battery": {
+      "n": 97,
+      "recall": 0.9691,
+      "precision": 0.9216
+    },
+    "biological": {
+      "n": 108,
+      "recall": 0.9722,
+      "precision": 0.9545
+    },
+    "brown-glass": {
+      "n": 85,
+      "recall": 0.9529,
+      "precision": 0.9643
+    },
+    "cardboard": {
+      "n": 106,
+      "recall": 0.9811,
+      "precision": 0.9541
+    },
+    "clothes": {
+      "n": 117,
+      "recall": 0.9744,
+      "precision": 1.0
+    },
+    "expired_medicine": {
+      "n": 149,
+      "recall": 0.9262,
+      "precision": 0.9857
+    },
+    "face_mask": {
+      "n": 45,
+      "recall": 0.8667,
+      "precision": 0.9286
+    },
+    "green-glass": {
+      "n": 92,
+      "recall": 0.9891,
+      "precision": 0.9192
+    },
+    "metal": {
+      "n": 113,
+      "recall": 0.9381,
+      "precision": 0.9381
+    },
+    "paper": {
+      "n": 104,
+      "recall": 0.9519,
+      "precision": 0.8839
+    },
+    "plastic": {
+      "n": 106,
+      "recall": 0.8396,
+      "precision": 0.9271
+    },
+    "shoes": {
+      "n": 110,
+      "recall": 0.9727,
+      "precision": 0.9469
+    },
+    "snack_wrapper": {
+      "n": 19,
+      "recall": 0.8421,
+      "precision": 0.7273
+    },
+    "spray_can": {
+      "n": 41,
+      "recall": 0.8537,
+      "precision": 0.9722
+    },
+    "tetra_pack": {
+      "n": 102,
+      "recall": 0.9216,
+      "precision": 0.9792
+    },
+    "trash": {
+      "n": 98,
+      "recall": 0.9796,
+      "precision": 0.9505
+    },
+    "white-glass": {
+      "n": 109,
+      "recall": 0.9541,
+      "precision": 0.9286
+    }
+  },
+  "split_counts": {
+    "train": 7479,
+    "val": 1596,
+    "test": 1601
+  },
+  "classes": [
+    "battery",
+    "biological",
+    "brown-glass",
+    "cardboard",
+    "clothes",
+    "expired_medicine",
+    "face_mask",
+    "green-glass",
+    "metal",
+    "paper",
+    "plastic",
+    "shoes",
+    "snack_wrapper",
+    "spray_can",
+    "tetra_pack",
+    "trash",
+    "white-glass"
+  ],
+  "note": "Hold-out photos from the same sources; not a field measure."
+}

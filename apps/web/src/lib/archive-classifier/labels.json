@@ -1,5 +1,5 @@
 {
-  "model_version": "itapon-archive-mobilenetv2-v1",
+  "model_version": "itapon-archive-mobilenetv2-v2",
   "input_size": [
     192,
     192
@@ -11,11 +11,16 @@
     "brown-glass",
     "cardboard",
     "clothes",
+    "expired_medicine",
+    "face_mask",
     "green-glass",
     "metal",
     "paper",
     "plastic",
     "shoes",
+    "snack_wrapper",
+    "spray_can",
+    "tetra_pack",
     "trash",
     "white-glass"
   ]

@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-// Combines the archive classifier (12 broad categories, the main scanner) with YOLO-World
+// Combines the archive classifier (17 classes, the main scanner) with YOLO-World
 // (23 specific items) for one answer per frame (D28, amended 2026-11-03).
 //
-// Why: the classifier has no category for 12 of the specific items (straw, utensil, snack
-// wrapper, styrofoam, soiled food container, tetra pack, used tissue, light bulb, medicine,
-// spray can, sanitary napkin, face mask), so it files them under plastic, paper, glass, metal or
-// trash, and three of them are hazardous. A plain "YOLO wins when it's sure" rule would break
-// correct answers (measured on 300 dataset photos: 8% at 0.35), so YOLO may only:
-//   1. name one of those 12 items, when the classifier's answer is a plausible mix-up for it;
+// Why: the classifier has no category for 7 of the specific items (straw, plastic utensil,
+// styrofoam, soiled food container, used tissue, light bulb, sanitary napkin; v2 learned tetra
+// pack, face mask, medicine, spray can and snack wrapper), so it files them under plastic, paper,
+// glass or trash. A plain "YOLO wins when it's sure" rule would break correct answers (measured
+// on 300 dataset photos: 8% at 0.35), so YOLO may only:
+//   1. name one of those items, when the classifier's answer is a plausible mix-up for it
+//      (and, as a safety net, spray can / medicine when the classifier says metal or plastic);
 //   2. refine a coarse answer into a specific item of the SAME bin (plastic → plastic bottle).
 // Measured cost of this rule: 1.0% of correct answers changed at the defaults below.
 import type { Detection } from "@/lib/detector/types";
@@ -34,16 +35,14 @@ export const HAZARDOUS_SPECIFIC = new Set(["light_bulb", "spray_can", "expired_m
 export const CONFUSABLE: Record<string, string[]> = {
   straw: ["plastic", "trash"],
   plastic_utensil: ["plastic", "trash"],
-  snack_wrapper: ["plastic", "paper", "trash"],
   styrofoam: ["plastic", "trash", "paper", "white_glass"],
   soiled_food_container: ["plastic", "paper", "cardboard", "trash"],
-  tetra_pack: ["cardboard", "paper", "plastic", "trash"],
   used_tissue: ["paper", "biological", "trash"],
   light_bulb: ["white_glass", "plastic", "trash"],
+  // The classifier knows these now; YOLO is only a hazardous safety net behind it.
   spray_can: ["metal", "plastic"],
   expired_medicine: ["plastic", "white_glass", "brown_glass", "paper", "metal", "trash"],
   sanitary_napkin: ["trash", "paper", "clothes", "plastic"],
-  face_mask: ["clothes", "paper", "trash", "plastic"],
 };
 
 /** Coarse answer → specific items of the same bin it may be refined into. */

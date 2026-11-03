@@ -5,13 +5,13 @@ Since D28 (2026-10-26) the **main scanner** is a 12-class whole-image classifier
 loads in the background and names the specific items the classifier has no category for, and
 YOLO-World becomes the main scanner if the classifier can't load. See "Hybrid" below.
 
-| | Archive classifier (main) | YOLO-World (helper, and fallback) |
-|---|---|---|
-| Task | One label for the whole image | Boxes and item-level labels |
-| Classes | 12: battery, biological, brown-glass, cardboard, clothes, green-glass, metal, paper, plastic, shoes, trash, white-glass | 23 item classes |
-| Model | MobileNetV2, 192 × 192, ONNX (9 MB) | YOLO-World int8, 480 px (13 MB) |
-| Multi-item "What to do next" | No (one answer per scan) | Yes |
-| Boxes on screen | No | Yes |
+|                              | Archive classifier (main)                                                                                               | YOLO-World (helper, and fallback) |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| Task                         | One label for the whole image                                                                                           | Boxes and item-level labels       |
+| Classes                      | 12: battery, biological, brown-glass, cardboard, clothes, green-glass, metal, paper, plastic, shoes, trash, white-glass | 23 item classes                   |
+| Model                        | MobileNetV2, 192 × 192, ONNX (9 MB)                                                                                     | YOLO-World int8, 480 px (13 MB)   |
+| Multi-item "What to do next" | No (one answer per scan)                                                                                                | Yes                               |
+| Boxes on screen              | No                                                                                                                      | Yes                               |
 
 The model and its training scripts come from the team's package (`ITAPON Model Package`):
 `models/browser_onnx/itapon-archive-classifier.onnx` and `.labels.json`, trained from the
@@ -25,6 +25,7 @@ classes: brown-glass 86.8% recall, plastic 86.8%, white-glass 89.7%. These numbe
 show how it does on phone photos in real bins.
 
 **Checked here (2026-10-26):**
+
 - The exported model takes RGB floats 0–255 in NHWC layout and ends in a softmax (probabilities
   sum to 1). 140 of 144 sampled dataset photos (97.2%) were classified correctly with the same
   preprocessing as the browser worker.
@@ -36,7 +37,7 @@ show how it does on phone photos in real bins.
 
 ## How it works in the app
 
-- **Hosting (D12 rules):** Hugging Face repo `alchemistUserhf/itapon-yolo`, tag **`archive-v1`**
+- **Hosting (D12 rules):** Hugging Face repo `alchemistUserhf/itapon-yolo`, tag **`archive-v2.1`** (`archive-v1`, the 12-class package model, stays as the rollback)
   (separate from the YOLO tag `v0.1`). SHA-256 of both files is pinned in
   `apps/web/src/lib/detector/models.ts` and checked in the worker before use; a mismatch is
   refused and cached copies are dropped.
@@ -52,23 +53,49 @@ show how it does on phone photos in real bins.
   this mode.
 - **Bin mapping (approved 2026-10-26, RA 9003):** `apps/web/src/lib/archive-classifier/classes.ts`.
 
-  | Archive class | App item | Bin |
-  |---|---|---|
-  | battery | battery (v1 item) | Hazardous |
-  | biological | biological | Biodegradable |
-  | brown-glass, green-glass, white-glass | brown_glass, green_glass, white_glass | Recyclable |
-  | cardboard, paper | cardboard (v1 item), paper | Recyclable |
-  | metal | metal | Recyclable |
-  | plastic | plastic | Recyclable |
-  | clothes, shoes | clothes, shoes | Residual |
-  | trash | trash | Residual |
+  | Archive class                         | App item                              | Bin           |
+  | ------------------------------------- | ------------------------------------- | ------------- |
+  | battery                               | battery (v1 item)                     | Hazardous     |
+  | biological                            | biological                            | Biodegradable |
+  | brown-glass, green-glass, white-glass | brown_glass, green_glass, white_glass | Recyclable    |
+  | cardboard, paper                      | cardboard (v1 item), paper            | Recyclable    |
+  | metal                                 | metal                                 | Recyclable    |
+  | plastic                               | plastic                               | Recyclable    |
+  | clothes, shoes                        | clothes, shoes                        | Residual      |
+  | trash                                 | trash                                 | Residual      |
 
   The 10 new items have `waste_items` rows (so scans are logged and missions count them) and
   copy in English and Filipino. They have `is_detectable = false` (that flag means "YOLO can
   return it") and stay out of the Bin Guide.
+
 - **Library card:** for broad classes it links to the matching material group (for plastic it
   adds "check the number in the triangle"). For battery and cardboard the specific library
   chooser still applies.
+
+## archive-v2: 17 classes (2026-11-03)
+
+Retrained in PyTorch (MobileNetV2, ImageNet weights, 192 px; `ml/scripts/archive_v2/prepare.py` and
+`train.py`) on the package's 12 classes (up to 700 photos each) plus five specific items:
+
+| Item             | Photos | Source                                                                                                      |
+| ---------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
+| tetra pack       | 680    | GlobalWasteData `tetra_pak` (CC BY 4.0) + TACO drink/meal cartons                                           |
+| expired medicine | 1,032  | GlobalWasteData `medicine_and_strip`                                                                        |
+| face mask        | 319    | GlobalWasteData `masks`                                                                                     |
+| spray can        | 314    | GlobalWasteData `spray_cans` + TACO aerosol                                                                 |
+| snack wrapper    | 115    | TACO crisp packet / plastic wrapper (bounding-box crops; only 466 of 1,500 TACO images could be downloaded) |
+
+Not enough public data (under 100 photos, or none): straw, plastic utensil, styrofoam, soiled food
+container, used tissue, sanitary napkin, light bulb. YOLO-World still covers those.
+
+Hold-out (same sources, split by source photo, 1601 photos): **94.4% accuracy, 93.3% macro F1**.
+New items (recall/precision %): medicine 92.6/98.6, tetra pack 92.2/97.9, spray can 85.4/97.2, face mask 86.7/92.9, snack wrapper 84.2/72.7 (few test photos).
+Training images are shrunk with anti-aliasing (Lanczos) because the browser does the same; a first run with plain bilinear shrinking scored 95.3% on the hold-out but failed to lock on 6 of 24 browser photos, so it was replaced (tag `archive-v2` is unused; use `archive-v2.1`).
+Browser check (training-set photos, so it checks wiring only): 8 of 8 new-class photos locked on the right bin with the first run. The final model (v2.1) has **not** been re-run through the 24-photo browser regression; do that, then the phone field test, before relying on it.
+These are in-dataset numbers, not field
+accuracy. Licences: GlobalWasteData and TACO are CC BY 4.0 (attribution needed); GlobalWasteData's
+paper says the dataset may not be modified and commercial use follows each source's licence, so the
+team should confirm with the adviser (images are not redistributed; only the model is).
 
 ## Hybrid: classifier + YOLO-World (2026-11-03)
 
@@ -80,12 +107,12 @@ could send a bulb or medicine to the blue bin.
 
 **The rule** (`apps/web/src/lib/archive-classifier/hybrid.ts`, one answer per frame):
 
-| Situation | Answer |
-|---|---|
-| The classifier is sure, and YOLO sees one of the 12 items above that the classifier's answer could plausibly be (e.g. straw vs plastic) | The YOLO item, if YOLO ≥ 0.45 (**≥ 0.40 for light bulb, medicine, spray can**) |
-| The classifier is sure and YOLO names a specific item of the **same bin** (plastic → plastic bottle, metal → aluminum can, glass → glass bottle, paper → paper sheet/bag, biological → banana peel/food scraps/leaves) at ≥ 0.45 | The specific item (same bin; the classifier's confidence is kept) |
-| Anything else | The classifier |
-| The classifier has no confident answer (odd angle, small item) | YOLO, if ≥ 0.35 (≥ 0.30 hazardous) |
+| Situation                                                                                                                                                                                                                        | Answer                                                                         |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| The classifier is sure, and YOLO sees one of the 12 items above that the classifier's answer could plausibly be (e.g. straw vs plastic)                                                                                          | The YOLO item, if YOLO ≥ 0.45 (**≥ 0.40 for light bulb, medicine, spray can**) |
+| The classifier is sure and YOLO names a specific item of the **same bin** (plastic → plastic bottle, metal → aluminum can, glass → glass bottle, paper → paper sheet/bag, biological → banana peel/food scraps/leaves) at ≥ 0.45 | The specific item (same bin; the classifier's confidence is kept)              |
+| Anything else                                                                                                                                                                                                                    | The classifier                                                                 |
+| The classifier has no confident answer (odd angle, small item)                                                                                                                                                                   | YOLO, if ≥ 0.35 (≥ 0.30 hazardous)                                             |
 
 **Why not just "YOLO wins when it's sure"?** Measured on 300 dataset photos (25 per class), through
 the deployed files: the classifier alone gets the right bin on **100%** (in-dataset); YOLO alone
@@ -154,11 +181,11 @@ lower it or improve training data.
 
 ### Hybrid (2026-11-03)
 
-| Test | Result |
-|---|---|
+| Test                                                                         | Result                                |
+| ---------------------------------------------------------------------------- | ------------------------------------- |
 | Sample photo of a plastic cup (`bag_cup.jpg`, small image): classifier alone | does **not** lock (scores it "shoes") |
-| Same photo with the YOLO helper | **locks** (YOLO: plastic cup 0.45) |
-| Empty scenes with both models running (white, beige, dark, gradient) | **4 / 4** stay in "searching" |
+| Same photo with the YOLO helper                                              | **locks** (YOLO: plastic cup 0.45)    |
+| Empty scenes with both models running (white, beige, dark, gradient)         | **4 / 4** stay in "searching"         |
 
 | 2 random photos per class, all 12 classes (24 runs), helper ready, scanned again | **22 / 24** correct bin, **0 wrong bins**; the 2 misses did not lock (see below) |
 
@@ -174,13 +201,14 @@ Chrome's fake camera played dataset photos into the production build (`e2e/scan.
 `scan` project, run locally with `E2E_SAMPLE_IMAGE` and `E2E_EXPECT_BIN`). The test checks the
 engine is `archive` and the announced bin is the expected one.
 
-| Test | Result |
-|---|---|
-| 2 random photos per class, all 12 classes (24 runs) | **24 / 24** locked on the correct bin |
-| Empty scenes: white, beige, dark, horizontal gradient (`E2E_EXPECT_NOTHING=1`) | **4 / 4** stayed in "searching" |
-| Control: a real battery photo in the empty-scene test | fails, as it should (it locks) |
+| Test                                                                           | Result                                |
+| ------------------------------------------------------------------------------ | ------------------------------------- |
+| 2 random photos per class, all 12 classes (24 runs)                            | **24 / 24** locked on the correct bin |
+| Empty scenes: white, beige, dark, horizontal gradient (`E2E_EXPECT_NOTHING=1`) | **4 / 4** stayed in "searching"       |
+| Control: a real battery photo in the empty-scene test                          | fails, as it should (it locks)        |
 
 How it got there (what the tests found):
+
 - With the first settings (gate 0.85, default canvas resize) 3 of 17 correct photos were
   refused. The gate is now 0.7 and the canvas resizes at high quality (paper: 0.55 → ~0.85).
 - Photos with a low model score (e.g. a metal photo at 0.58 when scored directly) can still

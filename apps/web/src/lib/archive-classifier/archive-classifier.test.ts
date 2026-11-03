@@ -35,19 +35,24 @@ const MODEL_CLASSES = [
   "brown-glass",
   "cardboard",
   "clothes",
+  "expired_medicine",
+  "face_mask",
   "green-glass",
   "metal",
   "paper",
   "plastic",
   "shoes",
+  "snack_wrapper",
+  "spray_can",
+  "tetra_pack",
   "trash",
   "white-glass",
 ];
 
 describe("archive classes", () => {
-  it("cover exactly the model's 12 classes, each once", () => {
+  it("cover exactly the model's 17 classes, each once", () => {
     expect(ARCHIVE_CLASSES.map((c) => c.name).sort()).toEqual([...MODEL_CLASSES].sort());
-    expect(new Set(ARCHIVE_CLASSES.map((c) => c.classKey)).size).toBe(12);
+    expect(new Set(ARCHIVE_CLASSES.map((c) => c.classKey)).size).toBe(17);
   });
 
   it("map to the approved RA 9003 bins", () => {
@@ -64,12 +69,25 @@ describe("archive classes", () => {
       "plastic",
     ])
       expect(bin(n), n).toBe("recyclable");
-    for (const n of ["clothes", "shoes", "trash"]) expect(bin(n), n).toBe("residual");
+    for (const n of ["clothes", "shoes", "trash", "tetra_pack", "face_mask", "snack_wrapper"])
+      expect(bin(n), n).toBe("residual");
+    for (const n of ["battery", "expired_medicine", "spray_can"])
+      expect(bin(n), n).toBe("hazardous");
     for (const c of ARCHIVE_CLASSES) expect(BIN_ORDER).toContain(c.category);
   });
 
-  it("reuse the existing v1 items for battery and cardboard only", () => {
-    expect([...SHARED_WITH_V1].sort()).toEqual(["battery", "cardboard"]);
+  it("reuse the existing v1 items for battery, cardboard and the five specific items", () => {
+    expect([...SHARED_WITH_V1].sort()).toEqual(
+      [
+        "battery",
+        "cardboard",
+        "expired_medicine",
+        "face_mask",
+        "snack_wrapper",
+        "spray_can",
+        "tetra_pack",
+      ].sort(),
+    );
     expect(ARCHIVE_ONLY_KEYS.size).toBe(10);
     expect(ARCHIVE_BY_KEY.get("battery")?.name).toBe("battery");
   });
@@ -119,7 +137,7 @@ describe("processing", () => {
   });
 
   const scores = (name: string, p: number) => {
-    const rest = (1 - p) / 11;
+    const rest = (1 - p) / (MODEL_CLASSES.length - 1);
     return MODEL_CLASSES.map((c) => (c === name ? p : rest));
   };
 
@@ -138,7 +156,7 @@ describe("processing", () => {
 
   it("reports nothing below the minimum, so an empty scene isn't an answer", () => {
     expect(topDetection(scores("trash", 0.5), MODEL_CLASSES, 0.6)).toBeNull();
-    expect(topDetection(new Array(12).fill(1 / 12), MODEL_CLASSES, 0.6)).toBeNull();
+    expect(topDetection(new Array(17).fill(1 / 17), MODEL_CLASSES, 0.6)).toBeNull();
   });
 
   it("skips flat frames (covered lens, plain wall) but not real photos", () => {

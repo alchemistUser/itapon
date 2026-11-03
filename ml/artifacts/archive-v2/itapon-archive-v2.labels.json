@@ -1,0 +1,27 @@
+{
+  "model_version": "itapon-archive-mobilenetv2-v2",
+  "input_size": [
+    192,
+    192
+  ],
+  "input_format": "RGB float pixel values 0-255",
+  "class_names": [
+    "battery",
+    "biological",
+    "brown-glass",
+    "cardboard",
+    "clothes",
+    "expired_medicine",
+    "face_mask",
+    "green-glass",
+    "metal",
+    "paper",
+    "plastic",
+    "shoes",
+    "snack_wrapper",
+    "spray_can",
+    "tetra_pack",
+    "trash",
+    "white-glass"
+  ]
+}
