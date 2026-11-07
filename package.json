@@ -20,7 +20,7 @@
     "db:rls-roles": "node supabase/tests/run-rls-roles.mjs"
   },
   "devDependencies": {
-    "@supabase/supabase-js": "^2.118.0",
+    "@supabase/supabase-js": "^2.119.0",
     "prettier": "^3.9.10",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "supabase": "^2.121.0"
